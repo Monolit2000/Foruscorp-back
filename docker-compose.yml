@@ -1,0 +1,15 @@
+services:
+  # foruscorp.fuelroute.api:
+  #   image: ${DOCKER_REGISTRY-}foruscorpfuelrouteapi
+  #   build:
+  #     context: .
+  #     dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+
+  foruscorp.truckstracking.api:
+    image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+    build:
+      context: .
+      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+    ports:
+      - 5001:5001
+

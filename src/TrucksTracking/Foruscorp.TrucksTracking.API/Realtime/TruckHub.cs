@@ -1,0 +1,22 @@
+﻿using Microsoft.AspNetCore.SignalR;
+using System.Runtime.CompilerServices;
+
+namespace Foruscorp.TrucksTracking.API.Realtime
+{
+    public interface ITruckLocationUpdateClient
+    {
+        Task ReciveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
+    }
+
+    public sealed record TruckLocationUpdate(string truckId, decimal log, decimal lat);
+
+    internal sealed class TruckHub : Hub<ITruckLocationUpdateClient>
+    {
+
+        public async Task JoinTruckGroup(string truckId)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, truckId);
+        }
+ 
+    }
+}
