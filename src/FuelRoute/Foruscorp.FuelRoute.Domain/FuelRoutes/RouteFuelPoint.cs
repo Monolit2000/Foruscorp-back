@@ -8,13 +8,18 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
     public class RouteFuelPoint
     {
-        public Guid FuelPointId { get; private set; }
         public Guid FuelRouteId { get; private set; }
+
+        public Guid FuelPointId { get; private set; }
         public GeoPoint Location { get; private set; }
         public decimal FuelPrice { get; private set; }
         public DateTime ScheduledTime { get; private set; }
 
-        private RouteFuelPoint(GeoPoint location, Guid fuelRouteId, decimal fuelPrice, DateTime scheduledTime)
+        private RouteFuelPoint(
+            GeoPoint location, 
+            Guid fuelRouteId, 
+            decimal fuelPrice,
+            DateTime scheduledTime)
         {
             FuelPointId = Guid.NewGuid();
             FuelRouteId = fuelRouteId;

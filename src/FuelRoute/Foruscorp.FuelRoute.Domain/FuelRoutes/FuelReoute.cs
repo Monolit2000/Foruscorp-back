@@ -17,8 +17,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public IReadOnlyList<RouteFuelPoint> FuelPoints => _fuelPoints.AsReadOnly();
 
-        // Private constructor for ORM/tools
-        private FuelRoute() { }
+        private FuelRoute() { } //For EF core 
 
         public FuelRoute(
             Guid truckId,

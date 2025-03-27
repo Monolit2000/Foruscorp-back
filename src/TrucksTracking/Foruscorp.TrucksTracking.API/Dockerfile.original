@@ -15,7 +15,6 @@ WORKDIR /src
 COPY ["src/TrucksTracking/Foruscorp.TrucksTracking.API/Foruscorp.TrucksTracking.API.csproj", "src/TrucksTracking/Foruscorp.TrucksTracking.API/"]
 COPY ["src/TrucksTracking/Foruscorp.TrucksTracking.Aplication/Foruscorp.TrucksTracking.Aplication.csproj", "src/TrucksTracking/Foruscorp.TrucksTracking.Aplication/"]
 COPY ["src/TrucksTracking/Foruscorp.TrucksTracking.Domain/Foruscorp.TrucksTracking.Domain.csproj", "src/TrucksTracking/Foruscorp.TrucksTracking.Domain/"]
-COPY ["src/TrucksTracking/Foruscorp.TrucksTracking.Infrastructure/Foruscorp.TrucksTracking.Infrastructure.csproj", "src/TrucksTracking/Foruscorp.TrucksTracking.Infrastructure/"]
 RUN dotnet restore "./src/TrucksTracking/Foruscorp.TrucksTracking.API/Foruscorp.TrucksTracking.API.csproj"
 COPY . .
 WORKDIR "/src/src/TrucksTracking/Foruscorp.TrucksTracking.API"

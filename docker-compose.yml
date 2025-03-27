@@ -1,10 +1,53 @@
-services:
-  # foruscorp.fuelroute.api:
-  #   image: ${DOCKER_REGISTRY-}foruscorpfuelrouteapi
-  #   build:
-  #     context: .
-  #     dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
 
+
+# version: '3.8'
+# services:
+
+
+
+#  # foruscorp.truckstracking.api:
+#  #    image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+#  #    build:
+#  #      context: .
+#  #      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+#  #    ports:
+#  #      - 5001:5001
+
+#   foruscorp.truckstracking.api:
+#     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+#     # container_name: truckstracking-api
+#     build:
+#       context: .
+#       dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+#     ports:
+#       - 5001:5001
+#     # environment:
+#     #   - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=TrucksTracking;Username=postgres;Password=postgres
+#     #   - ASPNETCORE_ENVIRONMENT=Development
+#     # depends_on:
+#     #   - foruscorp.truckstracking-db
+#     # networks:
+#     #   - truck-tracking-network
+
+#   db:
+#     image: postgres:latest
+#     container_name: postgres-logs
+#     ports:
+#       - 5432:5432
+#     environment:
+#       - POSTGRES_USER=postgres
+#       - POSTGRES_PASSWORD=postgres
+#       - POSTGRES_DB=TrucksTracking
+#   #   volumes:
+#   #     - c:/var/lib/postgresql/data
+#     # networks:
+#     #   - truck-tracking-network
+
+
+
+version: '3.8'
+
+services:
   foruscorp.truckstracking.api:
     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
     build:
@@ -12,4 +55,32 @@ services:
       dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
     ports:
       - 5001:5001
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=TrucksTracking;Username=postgres;Password=your_secure_password
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - db
+    networks:
+      - truck-tracking-network
 
+  db:
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=your_secure_password
+      - POSTGRES_DB=TrucksTracking
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - truck-tracking-network
+
+networks:
+  truck-tracking-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
+    

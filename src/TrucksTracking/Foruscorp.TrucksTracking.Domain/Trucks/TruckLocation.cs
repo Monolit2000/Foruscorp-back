@@ -11,13 +11,15 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
     {
         public Guid Id { get; set; }    
         public Guid TruckId { get; set; }
-        public Guid RouteId { get; set; }
         public GeoPoint Location { get; set; }  
         public DateTime RecordedAt { get; set; }
 
+        private TruckLocation()
+        {
+                
+        }
         private TruckLocation(
             Guid truckId,
-            Guid RouteId,
             GeoPoint location)
         {
             Id = Guid.NewGuid();
@@ -33,7 +35,6 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         {
             return new TruckLocation(
                 truckId,
-                routeId,
                 location);    
         }
     }

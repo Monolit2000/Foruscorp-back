@@ -1,4 +1,6 @@
 using Foruscorp.TrucksTracking.API.Realtime;
+using Foruscorp.TrucksTracking.Infrastructure.Percistence;
+using Foruscorp.TrucksTracking.Infrastructure.Satup;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +20,8 @@ builder.Services.AddCors(options =>
                         .AllowAnyHeader());
 });
 
+builder.Services.AddTrucksTrackingServices(builder.Configuration);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -25,6 +29,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.ApplyTuckTrackingMigrations();
 }
 
 app.UseCors("AllowAll");

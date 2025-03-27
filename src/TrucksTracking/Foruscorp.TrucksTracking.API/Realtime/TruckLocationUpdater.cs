@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
     internal sealed class TruckLocationUpdater(
-        IServiceScopeFactory serviceScopeFactory,
+        //IServiceScopeFactory serviceScopeFactory,
         IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
         ILogger<TruckLocationUpdater> logger,
         ActiveTruckManager activeTruckManager) : BackgroundService
@@ -28,7 +28,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         {
             foreach(var truck in activeTruckManager.GetAllTrucks())
             {
-                // get new 
+                //get new 
                 var currentLocation = new GeoPoint(12.23m, 123.32m);
                 var newLocation = CalculateNewLocation(currentLocation);
 
