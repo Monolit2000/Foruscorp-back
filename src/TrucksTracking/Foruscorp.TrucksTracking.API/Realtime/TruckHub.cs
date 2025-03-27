@@ -5,7 +5,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 {
     public interface ITruckLocationUpdateClient
     {
-        Task ReciveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
+        Task ReceiveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
     }
 
     public sealed record TruckLocationUpdate(string TruckId, decimal Longitude, decimal Latitude);
