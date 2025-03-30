@@ -5,7 +5,8 @@
       "commandVersion": "1.0",
       "serviceActions": {
         "foruscorp.fuelroute.api": "StartDebugging",
-        "foruscorp.truckstracking.api": "StartDebugging"
+        "foruscorp.truckstracking.api": "StartDebugging",
+        "foruscorp.fuelstations.api": "StartDebugging"
       }
     }
   }

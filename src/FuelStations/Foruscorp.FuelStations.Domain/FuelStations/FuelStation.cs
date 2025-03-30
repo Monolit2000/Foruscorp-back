@@ -11,12 +11,12 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 {
     public class FuelStation
     {
-        private readonly List<FuelPrice> _fuelPrices = new();
+        public readonly List<FuelPrice> FuelPrices = [];
 
         public Guid Id { get; private set; }
         public string Address { get; private set; }
+        public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }
-        public IReadOnlyList<FuelPrice> FuelPrices => _fuelPrices.AsReadOnly();
         public DateTime LastUpdated { get; private set; }
 
         private FuelStation() { }
@@ -45,8 +45,8 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             foreach (var price in newPrices)
                 ValidateFuelPrice(price);
 
-            _fuelPrices.Clear();
-            _fuelPrices.AddRange(newPrices);
+            FuelPrices.Clear();
+            FuelPrices.AddRange(newPrices);
             LastUpdated = DateTime.UtcNow;
         }
 
@@ -56,11 +56,11 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 
             ValidateFuelPrice(newFuelPrice);
 
-            var existingPrice = _fuelPrices.FirstOrDefault(fp => fp.FuelType == fuelType);
+            var existingPrice = FuelPrices.FirstOrDefault(fp => fp.FuelType == fuelType);
             if (existingPrice != null)
-                _fuelPrices.Remove(existingPrice);
+                FuelPrices.Remove(existingPrice);
 
-            _fuelPrices.Add(newFuelPrice);
+            FuelPrices.Add(newFuelPrice);
             LastUpdated = DateTime.UtcNow;
         }
 
@@ -76,23 +76,23 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 
         public decimal CalculateAverageFuelPrice(bool useDiscountedPrice = false)
         {
-            if (!_fuelPrices.Any())
+            if (!FuelPrices.Any())
                 return 0;
 
             if (useDiscountedPrice)
             {
-                var discountedPrices = _fuelPrices
+                var discountedPrices = FuelPrices
                     .Where(fp => fp.DiscountedPrice.HasValue)
                     .Select(fp => fp.DiscountedPrice.Value);
                 return discountedPrices.Any() ? discountedPrices.Average() : 0;
             }
 
-            return _fuelPrices.Average(fp => fp.Price);
+            return FuelPrices.Average(fp => fp.Price);
         }
 
         public decimal GetPriceForFuelType(FuelType fuelType, bool useDiscountedPrice = false)
         {
-            var fuelPrice = _fuelPrices.FirstOrDefault(fp => fp.FuelType == fuelType)
+            var fuelPrice = FuelPrices.FirstOrDefault(fp => fp.FuelType == fuelType)
                 ?? throw new InvalidOperationException($"Price for fuel type {fuelType.Name} not found");
 
             return useDiscountedPrice && fuelPrice.DiscountedPrice.HasValue
@@ -104,7 +104,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         {
             if (fuelPrice.FuelType == null)
                 throw new ArgumentException("Fuel type cannot be null", nameof(fuelPrice.FuelType));
-            if (_fuelPrices.Any(fp => fp.FuelType == fuelPrice.FuelType && fp != fuelPrice))
+            if (FuelPrices.Any(fp => fp.FuelType == fuelPrice.FuelType && fp != fuelPrice))
                 throw new InvalidOperationException($"Duplicate fuel type {fuelPrice.FuelType.Name} detected");
         }
     }

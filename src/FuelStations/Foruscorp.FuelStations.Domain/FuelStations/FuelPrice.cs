@@ -11,6 +11,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public FuelType FuelType { get; }
         public decimal Price { get; }
         public decimal? DiscountedPrice { get; } 
+        public decimal PriceDifference => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : 0; 
 
         public FuelPrice(FuelType fuelType, decimal price, decimal? discountedPrice = null)
         {

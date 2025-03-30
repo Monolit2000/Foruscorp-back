@@ -20,11 +20,21 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+
+	<PackageReference Include="Microsoft.Playwright" Version="1.51.0" />
+	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
 
   <ItemGroup>
+    <Folder Include="Migrations\" />
     <Folder Include="Processing\" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\Foruscorp.FuelStations.Aplication\Foruscorp.FuelStations.Aplication.csproj" />
+    <ProjectReference Include="..\Foruscorp.FuelStations.Domain\Foruscorp.FuelStations.Domain.csproj" />
   </ItemGroup>
   
 </Project>

@@ -48,6 +48,8 @@
 version: '3.8'
 
 services:
+
+
   foruscorp.truckstracking.api:
     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
     build:
@@ -56,29 +58,49 @@ services:
     ports:
       - 5001:5001
     environment:
-      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=TrucksTracking;Username=postgres;Password=your_secure_password
+      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
-      - db
+      - foruscorp.db
     networks:
-      - truck-tracking-network
+      - foruscorp-docker-network
 
-  db:
+      
+  foruscorp.fuelstations.api:
+    image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
+    build:
+      context: .
+      dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
+    ports:
+      - 5002:5002
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - foruscorp.db
+    networks:
+      - foruscorp-docker-network
+
+
+  foruscorp.db:
     image: postgres:latest
     ports:
       - 5432:5432
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=your_secure_password
-      - POSTGRES_DB=TrucksTracking
+      - POSTGRES_DB=ForuscorpDB
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
-      - truck-tracking-network
+      - foruscorp-docker-network
+
 
 networks:
-  truck-tracking-network:
+  foruscorp-docker-network:
     driver: bridge
+  # truck-tracking-network:
+  #   driver: bridge
 
 volumes:
   postgres-data:
