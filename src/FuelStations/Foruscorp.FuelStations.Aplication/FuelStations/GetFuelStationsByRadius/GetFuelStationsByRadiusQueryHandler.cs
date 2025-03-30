@@ -18,7 +18,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
 
             var stations = await fuelStationsService.GetFuelStations(
                 "14200|gfwKLLaTKkeJ6spYXXLk2X7q2eoMhjt6xflo3Zyo",
-                request.Radius);
+                request.Radius,
+                request.source,
+                request.destination);
 
             return stations.Select(stationResponce => new FuelStationDto 
             {
