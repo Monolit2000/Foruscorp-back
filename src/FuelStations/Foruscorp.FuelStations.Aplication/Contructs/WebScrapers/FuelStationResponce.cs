@@ -33,7 +33,7 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
         public string PriceAfterDiscount { get; set; } 
 
         [JsonProperty("distance_to_location")]
-        public double DistanceToLocation { get; set; } 
+        public object DistanceToLocation { get; set; } 
 
         [JsonProperty("image")]
         public FuelStationImage Image { get; set; }
@@ -59,6 +59,20 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
             string s => s,
             _ => null
         };
+
+
+        public string? GetDistanceToLocationAsString() => DistanceToLocation switch
+        {
+            decimal d => d.ToString("F3"),
+            double d => d.ToString("F3"),
+            string s when s == "N/A" => "N/A",
+            string s => s,
+            _ => null
+        };
+
+
+    
+
 
         //public decimal? GetPriceAfterDiscountAsDecimal() => PriceAfterDiscount switch
         //{

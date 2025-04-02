@@ -77,7 +77,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
                 Price = stationResponce.GetPriceAsString(),
                 Discount = stationResponce.GetDiscountAsStringl(),
                 PriceAfterDiscount = stationResponce.PriceAfterDiscount,
-                DistanceToLocation = stationResponce.DistanceToLocation.ToString(),
+                DistanceToLocation = stationResponce.GetDistanceToLocationAsString(),
                 Route = stationResponce.Route
             });
         }
