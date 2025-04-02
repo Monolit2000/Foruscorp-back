@@ -27,7 +27,7 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 {
                     source,
                     destination,
-                    date = "2030-03-14",
+                    date = "2025-04-02",
                     distanceFilterId = radius.ToString(),
                     locationFilterId = new[] { "AB", "AL", "AR", "AZ", "BC", "CA", "CO", "CT", "FL", "GA", "IA", "ID", "IL", "IN", "KS" },
                     truckStopChainFilterId = new[] { "Pilot", "Loves", "Road Rangers", "TA Petro", "Palmetto", "Compass", "Sapp Bros" }

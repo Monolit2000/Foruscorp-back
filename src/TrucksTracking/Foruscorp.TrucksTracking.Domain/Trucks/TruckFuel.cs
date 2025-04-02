@@ -15,6 +15,8 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public GeoPoint Location { get; private set; }
         public DateTime RecordedAt { get; private set; }
 
+        private TruckFuel() { } //For EF core   
+
         private TruckFuel(
             Guid truckId,
             decimal previousFuelLevel,

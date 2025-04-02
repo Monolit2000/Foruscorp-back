@@ -55,8 +55,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 });
 
                 locationBuilder.Property(l => l.RecordedAt)
-                    .IsRequired()
-                    .HasColumnType("datetime");
+                    .IsRequired();
+                    //.HasColumnType("datetime");
             });
 
             builder.OwnsMany(t => t.TruckLocationHistory, historyBuilder =>
@@ -87,8 +87,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 });
 
                 historyBuilder.Property(h => h.RecordedAt)
-                    .IsRequired()
-                    .HasColumnType("datetime");
+                    .IsRequired();
+                    //.HasColumnType("datetime");
             });
 
             builder.OwnsMany(t => t.FuelHistory, fuelBuilder =>
@@ -118,7 +118,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                         .HasColumnType("decimal(9,6)");
                 });
 
-                fuelBuilder.Property(f => f.RecordedAt) .IsRequired() .HasColumnType("datetime");
+                fuelBuilder.Property(f => f.RecordedAt).IsRequired();
             });
 
             builder.HasIndex(t => t.TruckId);

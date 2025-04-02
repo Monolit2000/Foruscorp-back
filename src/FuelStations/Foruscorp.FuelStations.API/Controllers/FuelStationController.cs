@@ -25,5 +25,16 @@ namespace Foruscorp.FuelStations.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
+
+
+        [HttpGet("get-by-radius")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> GetFuelStationsByRadiusGet([FromQuery]
+          GetFuelStationsByRadiusQuery getFuelStationsByRadiusQuery,
+          CancellationToken cancellationToken)
+        {
+            var query = getFuelStationsByRadiusQuery;
+            var result = await _mediator.Send(query, cancellationToken);
+            return Ok(result);
+        }
     }
 }

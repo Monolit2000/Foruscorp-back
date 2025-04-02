@@ -17,11 +17,11 @@ namespace Foruscorp.FuelStations.Infrastructure
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
 
-
             services.AddScoped<IFuelStationsService, FuelStationsService>();
 
             services.AddScoped<IFuelStationContext, FuelStationContext>();
 
+            services.AddMemoryCache();
 
             services.AddMediatR(cfg =>
             {

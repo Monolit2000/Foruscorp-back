@@ -26,4 +26,8 @@
     <ProjectReference Include="..\Foruscorp.TrucksTracking.Aplication\Foruscorp.TrucksTracking.Aplication.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Migrations\" />
+  </ItemGroup>
+
 </Project>
