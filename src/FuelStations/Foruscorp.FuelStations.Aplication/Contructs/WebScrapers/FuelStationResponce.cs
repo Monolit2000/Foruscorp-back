@@ -1,54 +1,78 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿using Newtonsoft.Json;
 
 namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
 {
+
     public class FuelStationResponce
     {
-        [JsonPropertyName("id")]
+        [JsonProperty("id")]
         public int Id { get; set; }
 
-        [JsonPropertyName("latitude")]
+        [JsonProperty("latitude")]
         public string Latitude { get; set; }
 
-        [JsonPropertyName("longitude")]
+        [JsonProperty("longitude")]
         public string Longitude { get; set; }
 
-        [JsonPropertyName("name")]
+        [JsonProperty("name")]
         public string Name { get; set; }
 
-        [JsonPropertyName("address")]
+        [JsonProperty("address")]
         public string Address { get; set; }
 
-        [JsonPropertyName("state")]
+        [JsonProperty("state")]
         public string State { get; set; }
 
-        [JsonPropertyName("price")]
-        public string? Price { get; set; }
+        [JsonProperty("price")]
+        public object Price { get; set; } 
 
-        [JsonPropertyName("discount")]
-        public string? Discount { get; set; }
+        [JsonProperty("discount")]
+        public object Discount { get; set; } 
 
-        [JsonPropertyName("price_after_discount")]
-        public string PriceAfterDiscount { get; set; }
+        [JsonProperty("price_after_discount")]
+        public string PriceAfterDiscount { get; set; } 
 
-        [JsonPropertyName("distance_to_location")]
-        public string DistanceToLocation { get; set; }
+        [JsonProperty("distance_to_location")]
+        public double DistanceToLocation { get; set; } 
 
-        [JsonPropertyName("image")]
+        [JsonProperty("image")]
         public FuelStationImage Image { get; set; }
 
-        [JsonPropertyName("route")]
+        [JsonProperty("route")]
         public int Route { get; set; }
+
+        // Helper methods to safely access values
+        public string? GetPriceAsString() => Price switch
+        {
+            decimal d => d.ToString("F3"), 
+            double d => d.ToString("F3"), 
+            string s when s == "N/A" => "N/A",
+            string s => s,                
+            _ => null                      
+        };
+
+        public string? GetDiscountAsStringl() => Discount switch
+        {
+            decimal d => d.ToString("F3"),
+            double d => d.ToString("F3"),
+            string s when s == "N/A" => "N/A",
+            string s => s,
+            _ => null
+        };
+
+        //public decimal? GetPriceAfterDiscountAsDecimal() => PriceAfterDiscount switch
+        //{
+        //    decimal d => d,
+        //    double d => (decimal)d,
+        //    string s when decimal.TryParse(s, out var result) => result,
+        //    string s when s == "N/A" => null,
+        //    _ => null
+        //};
     }
 
     public class FuelStationImage
     {
-        [JsonPropertyName("tile")]
+        [JsonProperty("tile")]
         public string Tile { get; set; }
     }
 

@@ -6,8 +6,10 @@ namespace Foruscorp.TrucksTracking.Aplication.Trucks.UpdateTruckStateInfo
 {
     public class UpdateTruckStateInfoCommand : IRequest 
     {
-        GeoPoint CurrentTruckLocation { get; set; }
-       
-        decimal NewFuelStatus { get; set; } 
+        public Guid TruckId { get; set; }
+
+        public GeoPoint CurrentTruckLocation { get; set; }
+
+        public decimal FuelStatus { get; set; } 
     }
 }

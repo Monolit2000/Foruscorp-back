@@ -1,18 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Foruscorp.TrucksTracking.Infrastructure.Percistence;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
+using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
 {
-    public class TuckTrackingContext : DbContext    
+    public class TuckTrackingContext : DbContext, ITuckTrackingContext
     {
+
+        public DbSet<Truck> Trucks { get; set; }
+
         public TuckTrackingContext(DbContextOptions<TuckTrackingContext> options) : base(options)   
         {
         }
+
+        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        {
+            await base.SaveChangesAsync(cancellationToken);    
+        }   
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

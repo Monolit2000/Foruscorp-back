@@ -140,7 +140,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
             Console.WriteLine("Route displayed. New page title: " + await page.TitleAsync());
         }
 
-        // Вспомогательные методы
         private async Task EnsurePageLoadedAsync(IPage page, string successMessage)
         {
             await page.WaitForLoadStateAsync(LoadState.Load, new PageWaitForLoadStateOptions { Timeout = DefaultTimeoutMs });
