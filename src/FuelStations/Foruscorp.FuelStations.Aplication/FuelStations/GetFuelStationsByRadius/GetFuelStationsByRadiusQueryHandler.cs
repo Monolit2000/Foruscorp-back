@@ -16,9 +16,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
         //    var cacheKey = $"FuelStations_{request.Radius}_{request.source}_{request.destination}";
         //    var cacheDateKey = $"{cacheKey}_Date";
 
+        //    // Check if cache exists and is still valid (less than 6 hours old)
         //    if (memoryCache.TryGetValue(cacheKey, out IEnumerable<FuelStationDto> cachedStations) &&
         //        memoryCache.TryGetValue(cacheDateKey, out DateTime cachedDate) &&
-        //        cachedDate.Date == DateTime.Today)
+        //        DateTime.Now < cachedDate.AddHours(6))
         //    {
         //        return cachedStations;
         //    }
@@ -29,31 +30,19 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
         //        request.source,
         //        request.destination);
 
-        //    var fuelStationDtos = stations.Select(stationResponse => new FuelStationDto
-        //    {
-        //        Id = stationResponse.Id,
-        //        Latitude = stationResponse.Latitude,
-        //        Longitude = stationResponse.Longitude,
-        //        Name = stationResponse.Name,
-        //        Address = stationResponse.Address,
-        //        State = stationResponse.State,
-        //        Price = stationResponse.Price,
-        //        Discount = stationResponse.Discount,
-        //        PriceAfterDiscount = stationResponse.PriceAfterDiscount,
-        //        DistanceToLocation = stationResponse.DistanceToLocation,
-        //        Route = stationResponse.Route
-        //    }).ToList();
+        //    var fuelStationDtos = stations.Select(stationResponce 
+        //        => ToFuelStationDto(stationResponce)).ToList();
 
         //    var cacheEntryOptions = new MemoryCacheEntryOptions
         //    {
-        //        AbsoluteExpiration = DateTime.Today.AddDays(1).AddTicks(-1),
+        //        AbsoluteExpiration = DateTimeOffset.Now.AddHours(6), // Expire after 6 hours from now
         //        Priority = CacheItemPriority.Normal
         //    };
 
         //    memoryCache.Set(cacheKey, fuelStationDtos, cacheEntryOptions);
         //    memoryCache.Set(cacheDateKey, DateTime.Today, cacheEntryOptions);
 
-        //    return fuelStationDtos;
+        //    return  fuelStationDtos;
         //}
 
 
@@ -66,20 +55,30 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
                 request.source,
                 request.destination);
 
-            return stations.Select(stationResponce => new FuelStationDto
+            if (!stations.Any() || stations.FirstOrDefault() == null)
+                return Enumerable.Empty<FuelStationDto>();
+
+            return stations.Select(stationResponce => ToFuelStationDto(stationResponce));
+         
+        }    
+        
+        
+        private FuelStationDto ToFuelStationDto(FuelStationResponce fuelStationResponce)
+        {
+            return new FuelStationDto
             {
-                Id = stationResponce.Id,
-                Latitude = stationResponce.Latitude,
-                Longitude = stationResponce.Longitude,
-                Name = stationResponce.Name,
-                Address = stationResponce.Address,
-                State = stationResponce.State,
-                Price = stationResponce.GetPriceAsString(),
-                Discount = stationResponce.GetDiscountAsStringl(),
-                PriceAfterDiscount = stationResponce.PriceAfterDiscount,
-                DistanceToLocation = stationResponce.GetDistanceToLocationAsString(),
-                Route = stationResponce.Route
-            });
+                Id = fuelStationResponce.Id,
+                Latitude = fuelStationResponce.Latitude,
+                Longitude = fuelStationResponce.Longitude,
+                Name = fuelStationResponce.Name,
+                Address = fuelStationResponce.Address,
+                State = fuelStationResponce.State,
+                Price = fuelStationResponce.GetPriceAsString(),
+                Discount = fuelStationResponce.GetDiscountAsStringl(),
+                PriceAfterDiscount = fuelStationResponce.PriceAfterDiscount,
+                DistanceToLocation = fuelStationResponce.GetDistanceToLocationAsString(),
+                Route = fuelStationResponce.Route
+            };  
         }
     }
 }

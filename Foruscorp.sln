@@ -37,6 +37,16 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelStations.Infr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelStations.Domain", "src\FuelStations\Foruscorp.FuelStations.Domain\Foruscorp.FuelStations.Domain.csproj", "{35C14521-92DC-4812-8F71-D96026821D4A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Trucks", "Trucks", "{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Trucks.API", "src\Trucks\Foruscorp.Trucks.API\Foruscorp.Trucks.API.csproj", "{DE989334-8A6D-4290-84AC-065C2B40CA24}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Trucks.Aplication", "src\Trucks\Foruscorp.Trucks.Aplication\Foruscorp.Trucks.Aplication.csproj", "{80223F91-CEAE-48E4-A448-884A987E5E79}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Trucks.Domain", "src\Trucks\Foruscorp.Trucks.Domain\Foruscorp.Trucks.Domain.csproj", "{70DD056A-C13E-4597-B1D9-3883185D1241}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Trucks.Infrastructure", "src\Trucks\Foruscorp.Trucks.Infrastructure\Foruscorp.Trucks.Infrastructure.csproj", "{FE099545-A18B-4BE5-BAF7-D9B638CD2479}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -95,6 +105,22 @@ Global
 		{35C14521-92DC-4812-8F71-D96026821D4A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{35C14521-92DC-4812-8F71-D96026821D4A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{35C14521-92DC-4812-8F71-D96026821D4A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE989334-8A6D-4290-84AC-065C2B40CA24}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE989334-8A6D-4290-84AC-065C2B40CA24}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE989334-8A6D-4290-84AC-065C2B40CA24}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE989334-8A6D-4290-84AC-065C2B40CA24}.Release|Any CPU.Build.0 = Release|Any CPU
+		{80223F91-CEAE-48E4-A448-884A987E5E79}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{80223F91-CEAE-48E4-A448-884A987E5E79}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{80223F91-CEAE-48E4-A448-884A987E5E79}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{80223F91-CEAE-48E4-A448-884A987E5E79}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70DD056A-C13E-4597-B1D9-3883185D1241}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70DD056A-C13E-4597-B1D9-3883185D1241}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70DD056A-C13E-4597-B1D9-3883185D1241}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70DD056A-C13E-4597-B1D9-3883185D1241}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FE099545-A18B-4BE5-BAF7-D9B638CD2479}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FE099545-A18B-4BE5-BAF7-D9B638CD2479}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FE099545-A18B-4BE5-BAF7-D9B638CD2479}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FE099545-A18B-4BE5-BAF7-D9B638CD2479}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -115,5 +141,13 @@ Global
 		{8D5DCB57-DB75-4729-98F1-5487858A458A} = {EABA0AE4-4A9E-4F72-8E66-12B3781ABE73}
 		{32844FF8-0014-4681-883E-57D80B38DAF8} = {EABA0AE4-4A9E-4F72-8E66-12B3781ABE73}
 		{35C14521-92DC-4812-8F71-D96026821D4A} = {EABA0AE4-4A9E-4F72-8E66-12B3781ABE73}
+		{36D591C7-65C7-A0D1-1CBC-10CDE441BDC8} = {CC87C304-2DA1-4C19-A7E3-A70B423D365D}
+		{DE989334-8A6D-4290-84AC-065C2B40CA24} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{80223F91-CEAE-48E4-A448-884A987E5E79} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{70DD056A-C13E-4597-B1D9-3883185D1241} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+		{FE099545-A18B-4BE5-BAF7-D9B638CD2479} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2904CEA6-8C5E-4BE6-8C16-181313AB69B3}
 	EndGlobalSection
 EndGlobal

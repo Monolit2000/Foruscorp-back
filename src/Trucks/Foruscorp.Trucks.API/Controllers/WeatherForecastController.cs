@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace Foruscorp.TrucksTracking.API.Controllers
+namespace Foruscorp.Trucks.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
