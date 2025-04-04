@@ -4,9 +4,9 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
 {
-    public class TruckConfiguration : IEntityTypeConfiguration<Truck>
+    public class TruckConfiguration : IEntityTypeConfiguration<TruckTracker>
     {
-        public void Configure(EntityTypeBuilder<Truck> builder)
+        public void Configure(EntityTypeBuilder<TruckTracker> builder)
         {
             builder.ToTable("Trucks");
 
