@@ -7,27 +7,27 @@ using Microsoft.Win32;
 
 namespace Foruscorp.TrucksTracking.Domain.Trucks
 {
-    public class Truck
+    public class TruckTracker
     {
+        public Guid TruckId { get; private set; }
         public List<TruckFuel> FuelHistory { get; private set; } = [];
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
 
-        public Guid TruckId { get; private set; }
-        public Guid CurrentRouteId { get; private set; }
         public Guid Id { get; private set; }
+        public Guid CurrentRouteId { get; private set; }
+        public TruckStatus Status { get; private set; }
         public decimal FuelStatus { get; private set; }
         public TruckLocation CurrentTruckLocation { get; set; }
-        public TruckStatus Status { get; private set; }
 
-        private Truck(Guid truckId)
+        private TruckTracker(Guid truckId)
         {
             Id = Guid.NewGuid();
             TruckId = truckId;
             Status = TruckStatus.Inactive;
         }
 
-        public static Truck Create(Guid truckId)
-            => new Truck(truckId);
+        public static TruckTracker Create(Guid truckId)
+            => new TruckTracker(truckId);
 
 
 

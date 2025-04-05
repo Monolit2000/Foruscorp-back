@@ -1,6 +1,0 @@
-@Foruscorp.TrucksTracking.API_HostAddress = http://localhost:5164
-
-GET {{Foruscorp.TrucksTracking.API_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

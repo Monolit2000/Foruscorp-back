@@ -9,9 +9,9 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 {
     public interface ITruckRepository
     {
-        Task<Truck> GetTruckById(Guid truckId);
-        Task AddTruck(Truck truck, CancellationToken cancellationToken);
-        Task UpdateTruck(Truck truck, CancellationToken cancellationToken);
+        Task<TruckTracker> GetTruckById(Guid truckId);
+        Task AddTruck(TruckTracker truck, CancellationToken cancellationToken);
+        Task UpdateTruck(TruckTracker truck, CancellationToken cancellationToken);
         Task DeleteTruck(Guid truckId, CancellationToken cancellationToken);
 
         Task SaveChangesAsync(CancellationToken cancellationToken);

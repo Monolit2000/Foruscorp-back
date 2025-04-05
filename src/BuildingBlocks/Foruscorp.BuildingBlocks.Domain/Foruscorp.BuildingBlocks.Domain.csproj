@@ -3,22 +3,13 @@
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>disable</Nullable>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
+
 	<ItemGroup>
-		<PackageReference Include="FluentResults" Version="3.16.0" />
 		<PackageReference Include="MediatR" Version="12.4.1" />
-
 		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.3" />
-
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		
 	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\Foruscorp.FuelStations.Domain\Foruscorp.FuelStations.Domain.csproj" />
-	</ItemGroup>
-
 
 </Project>

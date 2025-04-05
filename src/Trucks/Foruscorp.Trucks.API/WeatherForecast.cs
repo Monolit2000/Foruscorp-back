@@ -1,4 +1,6 @@
-namespace Foruscorp.TrucksTracking.API
+using System;
+
+namespace Foruscorp.Trucks.API
 {
     public class WeatherForecast
     {

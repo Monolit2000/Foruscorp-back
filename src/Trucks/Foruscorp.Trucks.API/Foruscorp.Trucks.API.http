@@ -1,0 +1,6 @@
+@Foruscorp.Trucks.API_HostAddress = http://localhost:5161
+
+GET {{Foruscorp.Trucks.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
