@@ -30,10 +30,9 @@ namespace Foruscorp.Trucks.API.Controllers
 
         [HttpGet("get-truck-list")]
         public async Task<ActionResult> GetFuelStationsByRadiusGet(
-          GetAllTruksQuery getFuelStationsByRadiusQuery,
           CancellationToken cancellationToken)
         {
-            var query = getFuelStationsByRadiusQuery;
+            var query = new GetAllTruksQuery();
             var result = await mediator.Send(query, cancellationToken);
             return Ok(result);
         }

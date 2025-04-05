@@ -6,7 +6,8 @@
       "serviceActions": {
         "foruscorp.fuelroute.api": "StartDebugging",
         "foruscorp.truckstracking.api": "StartDebugging",
-        "foruscorp.fuelstations.api": "StartDebugging"
+        "foruscorp.fuelstations.api": "StartDebugging",
+        "webapplication1": "StartDebugging"
       }
     }
   }
