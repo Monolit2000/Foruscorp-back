@@ -16,7 +16,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public int ExperienceYears { get; private set; }
         public decimal Bonus { get; private set; } 
 
-        private readonly List<DriverFuelHistory> FuelHistories = [];
+        public readonly List<DriverFuelHistory> FuelHistories = [];
 
 
         private readonly List<DriverBonus> _bonuses = new List<DriverBonus>();

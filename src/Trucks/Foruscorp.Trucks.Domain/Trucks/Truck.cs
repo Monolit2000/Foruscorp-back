@@ -3,16 +3,20 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.BuildingBlocks.Domain;
+using Foruscorp.Trucks.Domain.Drivers;
+using Foruscorp.Trucks.Domain.Trucks.Events;
 
 namespace Foruscorp.Trucks.Domain.Trucks
 {
-public class Truck
+    public class Truck : Entity, IAggregateRoot
     {
         public Guid Id { get; private set; }
         public string Ulid { get; private set; }
         public string LicensePlate { get; private set; }
         public TruckStatus Status { get; private set; }
         public Guid? DriverId { get; private set; }
+        public Driver Driver { get; private set; }
 
         private Truck() { }
 
@@ -30,6 +34,8 @@ public class Truck
             LicensePlate = licensePlate;
             Status = TruckStatus.Inactive;
             DriverId = null;
+
+            AddDomainEvent(new TruckCreatedEvent(this));    
         }
 
         public static Truck CreateNew(
@@ -68,6 +74,15 @@ public class Truck
 
             Status = TruckStatus.Active;
         }
+
+        public void SetInactiveStatus()
+        {
+            if (Status == TruckStatus.Active)
+                throw new InvalidOperationException("Truck is already active.");
+
+            Status = TruckStatus.Active;
+        }
+
     }
 
     public enum TruckStatus

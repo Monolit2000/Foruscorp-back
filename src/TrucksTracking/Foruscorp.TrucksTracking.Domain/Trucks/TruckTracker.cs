@@ -13,7 +13,6 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public List<TruckFuel> FuelHistory { get; private set; } = [];
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
 
-
         public Guid Id { get; private set; }
         public Guid CurrentRouteId { get; private set; }
         public TruckStatus Status { get; private set; }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.Trucks.Domain.Drivers;
 
 namespace Foruscorp.Trucks.Domain.RouteOffers
 {
@@ -10,10 +11,11 @@ namespace Foruscorp.Trucks.Domain.RouteOffers
     {
         public Guid Id { get; private set; }
         public Guid DriverId { get; private set; }
+        public Driver Driver { get; private set; }
         public string Description { get; private set; }
         public RouteOfferStatus Status { get; private set; }
-        public bool IsTrackingAlways { get; private set; }
 
+        public RouteOfferType Type { get; private set; }         
         private RouteOffer() { }
 
         private RouteOffer(Guid driverId, string description)
@@ -22,7 +24,6 @@ namespace Foruscorp.Trucks.Domain.RouteOffers
             DriverId = driverId;
             Description = description;
             Status = RouteOfferStatus.Pending;
-            IsTrackingAlways = false;
         }
 
         public static RouteOffer CreateNew(Guid driverId, string description)
@@ -60,13 +61,12 @@ namespace Foruscorp.Trucks.Domain.RouteOffers
 
             Status = RouteOfferStatus.Refused;
         }
-
-        public void SetAlwaysTrackingStatus()
-        {
-            IsTrackingAlways = true;
-        }
     }
 
+    public enum RouteOfferType
+    {
+        Correct
+    }
     public enum RouteOfferStatus
     {
         Pending,
