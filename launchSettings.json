@@ -3,12 +3,12 @@
     "Docker Compose": {
       "commandName": "DockerCompose",
       "commandVersion": "1.0",
-      "serviceActions": {
-        "foruscorp.fuelroute.api": "StartDebugging",
-        "foruscorp.truckstracking.api": "StartDebugging",
-        "foruscorp.fuelstations.api": "StartDebugging",
-        "webapplication1": "StartDebugging"
-      }
+        "serviceActions": {
+            "foruscorp.fuelroute.api": "StartDebugging",
+            "foruscorp.truckstracking.api": "StartDebugging",
+            "foruscorp.fuelstations.api": "StartDebugging",
+            "foruscorp.trucks.api": "StartDebugging"
+        }
     }
   }
 }
