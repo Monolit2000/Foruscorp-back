@@ -23,7 +23,6 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
                 Id = d.Id,
                 FullName = d.FullName,
                 TruckId = d.TruckId ?? Guid.Empty 
-
             }).ToList();
 
             return driverDtos;

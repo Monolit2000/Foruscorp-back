@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.TrucksTracking.Aplication.Trucks.GetLatestTruckLocation
+namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
 {
-    public class GetLatestTruckLocationQuery
+    public class CreateTruckTrackerCommandHandler
     {
     }
 }

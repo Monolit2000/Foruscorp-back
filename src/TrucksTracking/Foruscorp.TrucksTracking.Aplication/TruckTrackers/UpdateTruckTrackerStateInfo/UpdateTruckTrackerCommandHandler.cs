@@ -2,12 +2,12 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foruscorp.TrucksTracking.Aplication.Trucks.UpdateTruckStateInfo
+namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStateInfo
 {
-    public class UpdateTruckStateInfoCommandHandler(
-        ITuckTrackingContext tuckTrackingContext) : IRequestHandler<UpdateTruckStateInfoCommand>
+    public class UpdateTruckTrackerCommandHandler(
+        ITuckTrackingContext tuckTrackingContext) : IRequestHandler<UpdateTruckTrackerCommand>
     {
-        public async Task Handle(UpdateTruckStateInfoCommand request, CancellationToken cancellationToken)
+        public async Task Handle(UpdateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
             var truck = await tuckTrackingContext.Trucks.FirstOrDefaultAsync(t => t.Id == request.TruckId, cancellationToken);
 

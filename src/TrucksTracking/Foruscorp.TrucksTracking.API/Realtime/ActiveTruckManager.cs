@@ -5,7 +5,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
     public sealed class ActiveTruckManager
     {
 
-        private readonly ConcurrentBag<string> _activeTruck = ["#111"/*, "#222", "#334"*/];
+        private readonly ConcurrentBag<string> _activeTruck = ["#111", "#222", "#334"];
 
         public void AddTruck(string truckId)
         {

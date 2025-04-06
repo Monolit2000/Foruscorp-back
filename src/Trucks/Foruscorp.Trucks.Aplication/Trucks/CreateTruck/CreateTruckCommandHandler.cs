@@ -9,11 +9,14 @@ using Foruscorp.Trucks.Domain.Trucks;
 using MediatR;
 
 using Foruscorp.Trucks.Aplication.Trucks;
+using MassTransit;
+using Foruscorp.Trucks.IntegrationEvents;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.CreateTruck
 {
     public class CreateTruckCommandHandler(
-        ITuckContext context) : IRequestHandler<CreateTruckCommand, TruckDto>
+        ITuckContext context,
+        IPublishEndpoint publishEndpoint) : IRequestHandler<CreateTruckCommand, TruckDto>
     {
         public async Task<TruckDto> Handle(CreateTruckCommand request, CancellationToken cancellationToken)
         {
@@ -26,6 +29,8 @@ namespace Foruscorp.Trucks.Aplication.Trucks.CreateTruck
             await context.SaveChangesAsync(cancellationToken);
 
             var truckDto = truck.ToTruckDto();
+
+            await publishEndpoint.Publish(new TruckCreatedIntegrationEvent() { TruckId = truckDto.Id });
 
             return truckDto;    
         }

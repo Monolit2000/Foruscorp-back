@@ -17,7 +17,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         {
             while(!stoppingToken.IsCancellationRequested)
             {
-                await UpdateTruckLocation();
+                //await UpdateTruckLocation();
                 await Task.Delay(1000, stoppingToken);
             }
             throw new NotImplementedException();
@@ -34,9 +34,9 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
                 var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
 
-                await hubContext.Clients.All. ReceiveTruckLocationUpdate(update);
+                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
 
-                await hubContext.Clients.Group(truck). ReceiveTruckLocationUpdate(update);
+                await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
 
                 logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
                     truck, newLocation.Longitude, newLocation.Latitude);

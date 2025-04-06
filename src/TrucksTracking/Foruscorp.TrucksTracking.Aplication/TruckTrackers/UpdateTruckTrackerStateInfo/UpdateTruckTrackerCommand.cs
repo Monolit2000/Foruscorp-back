@@ -2,9 +2,9 @@
 using MediatR;
 using Foruscorp.TrucksTracking.Domain.Trucks;
 
-namespace Foruscorp.TrucksTracking.Aplication.Trucks.UpdateTruckStateInfo
+namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStateInfo
 {
-    public class UpdateTruckStateInfoCommand : IRequest 
+    public class UpdateTruckTrackerCommand : IRequest 
     {
         public Guid TruckId { get; set; }
 
