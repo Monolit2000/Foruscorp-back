@@ -1,24 +1,10 @@
 services:
-  # foruscorp.fuelroute.api:
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Development
-  #     - ASPNETCORE_HTTP_PORTS=8080
-  #     - ASPNETCORE_HTTPS_PORTS=8081
-  #   ports:
-  #     - "8080"
-  #     - "8081"
-  #   volumes:
-  #     - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
-  #     - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
-  foruscorp.truckstracking.api:
+  foruscorp.trucks.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=5001
-      # - ASPNETCORE_HTTPS_PORTS=5001
+      - ASPNETCORE_HTTP_PORTS=5003
     ports:
-      - "5000"
-      - "5001"
-
+      - "5003"
 
   foruscorp.fuelstations.api:
     environment:
@@ -27,12 +13,21 @@ services:
       # - ASPNETCORE_HTTPS_PORTS=8081
     ports:
       - "5002"
+    # volumes:
+    #   - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+    #   - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    #   - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    #   - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
 
-
-  foruscorp.trucks.api:
+  foruscorp.truckstracking.api:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORTS=5003
+      - ASPNETCORE_HTTP_PORTS=5001
+      # - ASPNETCORE_HTTPS_PORTS=8081
     ports:
-      - "5003"
-
+      - "5001"
+    # volumes:
+    #   - ${APPDATA}/Microsoft/UserSecrets:/home/app/.microsoft/usersecrets:ro
+    #   - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
+    #   - ${APPDATA}/ASP.NET/Https:/home/app/.aspnet/https:ro
+    #   - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro

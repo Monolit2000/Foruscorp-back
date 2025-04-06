@@ -1,11 +1,8 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
+
 using MediatR;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
 using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
 using Foruscorp.Trucks.Aplication.Drivers.CreateDriver;
@@ -20,7 +17,7 @@ namespace Foruscorp.Trucks.API.Controllers
         IMediator mediator) : ControllerBase
     {
 
-        [HttpPost("createTruck")]
+        [HttpPost("create-truck")]
         public async Task<ActionResult> GetFuelStationsByRadius( CreateTruckCommand createTruckCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(createTruckCommand, cancellationToken);

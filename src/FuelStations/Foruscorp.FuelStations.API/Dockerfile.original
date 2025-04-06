@@ -14,8 +14,8 @@ ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 COPY ["src/FuelStations/Foruscorp.FuelStations.API/Foruscorp.FuelStations.API.csproj", "src/FuelStations/Foruscorp.FuelStations.API/"]
 COPY ["src/FuelStations/Foruscorp.FuelStations.Aplication/Foruscorp.FuelStations.Aplication.csproj", "src/FuelStations/Foruscorp.FuelStations.Aplication/"]
-COPY ["src/FuelStations/Foruscorp.FuelStations.Domain/Foruscorp.FuelStations.Domain.csproj", "src/FuelStations/Foruscorp.FuelStations.Domain/"]
 COPY ["src/FuelStations/Foruscorp.FuelStations.Infrastructure/Foruscorp.FuelStations.Infrastructure.csproj", "src/FuelStations/Foruscorp.FuelStations.Infrastructure/"]
+COPY ["src/FuelStations/Foruscorp.FuelStations.Domain/Foruscorp.FuelStations.Domain.csproj", "src/FuelStations/Foruscorp.FuelStations.Domain/"]
 RUN dotnet restore "./src/FuelStations/Foruscorp.FuelStations.API/Foruscorp.FuelStations.API.csproj"
 COPY . .
 WORKDIR "/src/src/FuelStations/Foruscorp.FuelStations.API"

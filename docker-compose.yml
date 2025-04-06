@@ -1,6 +1,26 @@
-version: '3.8'
+# services:
+#   foruscorp.trucks.api:
+#     image: ${DOCKER_REGISTRY-}foruscorptrucksapi
+#     build:
+#       context: .
+#       dockerfile: src/Trucks/Foruscorp.Trucks.API/Dockerfile
+
+#   foruscorp.fuelstations.api:
+#     image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
+#     build:
+#       context: .
+#       dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
+
+
+#   foruscorp.truckstracking.api:
+#     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+#     build:
+#       context: .
+#       dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+
 
 services:
+
   foruscorp.truckstracking.api:
     container_name: truckstracking-api
     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
@@ -49,6 +69,17 @@ services:
     networks:
       - foruscorp-docker-network
 
+
+    
+  gateway.api: 
+    container_name: gateway-api
+    image: mcr.microsoft.com/dotnet/nightly/yarp:latest
+    volumes:
+      - ./appsettings.json:/etc/yarp.config
+    ports:
+         - "5000:5000"
+    networks:
+        - foruscorp-docker-network
 
 
   foruscorp.db:
