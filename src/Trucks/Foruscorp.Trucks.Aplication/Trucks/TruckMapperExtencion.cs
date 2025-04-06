@@ -9,19 +9,6 @@ namespace Foruscorp.Trucks.Aplication.Trucks
 {
     public static class TruckMapperExtencion
     {
-
-        public static TruckDto TrucToTruckDto(this Truck truck)
-        {
-            return new TruckDto
-            {
-                Id = truck.Id,
-                Ulid = truck.Ulid,
-                LicensePlate = truck.LicensePlate,
-                Status = truck.Status.ToString(),
-                DriverId = truck.DriverId
-            };
-        }
-
         public static TruckDto ToTruckDto(this Truck truck)
         {
             return new TruckDto
@@ -30,7 +17,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks
                 Ulid = truck.Ulid,
                 LicensePlate = truck.LicensePlate,
                 Status = truck.Status.ToString(),
-                DriverId = truck.DriverId
+                DriverId = truck.Driver == null ? Guid.Empty : truck.Driver.Id, 
             };
         }
 

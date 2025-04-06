@@ -33,20 +33,6 @@ services:
     networks:
       - foruscorp-docker-network
 
-  foruscorp.db:
-    container_name: foruscorp-postgres
-    image: postgres:latest
-    ports:
-      - 5432:5432
-    environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=your_secure_password
-      - POSTGRES_DB=ForuscorpDB
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - foruscorp-docker-network
-
   foruscorp.trucks.api:
     container_name: trucks-api
     image: ${DOCKER_REGISTRY-}foruscorptrucksapi
@@ -62,6 +48,24 @@ services:
       - foruscorp.db
     networks:
       - foruscorp-docker-network
+
+
+
+  foruscorp.db:
+    container_name: foruscorp-postgres
+    image: postgres:latest
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=your_secure_password
+      - POSTGRES_DB=ForuscorpDB
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - foruscorp-docker-network
+
+
 
 networks:
   foruscorp-docker-network:

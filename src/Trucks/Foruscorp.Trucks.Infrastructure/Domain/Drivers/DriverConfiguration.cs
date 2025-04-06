@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Foruscorp.Trucks.Domain.Drivers;
+using Foruscorp.Trucks.Domain.Trucks;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 {
@@ -13,15 +14,15 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.HasKey(d => d.Id);
 
             builder.Property(d => d.Id)
-                .HasColumnName("DriverId")
-                .ValueGeneratedOnAdd();
+                .HasColumnName("DriverId");
+
 
             builder.Property(d => d.FullName)
                 .IsRequired()
                 .HasMaxLength(100);
 
             builder.Property(d => d.LicenseNumber)
-                .IsRequired()
+                .IsRequired(false)
                 .HasMaxLength(50);
 
             builder.Property(d => d.Status)
@@ -31,17 +32,15 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.TruckId)
                 .IsRequired(false);
 
-            builder.Property(d => d.HireDate)
-                .IsRequired();
+            builder.Property(d => d.HireDate);
 
-            builder.Property(d => d.ExperienceYears)
-                .IsRequired();
+
+            builder.Property(d => d.ExperienceYears);
 
             builder.Property(d => d.Bonus)
-                .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-            // One-to-Many relationship with DriverBonus
+
             builder.HasMany(d => d.Bonuses)
                 .WithOne()
                 .HasForeignKey(db => db.DriverId)
@@ -51,6 +50,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
                 .WithOne()
                 .HasForeignKey(fh => fh.DriverId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+
+            //builder.HasOne(d => d.Truck)
+            //    .WithOne(t => t.Driver)
+            //    .HasForeignKey<Truck>();
+
+            builder.HasOne(d => d.Truck)
+                .WithOne(t => t.Driver)
+                .HasForeignKey<Driver>(d => d.TruckId)
+                .OnDelete(DeleteBehavior.Restrict);
 
             // Indexes
             builder.HasIndex(d => d.LicenseNumber)
@@ -70,7 +79,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 
             builder.Property(b => b.Id)
                 .HasColumnName("BonusId");
-
 
             builder.Property(b => b.DriverId)
                 .IsRequired();

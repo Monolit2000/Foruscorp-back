@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckContext))]
-    partial class TuckContextModelSnapshot : ModelSnapshot
+    [Migration("20250405234100_OneDriverToOneTruckMigartionsdfassdfsdfdsdfgdfgfjhggsdfsdasds")]
+    partial class OneDriverToOneTruckMigartionsdfassdfsdfdsdfgdfgfjhggsdfsdasds
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -172,7 +175,8 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
+                    b.HasIndex("DriverId")
+                        .IsUnique();
 
                     b.HasIndex("LicensePlate")
                         .IsUnique();

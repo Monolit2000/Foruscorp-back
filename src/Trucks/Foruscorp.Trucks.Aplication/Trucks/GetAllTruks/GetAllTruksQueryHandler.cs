@@ -13,7 +13,9 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetAllTruks
     {
         public async Task<List<TruckDto>> Handle(GetAllTruksQuery request, CancellationToken cancellationToken)
         {
-            var truks = await truckContext.Trucks.AsNoTracking()
+            var truks = await truckContext.Trucks
+                .Include(t => t.Driver) 
+                .AsNoTracking()
                 .ToListAsync();
 
             if(!truks.Any())

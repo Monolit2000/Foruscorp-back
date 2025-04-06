@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckContext))]
-    partial class TuckContextModelSnapshot : ModelSnapshot
+    [Migration("20250405214129_OneDriverToOneTruckMigartionsdfasd")]
+    partial class OneDriverToOneTruckMigartionsdfasd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -70,6 +73,7 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("LicenseNumber")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
@@ -84,8 +88,7 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.HasIndex("LicenseNumber")
                         .IsUnique();
 
-                    b.HasIndex("TruckId")
-                        .IsUnique();
+                    b.HasIndex("TruckId");
 
                     b.ToTable("Drivers", "Tuck");
                 });
@@ -154,7 +157,7 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("DriverId")
+                    b.Property<Guid>("DriverId")
                         .HasColumnType("uuid");
 
                     b.Property<string>("LicensePlate")
@@ -172,7 +175,8 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId");
+                    b.HasIndex("DriverId")
+                        .IsUnique();
 
                     b.HasIndex("LicensePlate")
                         .IsUnique();
@@ -190,16 +194,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Driver", b =>
-                {
-                    b.HasOne("Foruscorp.Trucks.Domain.Trucks.Truck", "Truck")
-                        .WithOne("Driver")
-                        .HasForeignKey("Foruscorp.Trucks.Domain.Drivers.Driver", "TruckId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Truck");
                 });
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.DriverBonus", b =>
@@ -222,16 +216,24 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.Navigation("Driver");
                 });
 
+            modelBuilder.Entity("Foruscorp.Trucks.Domain.Trucks.Truck", b =>
+                {
+                    b.HasOne("Foruscorp.Trucks.Domain.Drivers.Driver", "Driver")
+                        .WithOne("Truck")
+                        .HasForeignKey("Foruscorp.Trucks.Domain.Trucks.Truck", "DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+                });
+
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Driver", b =>
                 {
                     b.Navigation("Bonuses");
 
                     b.Navigation("FuelHistories");
-                });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Trucks.Truck", b =>
-                {
-                    b.Navigation("Driver");
+                    b.Navigation("Truck");
                 });
 #pragma warning restore 612, 618
         }

@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.BuildingBlocks.Domain;
 
 namespace Foruscorp.Trucks.Domain.Drivers
 {
-    public class DriverBonus
+    public class DriverBonus : Entity
     {
         public Guid Id { get; private set; }
         public Guid DriverId { get; private set; }
@@ -16,7 +17,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
 
         private DriverBonus() { }
 
-        internal DriverBonus(Guid driverId, decimal amount, string reason)
+        private DriverBonus(Guid driverId, decimal amount, string reason)
         {
             if (amount <= 0)
                 throw new ArgumentException("Bonus amount must be positive.", nameof(amount));
@@ -29,6 +30,18 @@ namespace Foruscorp.Trucks.Domain.Drivers
             AwardedAt = DateTime.UtcNow;
             Reason = reason;
         }
+
+        public static DriverBonus CreateNew(
+            Guid driverId, 
+            decimal amount,
+            string reason)
+        {
+            return new DriverBonus(
+                driverId, 
+                amount,
+                reason);
+        }   
+
 
         internal void UpdateAmount(decimal newAmount)
         {

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Foruscorp.BuildingBlocks.Domain;
+﻿using Foruscorp.BuildingBlocks.Domain;
 using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Domain.Trucks.Events;
 
@@ -33,7 +28,6 @@ namespace Foruscorp.Trucks.Domain.Trucks
             Ulid = ulid;
             LicensePlate = licensePlate;
             Status = TruckStatus.Inactive;
-            DriverId = null;
 
             AddDomainEvent(new TruckCreatedEvent(this));    
         }
@@ -47,24 +41,29 @@ namespace Foruscorp.Trucks.Domain.Trucks
                 licensePlate);
         }
 
-        public void AttachDriver(Guid driverId)
+        public void AttachDriver(Driver driver)
         {
-            if (driverId == Guid.Empty)
-                throw new ArgumentException("Driver identifier cannot be empty.", nameof(driverId));
-            if (Status != TruckStatus.Active)
-                throw new InvalidOperationException("Truck must be active to attach a driver.");
-            if (DriverId.HasValue)
+            if (driver == null)
+                throw new ArgumentException("Driver identifier cannot be empty.", nameof(driver.Id));
+            //if (Status != TruckStatus.Active)
+            //    throw new InvalidOperationException("Truck must be active to attach a driver.");
+            if (Driver != null)
                 throw new InvalidOperationException("Truck already has an assigned driver.");
 
-            DriverId = driverId;
+            //DriverId = driver.Id;
+            Driver = driver;
+
+            AddDomainEvent(new TruckDriverAttachedDomainEvent(Id, Driver.Id));
         }
 
         public void DetachDriver()
         {
-            if (!DriverId.HasValue)
+            if (DriverId == null)
                 throw new InvalidOperationException("Truck does not have an assigned driver.");
 
-            DriverId = null;
+            Driver = null;
+
+            AddDomainEvent(new TruckDriverDetachedDomainEvent(Id, DriverId.Value));   
         }
 
         public void SetActiveStatus()
@@ -73,6 +72,8 @@ namespace Foruscorp.Trucks.Domain.Trucks
                 throw new InvalidOperationException("Truck is already active.");
 
             Status = TruckStatus.Active;
+
+            AddDomainEvent(new TruckActivatedEvent(Id, Ulid));
         }
 
         public void SetInactiveStatus()
@@ -81,6 +82,8 @@ namespace Foruscorp.Trucks.Domain.Trucks
                 throw new InvalidOperationException("Truck is already active.");
 
             Status = TruckStatus.Active;
+
+            AddDomainEvent(new TruckDeactivatedEvent(Id, Ulid));    
         }
 
     }

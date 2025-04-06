@@ -31,6 +31,9 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.RouteOffers
                 .IsRequired()
                 .HasConversion<int>();
 
+            builder.Property(ro => ro.CreatedAt)
+                .IsRequired();
+
             builder.HasOne(x => x.Driver) 
                 .WithMany()
                 .HasForeignKey(ro => ro.DriverId)
