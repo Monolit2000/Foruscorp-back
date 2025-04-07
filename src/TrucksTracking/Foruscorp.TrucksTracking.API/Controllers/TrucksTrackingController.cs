@@ -16,7 +16,6 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             return Ok(result);
         }
 
-
         [HttpPost("activate-truck-tracker")]
         public async Task<ActionResult> ActivateTruckTracker(ActivateTruckTrackerCommand activateTruckTrackerCommand, CancellationToken cancellationToken)
         {

@@ -17,7 +17,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         {
             while(!stoppingToken.IsCancellationRequested)
             {
-                //await UpdateTruckLocation();
+                await UpdateTruckLocation();
                 await Task.Delay(1000, stoppingToken);
             }
             throw new NotImplementedException();
