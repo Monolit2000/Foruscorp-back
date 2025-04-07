@@ -9,7 +9,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStateInfo
     {
         public async Task Handle(UpdateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
-            var truck = await tuckTrackingContext.Trucks.FirstOrDefaultAsync(t => t.Id == request.TruckId, cancellationToken);
+            var truck = await tuckTrackingContext.TruckTrackers.FirstOrDefaultAsync(t => t.Id == request.TruckId, cancellationToken);
 
             if (truck == null)
                 return;

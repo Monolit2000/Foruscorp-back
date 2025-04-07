@@ -7,7 +7,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
     public class TuckTrackingContext : DbContext, ITuckTrackingContext
     {
 
-        public DbSet<TruckTracker> Trucks { get; set; }
+        public DbSet<TruckTracker> TruckTrackers { get; set; }
 
         public TuckTrackingContext(DbContextOptions<TuckTrackingContext> options) : base(options)   
         {

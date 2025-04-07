@@ -8,15 +8,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
     {
         public void Configure(EntityTypeBuilder<TruckTracker> builder)
         {
-            builder.ToTable("Trucks");
+            builder.ToTable("TruckTrackers");
 
             builder.HasKey(t => t.Id);
 
+
             builder.Property(t => t.Id)
-                .HasColumnName("TruckId")
-                .ValueGeneratedOnAdd();
+            .HasColumnName("Id");
 
             builder.Property(t => t.TruckId)
+                .HasColumnName("TruckId")
                 .IsRequired();
 
             builder.Property(t => t.CurrentRouteId)

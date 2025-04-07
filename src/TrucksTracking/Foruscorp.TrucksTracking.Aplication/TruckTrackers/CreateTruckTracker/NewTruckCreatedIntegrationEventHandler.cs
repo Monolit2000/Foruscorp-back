@@ -1,19 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Foruscorp.Trucks.IntegrationEvents;
 using MassTransit;
+using MediatR;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
 {
-    public class NewTruckCreatedIntegrationEventHandler : IConsumer<TruckCreatedIntegrationEvent>
+    public class NewTruckCreatedIntegrationEventHandler(
+        ISender sender) : IConsumer<TruckCreatedIntegrationEvent>
     {
         public async Task Consume(ConsumeContext<TruckCreatedIntegrationEvent> context)
         {
-            Console.WriteLine($"{context.Message.TruckId}");
+            await sender.Send(new CreateTruckTrackerCommand() {TruckId = context.Message.TruckId });
         }
     }
 }

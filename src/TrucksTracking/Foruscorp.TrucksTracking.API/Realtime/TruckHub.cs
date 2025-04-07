@@ -10,11 +10,12 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
     public sealed record TruckLocationUpdate(string TruckId, decimal Longitude, decimal Latitude);
 
-    internal sealed class TruckHub : Hub<ITruckLocationUpdateClient>
+    internal sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {
 
         public async Task JoinTruckGroup(string truckId)
         {
+            //activeTruckManager.AddTruck(truckId);
             await Groups.AddToGroupAsync(Context.ConnectionId, truckId);
         }
  

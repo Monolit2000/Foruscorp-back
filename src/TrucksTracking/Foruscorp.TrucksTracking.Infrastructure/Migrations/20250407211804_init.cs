@@ -15,19 +15,19 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 name: "TuckTracking");
 
             migrationBuilder.CreateTable(
-                name: "Trucks",
+                name: "TruckTrackers",
                 schema: "TuckTracking",
                 columns: table => new
                 {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
                     TruckId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TruckId1 = table.Column<Guid>(type: "uuid", nullable: false),
                     CurrentRouteId = table.Column<Guid>(type: "uuid", nullable: false),
-                    FuelStatus = table.Column<decimal>(type: "numeric(18,2)", nullable: false),
-                    Status = table.Column<int>(type: "integer", nullable: false)
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    FuelStatus = table.Column<decimal>(type: "numeric(18,2)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Trucks", x => x.TruckId);
+                    table.PrimaryKey("PK_TruckTrackers", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -35,21 +35,22 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 schema: "TuckTracking",
                 columns: table => new
                 {
-                    TruckId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TruckTrackerId = table.Column<Guid>(type: "uuid", nullable: false),
                     TruckLocationId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TruckId = table.Column<Guid>(type: "uuid", nullable: false),
                     Latitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
                     Longitude = table.Column<decimal>(type: "numeric(9,6)", nullable: true),
                     RecordedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CurrentTruckLocations", x => x.TruckId);
+                    table.PrimaryKey("PK_CurrentTruckLocations", x => x.TruckTrackerId);
                     table.ForeignKey(
-                        name: "FK_CurrentTruckLocations_Trucks_TruckId",
-                        column: x => x.TruckId,
+                        name: "FK_CurrentTruckLocations_TruckTrackers_TruckTrackerId",
+                        column: x => x.TruckTrackerId,
                         principalSchema: "TuckTracking",
-                        principalTable: "Trucks",
-                        principalColumn: "TruckId",
+                        principalTable: "TruckTrackers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -70,11 +71,11 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_TruckFuelHistory", x => new { x.TruckId, x.TruckFuelId });
                     table.ForeignKey(
-                        name: "FK_TruckFuelHistory_Trucks_TruckId",
+                        name: "FK_TruckFuelHistory_TruckTrackers_TruckId",
                         column: x => x.TruckId,
                         principalSchema: "TuckTracking",
-                        principalTable: "Trucks",
-                        principalColumn: "TruckId",
+                        principalTable: "TruckTrackers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
@@ -93,25 +94,25 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 {
                     table.PrimaryKey("PK_TruckLocationHistory", x => new { x.TruckId, x.TruckLocationId });
                     table.ForeignKey(
-                        name: "FK_TruckLocationHistory_Trucks_TruckId",
+                        name: "FK_TruckLocationHistory_TruckTrackers_TruckId",
                         column: x => x.TruckId,
                         principalSchema: "TuckTracking",
-                        principalTable: "Trucks",
-                        principalColumn: "TruckId",
+                        principalTable: "TruckTrackers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trucks_CurrentRouteId",
+                name: "IX_TruckTrackers_CurrentRouteId",
                 schema: "TuckTracking",
-                table: "Trucks",
+                table: "TruckTrackers",
                 column: "CurrentRouteId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Trucks_TruckId1",
+                name: "IX_TruckTrackers_TruckId",
                 schema: "TuckTracking",
-                table: "Trucks",
-                column: "TruckId1");
+                table: "TruckTrackers",
+                column: "TruckId");
         }
 
         /// <inheritdoc />
@@ -130,7 +131,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 schema: "TuckTracking");
 
             migrationBuilder.DropTable(
-                name: "Trucks",
+                name: "TruckTrackers",
                 schema: "TuckTracking");
         }
     }

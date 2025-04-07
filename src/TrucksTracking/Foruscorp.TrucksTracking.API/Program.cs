@@ -30,7 +30,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    //app.ApplyTuckTrackingMigrations();
+    app.ApplyTuckTrackingMigrations();
 }
 
 app.UseCors("AllowAll");

@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    [Migration("20250401234332_init")]
+    [Migration("20250407211804_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -26,12 +26,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Truck", b =>
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
-                        .HasColumnName("TruckId");
+                        .HasColumnName("Id");
 
                     b.Property<Guid>("CurrentRouteId")
                         .HasColumnType("uuid");
@@ -43,7 +43,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasColumnType("integer");
 
                     b.Property<Guid>("TruckId")
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("TruckId");
 
                     b.HasKey("Id");
 
@@ -51,16 +52,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.HasIndex("TruckId");
 
-                    b.ToTable("Trucks", "TuckTracking", t =>
-                        {
-                            t.Property("TruckId")
-                                .HasColumnName("TruckId1");
-                        });
+                    b.ToTable("TruckTrackers", "TuckTracking");
                 });
 
-            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Truck", b =>
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>
                 {
-                    b.OwnsOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "CurrentTruckLocation", b1 =>
+                    b.OwnsMany("Foruscorp.TrucksTracking.Domain.Trucks.TruckFuel", "FuelHistory", b1 =>
                         {
                             b1.Property<Guid>("TruckId")
                                 .HasColumnType("uuid");
@@ -68,21 +65,30 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid")
-                                .HasColumnName("TruckLocationId");
+                                .HasColumnName("TruckFuelId");
+
+                            b1.Property<decimal>("NewFuelLevel")
+                                .HasColumnType("decimal(18,2)");
+
+                            b1.Property<decimal>("PreviousFuelLevel")
+                                .HasColumnType("decimal(18,2)");
 
                             b1.Property<DateTime>("RecordedAt")
                                 .HasColumnType("timestamp with time zone");
 
-                            b1.HasKey("TruckId");
+                            b1.HasKey("TruckId", "Id");
 
-                            b1.ToTable("CurrentTruckLocations", "TuckTracking");
+                            b1.ToTable("TruckFuelHistory", "TuckTracking");
 
                             b1.WithOwner()
                                 .HasForeignKey("TruckId");
 
                             b1.OwnsOne("Foruscorp.TrucksTracking.Domain.Trucks.GeoPoint", "Location", b2 =>
                                 {
-                                    b2.Property<Guid>("TruckLocationTruckId")
+                                    b2.Property<Guid>("TruckFuelTruckId")
+                                        .HasColumnType("uuid");
+
+                                    b2.Property<Guid>("TruckFuelId")
                                         .HasColumnType("uuid");
 
                                     b2.Property<decimal>("Latitude")
@@ -93,12 +99,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                                         .HasColumnType("decimal(9,6)")
                                         .HasColumnName("Longitude");
 
-                                    b2.HasKey("TruckLocationTruckId");
+                                    b2.HasKey("TruckFuelTruckId", "TruckFuelId");
 
-                                    b2.ToTable("CurrentTruckLocations", "TuckTracking");
+                                    b2.ToTable("TruckFuelHistory", "TuckTracking");
 
                                     b2.WithOwner()
-                                        .HasForeignKey("TruckLocationTruckId");
+                                        .HasForeignKey("TruckFuelTruckId", "TruckFuelId");
                                 });
 
                             b1.Navigation("Location");
@@ -151,38 +157,32 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                             b1.Navigation("Location");
                         });
 
-                    b.OwnsMany("Foruscorp.TrucksTracking.Domain.Trucks.TruckFuel", "FuelHistory", b1 =>
+                    b.OwnsOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "CurrentTruckLocation", b1 =>
                         {
-                            b1.Property<Guid>("TruckId")
+                            b1.Property<Guid>("TruckTrackerId")
                                 .HasColumnType("uuid");
 
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid")
-                                .HasColumnName("TruckFuelId");
-
-                            b1.Property<decimal>("NewFuelLevel")
-                                .HasColumnType("decimal(18,2)");
-
-                            b1.Property<decimal>("PreviousFuelLevel")
-                                .HasColumnType("decimal(18,2)");
+                                .HasColumnName("TruckLocationId");
 
                             b1.Property<DateTime>("RecordedAt")
                                 .HasColumnType("timestamp with time zone");
 
-                            b1.HasKey("TruckId", "Id");
+                            b1.Property<Guid>("TruckId")
+                                .HasColumnType("uuid");
 
-                            b1.ToTable("TruckFuelHistory", "TuckTracking");
+                            b1.HasKey("TruckTrackerId");
+
+                            b1.ToTable("CurrentTruckLocations", "TuckTracking");
 
                             b1.WithOwner()
-                                .HasForeignKey("TruckId");
+                                .HasForeignKey("TruckTrackerId");
 
                             b1.OwnsOne("Foruscorp.TrucksTracking.Domain.Trucks.GeoPoint", "Location", b2 =>
                                 {
-                                    b2.Property<Guid>("TruckFuelTruckId")
-                                        .HasColumnType("uuid");
-
-                                    b2.Property<Guid>("TruckFuelId")
+                                    b2.Property<Guid>("TruckLocationTruckTrackerId")
                                         .HasColumnType("uuid");
 
                                     b2.Property<decimal>("Latitude")
@@ -193,12 +193,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                                         .HasColumnType("decimal(9,6)")
                                         .HasColumnName("Longitude");
 
-                                    b2.HasKey("TruckFuelTruckId", "TruckFuelId");
+                                    b2.HasKey("TruckLocationTruckTrackerId");
 
-                                    b2.ToTable("TruckFuelHistory", "TuckTracking");
+                                    b2.ToTable("CurrentTruckLocations", "TuckTracking");
 
                                     b2.WithOwner()
-                                        .HasForeignKey("TruckFuelTruckId", "TruckFuelId");
+                                        .HasForeignKey("TruckLocationTruckTrackerId");
                                 });
 
                             b1.Navigation("Location");
