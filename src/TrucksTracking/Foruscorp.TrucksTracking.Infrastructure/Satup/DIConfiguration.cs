@@ -5,6 +5,7 @@ using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using MassTransit;
 using Foruscorp.TrucksTracking.Aplication;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 {
@@ -42,6 +43,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 
                 busConfiguration.AddConsumers(typeof(IApplication).Assembly);
             });
+
+
+            services.AddSingleton<ActiveTruckManager, ActiveTruckManager>();
 
             return services;
         }

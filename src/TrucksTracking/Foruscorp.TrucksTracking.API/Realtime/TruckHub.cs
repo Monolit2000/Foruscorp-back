@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 
 namespace Foruscorp.TrucksTracking.API.Realtime

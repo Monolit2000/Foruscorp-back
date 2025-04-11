@@ -1,4 +1,5 @@
 ﻿
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 using Foruscorp.TrucksTracking.Domain.Trucks;
 using Microsoft.AspNetCore.SignalR;
 
@@ -20,7 +21,6 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 await UpdateTruckLocation();
                 await Task.Delay(1000, stoppingToken);
             }
-            throw new NotImplementedException();
         }
 
 

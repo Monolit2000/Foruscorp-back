@@ -10,7 +10,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSignalR();
 builder.Services.AddHostedService<TruckLocationUpdater>();
-builder.Services.AddSingleton<ActiveTruckManager>();
+//builder.Services.AddSingleton<ActiveTruckManager>();
 
 builder.Services.AddCors(options =>
 {
