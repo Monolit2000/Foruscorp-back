@@ -19,7 +19,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoute.CreateFuelRoute
             //    ""api_errors"": null
             //}";
 
-            var result = await truckerPathApi.PlanRouteAsyntrc();
+            var result = await truckerPathApi.PlanRouteAsync();
 
             var p1 = result.Routes.WaypointsAndShapes
                 .Where(wp => wp != null && wp.Sections != null).First();
