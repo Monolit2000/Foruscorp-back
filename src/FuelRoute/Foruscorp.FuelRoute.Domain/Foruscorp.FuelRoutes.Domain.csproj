@@ -12,4 +12,8 @@
     <None Remove="Shared\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Foruscorp.BuildingBlocks.Domain\Foruscorp.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

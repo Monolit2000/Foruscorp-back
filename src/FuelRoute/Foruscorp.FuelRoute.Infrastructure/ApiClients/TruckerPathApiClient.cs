@@ -3,6 +3,7 @@ using System.Text.Json.Serialization;
 using System.Text.Json;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 
 namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
 {
@@ -16,7 +17,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
             _httpClient = new HttpClient(); /*httpClient ?? throw new ArgumentNullException(nameof(httpClient));*/
         }
 
-        public async Task<DataObject> PlanRouteAsync()
+        public async Task<DataObject> PlanRouteAsync(GeoPoint origin, GeoPoint destinations, CancellationToken cancellationToken = default)
         {
             var requestBody = new RoutePlanningRequest
             {
@@ -30,8 +31,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
                         OriginalPosition = new TPosition
                         {
                             Course = 360,
-                            Latitude = 33.95385096208551,
-                            Longitude = -118.26051943667348
+                            Latitude = origin.Latitude,
+                            Longitude = origin.Longitude
                         },
                         Index = 0,
                         PlaceType = "address",
@@ -43,8 +44,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
                         OriginalPosition = new TPosition
                         {
                             Course = 360,
-                            Latitude = 39.71691540324567,
-                            Longitude = -105.01100771792348
+                            Latitude = destinations.Latitude,
+                            Longitude = destinations.Longitude
                         },
                         Index = 1,
                         PlaceType = "address",
@@ -92,7 +93,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
                 var jsonContent = JsonSerializer.Serialize(requestBody);
                 var content = new StringContent(jsonContent, Encoding.UTF8, "application/json");
 
-                var response = await _httpClient.PostAsync(ApiUrl, content);
+                var response = await _httpClient.PostAsync(ApiUrl, content, cancellationToken);
                 response.EnsureSuccessStatusCode();
 
                 var responseContent = await response.Content.ReadAsStringAsync();

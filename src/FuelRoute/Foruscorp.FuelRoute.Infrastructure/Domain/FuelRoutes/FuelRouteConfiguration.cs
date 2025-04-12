@@ -31,12 +31,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .HasMaxLength(100);
 
             builder.Property(fr => fr.CreatedAt)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
+                
 
             builder.Property(fr => fr.ChangedAt)
-                .IsRequired()
-                .HasColumnType("datetime");
+                .IsRequired();
 
             builder.OwnsMany(fr => fr.FuelPoints, fuelPointBuilder =>
             {
@@ -55,13 +54,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 {
                     geoPointBuilder.Property(gp => gp.Latitude)
                         .HasColumnName(nameof(GeoPoint.Latitude))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)"); 
+                        .IsRequired(); 
 
                     geoPointBuilder.Property(gp => gp.Longitude)
                         .HasColumnName(nameof(GeoPoint))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
+                        .IsRequired();
                 });
 
 
@@ -71,8 +68,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                     .HasColumnType("decimal(18,2)"); 
 
                 fuelPointBuilder.Property(fp => fp.ScheduledTime)
-                    .IsRequired()
-                    .HasColumnType("datetime");
+                    .IsRequired();
 
                 fuelPointBuilder.WithOwner()
                     .HasForeignKey(fp => fp.FuelRouteId);

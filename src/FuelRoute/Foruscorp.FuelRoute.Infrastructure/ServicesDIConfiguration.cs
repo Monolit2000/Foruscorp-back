@@ -5,10 +5,12 @@ using Foruscorp.FuelRoutes.Infrastructure.Percistence;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Infrastructure.ApiClients;
+using System.Runtime.Serialization;
+
 
 namespace Foruscorp.FuelRoutes.Infrastructure
 {
-    public static class PersistenceDIConfiguration
+    public static class ServicesDIConfiguration
     {
         public static IServiceCollection AddPersistenceServices(
             this IServiceCollection services, IConfiguration configuration)
@@ -23,12 +25,13 @@ namespace Foruscorp.FuelRoutes.Infrastructure
             services.AddDbContext<FuelRouteContext>((sp, options) =>
             {
                 //options.ReplaceService<IValueConverterSelector, StronglyTypedIdValueConverterSelector>();
-                options.UseNpgsql(configuration.GetConnectionString("Database"));
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
                 //options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
             });
 
-            services.AddScoped<ITruckerPathApi, TruckerPathApiClient>();
+            services.AddMemoryCache();
 
+            services.AddScoped<ITruckerPathApi, TruckerPathApiClient>();
 
             //services.AddScoped<TreatmentContext>();
 

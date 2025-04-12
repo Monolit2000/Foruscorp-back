@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.SymbolStore;
 using System.Linq;
+using Foruscorp.BuildingBlocks.Domain;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
-    public class FuelRoute
+    public class FuelRoute : Entity, IAggregateRoot
     {
-        private List<RouteFuelPoint> _fuelPoints = [];
+        public readonly List<RouteFuelPoint> FuelPoints = [];
 
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }
@@ -15,11 +18,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
 
-        public IReadOnlyList<RouteFuelPoint> FuelPoints => _fuelPoints.AsReadOnly();
+        public bool IsAccepted { get; private set; }    
 
         private FuelRoute() { } //For EF core 
 
-        public FuelRoute(
+        private FuelRoute(
             Guid truckId,
             //Guid driverId,
             string origin,
@@ -42,6 +45,21 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             }
         }
 
+        public static FuelRoute CreateNew(
+            Guid truckId,
+            //Guid driverId,
+            string origin,
+            string destination,
+            List<RouteFuelPoint> fuelPoints)
+        {
+            return new FuelRoute(
+                truckId,
+                //driverId,
+                origin,
+                destination,
+                fuelPoints);
+        }
+
         // Business methods
         public void AddFuelPoint(RouteFuelPoint fuelPoint)
         {
@@ -49,7 +67,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 throw new ArgumentNullException(nameof(fuelPoint));
 
             ValidateFuelPoint(fuelPoint);
-            _fuelPoints.Add(fuelPoint);
+            FuelPoints.Add(fuelPoint);
             UpdateChangedAt();
         }
 
@@ -61,18 +79,18 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             foreach (var point in fuelPoints)
             {
                 ValidateFuelPoint(point);
-                _fuelPoints.Add(point);
+                FuelPoints.Add(point);
             }
             UpdateChangedAt();
         }
 
         public void RemoveFuelPoint(Guid fuelPointId)
         {
-            var point = _fuelPoints.FirstOrDefault(fp => fp.FuelPointId == fuelPointId);
+            var point = FuelPoints.FirstOrDefault(fp => fp.FuelPointId == fuelPointId);
             if (point == null)
                 throw new InvalidOperationException($"Fuel point with ID {fuelPointId} not found");
 
-            _fuelPoints.Remove(point);
+            FuelPoints.Remove(point);
             UpdateChangedAt();
         }
 
@@ -166,9 +184,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             return EarthRadiusKm * c;
         }
 
-        private static decimal ToRadians(decimal degrees)
+        private static decimal ToRadians(double degrees)
         {
-            return degrees * (decimal)Math.PI / 180;
+            return (decimal)(degrees * (double)Math.PI / 180);
         }
     }
 }

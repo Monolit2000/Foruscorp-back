@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoute
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 {
     internal class FuelRouteDto
     {

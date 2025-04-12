@@ -8,11 +8,14 @@ using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using MediatR;
 using Microsoft.VisualBasic;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoute.CreateFuelRoute
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
     public class CreateFuelRouteCommand : IRequest<object>
     {
-        public RoutePlanningRequest RoutePlanningRequest { get; set; }  
+        public GeoPoint Origin { get; set; }
+        public GeoPoint Destinations { get; set; }
+        //public RoutePlanningRequest RoutePlanningRequest { get; set; }  
     }
 }

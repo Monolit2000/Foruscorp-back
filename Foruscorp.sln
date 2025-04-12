@@ -7,13 +7,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CC87C304-2DA
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "FuelRoutes", "FuelRoutes", "{25134F56-9F3B-4CD8-9890-ADA628FE97AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoute.API", "src\FuelRoute\Foruscorp.FuelRoute.API\Foruscorp.FuelRoute.API.csproj", "{B0BA8F9A-C713-4049-B88E-563033E6C490}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoutes.API", "src\FuelRoute\Foruscorp.FuelRoute.API\Foruscorp.FuelRoutes.API.csproj", "{B0BA8F9A-C713-4049-B88E-563033E6C490}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoute.Domain", "src\FuelRoute\Foruscorp.FuelRoute.Domain\Foruscorp.FuelRoute.Domain.csproj", "{D08E6593-9004-4CD8-80A3-AC153B886A39}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoutes.Domain", "src\FuelRoute\Foruscorp.FuelRoute.Domain\Foruscorp.FuelRoutes.Domain.csproj", "{D08E6593-9004-4CD8-80A3-AC153B886A39}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoute.Aplication", "src\FuelRoute\Foruscorp.FuelRoute.Aplication\Foruscorp.FuelRoute.Aplication.csproj", "{9F8AC8D1-CE1A-48CC-8593-602FDC0B2493}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoutes.Aplication", "src\FuelRoute\Foruscorp.FuelRoute.Aplication\Foruscorp.FuelRoutes.Aplication.csproj", "{9F8AC8D1-CE1A-48CC-8593-602FDC0B2493}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoute.Infrastructure", "src\FuelRoute\Foruscorp.FuelRoute.Infrastructure\Foruscorp.FuelRoute.Infrastructure.csproj", "{DCF61BFF-6B58-4A4F-B003-48662D649BEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoutes.Infrastructure", "src\FuelRoute\Foruscorp.FuelRoute.Infrastructure\Foruscorp.FuelRoutes.Infrastructure.csproj", "{DCF61BFF-6B58-4A4F-B003-48662D649BEA}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TrucksTracking", "TrucksTracking", "{49C09F7C-C68E-4556-8CB9-80B2285B76AE}"
 EndProject

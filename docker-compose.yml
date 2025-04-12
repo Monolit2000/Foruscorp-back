@@ -147,6 +147,28 @@ services:
     networks:
       - foruscorp-docker-network
 
+
+  foruscorp.fuelroutes.api:
+    container_name: fuelroutes-api
+    image: ${DOCKER_REGISTRY-}foruscorpfuelroutesapi
+    build:
+        context: .
+        dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+    ports:
+      - 5004:5004
+    environment:
+      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
+      - ASPNETCORE_ENVIRONMENT=Development
+      - MessageBroker__HostName=rabbitmq://rabbitmq
+      - MessageBroker__Username=guest
+      - MessageBroker__Password=guest
+    depends_on:
+      - foruscorp.db
+      - rabbitmq
+    networks:
+      - foruscorp-docker-network
+
+
   gateway.api:
     container_name: gateway-api
     image: mcr.microsoft.com/dotnet/nightly/yarp:latest
@@ -184,6 +206,8 @@ services:
       - rabbitmq-data:/var/lib/rabbitmq
     networks:
       - foruscorp-docker-network
+
+
 
 networks:
   foruscorp-docker-network:

@@ -15,6 +15,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public decimal FuelPrice { get; private set; }
         public DateTime ScheduledTime { get; private set; }
 
+
+        private RouteFuelPoint() { } // For EF Core 
+
         private RouteFuelPoint(
             GeoPoint location, 
             Guid fuelRouteId, 

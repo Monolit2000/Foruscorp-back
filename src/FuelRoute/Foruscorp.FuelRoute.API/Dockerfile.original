@@ -12,24 +12,19 @@ EXPOSE 8081
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
-COPY ["src/FuelRoute/Foruscorp.FuelRoute.API/Foruscorp.FuelRoutes.API.csproj", "src/FuelRoute/Foruscorp.FuelRoute.API/"]
-COPY ["src/FuelRoute/Foruscorp.FuelRoute.Aplication/Foruscorp.FuelRoutes.Aplication.csproj", "src/FuelRoute/Foruscorp.FuelRoute.Aplication/"]
-COPY ["src/BuildingBlocks/Foruscorp.BuildingBlocks.Infastructure/Foruscorp.BuildingBlocks.Infastructure.csproj", "src/BuildingBlocks/Foruscorp.BuildingBlocks.Infastructure/"]
-COPY ["src/FuelRoute/Foruscorp.FuelRoute.Domain/Foruscorp.FuelRoutes.Domain.csproj", "src/FuelRoute/Foruscorp.FuelRoute.Domain/"]
-COPY ["src/BuildingBlocks/Foruscorp.BuildingBlocks.Domain/Foruscorp.BuildingBlocks.Domain.csproj", "src/BuildingBlocks/Foruscorp.BuildingBlocks.Domain/"]
-COPY ["src/FuelRoute/Foruscorp.FuelRoute.Infrastructure/Foruscorp.FuelRoutes.Infrastructure.csproj", "src/FuelRoute/Foruscorp.FuelRoute.Infrastructure/"]
-RUN dotnet restore "./src/FuelRoute/Foruscorp.FuelRoute.API/Foruscorp.FuelRoutes.API.csproj"
+COPY ["src/FuelRoute/Foruscorp.FuelRoute.API/Foruscorp.FuelRoute.API.csproj", "src/FuelRoute/Foruscorp.FuelRoute.API/"]
+RUN dotnet restore "./src/FuelRoute/Foruscorp.FuelRoute.API/Foruscorp.FuelRoute.API.csproj"
 COPY . .
 WORKDIR "/src/src/FuelRoute/Foruscorp.FuelRoute.API"
-RUN dotnet build "./Foruscorp.FuelRoutes.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
+RUN dotnet build "./Foruscorp.FuelRoute.API.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
 # Этот этап используется для публикации проекта службы, который будет скопирован на последний этап
 FROM build AS publish
 ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Foruscorp.FuelRoutes.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "./Foruscorp.FuelRoute.API.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
 # Этот этап используется в рабочей среде или при запуске из VS в обычном режиме (по умолчанию, когда конфигурация отладки не используется)
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Foruscorp.FuelRoutes.API.dll"]
+ENTRYPOINT ["dotnet", "Foruscorp.FuelRoute.API.dll"]

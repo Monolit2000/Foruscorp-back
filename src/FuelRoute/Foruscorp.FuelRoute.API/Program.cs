@@ -12,6 +12,8 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+//builder.Services.AddHttpClient<IBasketService, BasketService>();
+
 builder.Services.AddPersistenceServices(builder.Configuration); 
 
 var app = builder.Build();

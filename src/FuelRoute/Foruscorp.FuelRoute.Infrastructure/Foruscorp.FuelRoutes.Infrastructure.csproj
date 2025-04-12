@@ -16,15 +16,15 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 	  <PackageReference Include="System.Net.Http" Version="4.3.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Foruscorp.FuelRoute.Aplication\Foruscorp.FuelRoute.Aplication.csproj" />
-    <ProjectReference Include="..\Foruscorp.FuelRoute.Domain\Foruscorp.FuelRoute.Domain.csproj" />
+    <ProjectReference Include="..\Foruscorp.FuelRoute.Aplication\Foruscorp.FuelRoutes.Aplication.csproj" />
+    <ProjectReference Include="..\Foruscorp.FuelRoute.Domain\Foruscorp.FuelRoutes.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
