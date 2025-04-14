@@ -28,12 +28,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 { 
                     routeId = s.Id,
                     mupPoints = s.ShowShape
-                        .Select(p => new
-                        {
-                            Latitude = p[0],
-                            Longitude = p[1]
-                        })
-                        .ToList()
+                        //.Select(p => new
+                        //{
+                        //    Latitude = p[0],
+                        //    Longitude = p[1]
+                        //})
+                        //.ToList()
                 });
 
             return new {
