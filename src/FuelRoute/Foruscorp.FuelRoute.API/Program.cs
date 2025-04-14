@@ -13,6 +13,15 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        policy => policy.AllowAnyOrigin()
+                        .AllowAnyMethod()
+                        .AllowAnyHeader());
+});
+
+
 //builder.Services.AddHttpClient<IBasketService, BasketService>();
 
 builder.Services.AddPersistenceServices(builder.Configuration); 
@@ -28,9 +37,9 @@ if (app.Environment.IsDevelopment())
     app.ApplyFuelRouteContextMigrations();
 }
 
-app.UseHttpsRedirection();
+//app.UseAuthorization();
 
-app.UseAuthorization();
+app.UseCors("AllowAll");
 
 app.MapControllers();
 
