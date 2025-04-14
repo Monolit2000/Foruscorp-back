@@ -15,7 +15,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
         public async Task<object> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
-            var destinations = new GeoPoint(request.Destinations.Latitude, request.Destinations.Longitude);
+            var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
             var result = await truckerPathApi.PlanRouteAsync(origin, destinations, cancellationToken);
 
