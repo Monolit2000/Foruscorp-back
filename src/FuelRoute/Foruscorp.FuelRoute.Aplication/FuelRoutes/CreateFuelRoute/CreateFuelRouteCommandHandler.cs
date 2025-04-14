@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
@@ -19,7 +20,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var result = await truckerPathApi.PlanRouteAsync(origin, destinations, cancellationToken);
 
-            memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2)); 
+            memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)

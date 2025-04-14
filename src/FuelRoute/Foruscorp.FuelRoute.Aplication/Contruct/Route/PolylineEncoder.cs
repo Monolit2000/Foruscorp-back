@@ -63,6 +63,59 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route
             encoded.Append((char)value);
         }
 
+
+        /// <summary>
+        /// Decodes a Google Maps polyline string into a list of [lat, lng] coordinates.
+        /// </summary>
+        /// <param name="encodedPolyline">The encoded polyline string.</param>
+        /// <returns>List of [lat, lng] pairs.</returns>
+        public static List<List<double>> DecodePolyline(string encodedPolyline)
+        {
+            var coordinates = new List<List<double>>();
+            if (string.IsNullOrEmpty(encodedPolyline))
+            {
+                return coordinates;
+            }
+
+            int index = 0;
+            int lat = 0, lng = 0;
+
+            while (index < encodedPolyline.Length)
+            {
+                // Decode latitude
+                lat += DecodeValue(encodedPolyline, ref index);
+                // Decode longitude
+                lng += DecodeValue(encodedPolyline, ref index);
+
+                // Convert back to double (divide by 1e5 for original precision)
+                coordinates.Add(new List<double> { lat / 1e5, lng / 1e5 });
+            }
+
+            return coordinates;
+        }
+
+        private static int DecodeValue(string encoded, ref int index)
+        {
+            int value = 0;
+            int shift = 0;
+            int currentByte;
+
+            do
+            {
+                if (index >= encoded.Length)
+                {
+                    return value; // Handle incomplete data gracefully
+                }
+
+                currentByte = encoded[index++] - 63;
+                value |= (currentByte & 0x1f) << shift;
+                shift += 5;
+            } while (currentByte >= 0x20);
+
+            // Reverse two's complement for negative values
+            return ((value & 1) != 0 ? ~(value >> 1) : (value >> 1));
+        }
+
         ///// <summary>
         ///// Converts encoded polyline to a Google Maps API Directions request URL.
         ///// </summary>
