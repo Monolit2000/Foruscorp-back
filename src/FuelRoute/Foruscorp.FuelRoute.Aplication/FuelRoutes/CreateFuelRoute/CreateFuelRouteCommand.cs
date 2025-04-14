@@ -15,7 +15,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
     public class CreateFuelRouteCommand : IRequest<object>
     {
         public GeoPoint Origin { get; set; }
-        public GeoPoint Destinations { get; set; }
+        public GeoPoint Destination { get; set; }
         //public RoutePlanningRequest RoutePlanningRequest { get; set; }  
     }
 }

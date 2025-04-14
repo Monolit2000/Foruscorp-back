@@ -27,7 +27,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .Select(s => new 
                 { 
                     routeId = s.Id,
-                    mupPoints = s.ShowShape
+                    mapPoints = s.ShowShape
                         //.Select(p => new
                         //{
                         //    Latitude = p[0],
