@@ -1,6 +1,8 @@
 ﻿
+using System.Threading.Channels;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
@@ -28,15 +30,30 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         {
             foreach(var truck in activeTruckManager.GetAllTrucks())
             {
-                //get new 
-                var currentLocation = new GeoPoint(12.23m, 123.32m);
-                var newLocation = CalculateNewLocation(currentLocation);
+                //faker 
+                var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
 
                 var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
 
                 await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
+                //await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
 
-                await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
+                logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
+                    truck, newLocation.Longitude, newLocation.Latitude);
+            }
+        }
+
+        private async Task UpdateTruckFuel()
+        {
+            foreach (var truck in activeTruckManager.GetAllTrucks())
+            {
+                //faker 
+                var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
+
+                var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
+
+                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
+                //await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
 
                 logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
                     truck, newLocation.Longitude, newLocation.Latitude);

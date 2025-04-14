@@ -58,8 +58,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
             if (!stations.Any() || stations.FirstOrDefault() == null)
                 return Enumerable.Empty<FuelStationDto>();
 
-            return stations.Select(stationResponce => ToFuelStationDto(stationResponce));
-         
+            return stations.Select(stationResponce => ToFuelStationDto(stationResponce));         
         }    
         
         

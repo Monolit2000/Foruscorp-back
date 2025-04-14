@@ -41,6 +41,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             {
                 fuelPointBuilder.ToTable("RouteFuelPoints");
 
+                fuelPointBuilder.WithOwner().HasForeignKey("FuelRouteId");
+
                 fuelPointBuilder.HasKey(fp => fp.FuelPointId);
 
                 fuelPointBuilder.Property(fp => fp.FuelPointId)
@@ -73,6 +75,31 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 fuelPointBuilder.WithOwner()
                     .HasForeignKey(fp => fp.FuelRouteId);
             });
+
+            builder.HasMany(fr => fr.MapPoints)
+                .WithOne()
+                .HasForeignKey(mp => mp.RouteId);
+
+            //builder.OwnsMany(fr => fr.MapPoints, mp =>
+            //{
+            //    mp.ToTable("MapPoints");
+
+            //    mp.HasKey(p => p.Id);
+
+            //    mp.Property(p => p.RouteId)
+            //        .IsRequired();
+
+            //    mp.OwnsOne(p => p.GeoPoint, gp =>
+            //    {
+            //        gp.Property(g => g.Latitude)
+            //            .HasColumnName("Latitude")
+            //            .IsRequired();
+
+            //        gp.Property(g => g.Longitude)
+            //            .HasColumnName("Longitude")
+            //            .IsRequired();
+            //    });
+            //});
 
             //builder.HasIndex(fr => fr.DriverId);
             builder.HasIndex(fr => fr.TruckId);

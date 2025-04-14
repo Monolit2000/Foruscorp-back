@@ -11,6 +11,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
     {
         public readonly List<RouteFuelPoint> FuelPoints = [];
 
+        public readonly List<MapPoint> MapPoints = []; 
+
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }
         public string Origin { get; private set; }
@@ -27,7 +29,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             //Guid driverId,
             string origin,
             string destination,
-            List<RouteFuelPoint> fuelPoints)
+            List<RouteFuelPoint> fuelPoints,
+            List<MapPoint> mapPoints)
         {
             ValidateInitialParameters(truckId, /*driverId,*/ origin, destination);
 
@@ -38,11 +41,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             Destination = destination;
             CreatedAt = DateTime.UtcNow;
             ChangedAt = DateTime.UtcNow;
+            IsAccepted = true;
 
             if (fuelPoints.Any())
             {
                 AddFuelPoints(fuelPoints);
             }
+            if (mapPoints.Any())
+            {
+                AddMapPoints(mapPoints);
+            }   
         }
 
         public static FuelRoute CreateNew(
@@ -50,14 +58,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             //Guid driverId,
             string origin,
             string destination,
-            List<RouteFuelPoint> fuelPoints)
+            List<RouteFuelPoint> fuelPoints,
+            List<MapPoint> mapPoints)
         {
             return new FuelRoute(
                 truckId,
                 //driverId,
                 origin,
                 destination,
-                fuelPoints);
+                fuelPoints,
+                mapPoints);
         }
 
         // Business methods
@@ -83,6 +93,17 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             }
             UpdateChangedAt();
         }
+
+        public void AddMapPoints (IEnumerable<MapPoint> mapPoints)
+        {
+            if (mapPoints == null)
+                throw new ArgumentNullException(nameof(mapPoints));
+
+            MapPoints.AddRange(mapPoints);
+            UpdateChangedAt();
+        }
+
+
 
         public void RemoveFuelPoint(Guid fuelPointId)
         {

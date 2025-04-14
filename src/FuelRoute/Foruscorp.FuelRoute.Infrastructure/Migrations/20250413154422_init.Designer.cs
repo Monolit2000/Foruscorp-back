@@ -12,16 +12,16 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelRouteContext))]
-    [Migration("20250412145627_innit")]
-    partial class innit
+    [Migration("20250413154422_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasDefaultSchema("FuelRoute")
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasDefaultSchema("FuelRoutes")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -44,6 +44,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)");
 
+                    b.Property<bool>("IsAccepted")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Origin")
                         .IsRequired()
                         .HasMaxLength(100)
@@ -56,7 +59,23 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                     b.HasIndex("TruckId");
 
-                    b.ToTable("FuelRoutes", "FuelRoute");
+                    b.ToTable("FuelRoutes", "FuelRoutes");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.MapPoint", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RouteId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("MapPoints", "FuelRoutes");
                 });
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", b =>
@@ -82,7 +101,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                             b1.HasIndex("FuelRouteId");
 
-                            b1.ToTable("RouteFuelPoints", "FuelRoute");
+                            b1.ToTable("RouteFuelPoints", "FuelRoutes");
 
                             b1.WithOwner()
                                 .HasForeignKey("FuelRouteId");
@@ -92,17 +111,17 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                                     b2.Property<Guid>("RouteFuelPointFuelPointId")
                                         .HasColumnType("uuid");
 
-                                    b2.Property<decimal>("Latitude")
-                                        .HasColumnType("decimal(9,6)")
+                                    b2.Property<double>("Latitude")
+                                        .HasColumnType("double precision")
                                         .HasColumnName("Latitude");
 
-                                    b2.Property<decimal>("Longitude")
-                                        .HasColumnType("decimal(9,6)")
+                                    b2.Property<double>("Longitude")
+                                        .HasColumnType("double precision")
                                         .HasColumnName("GeoPoint");
 
                                     b2.HasKey("RouteFuelPointFuelPointId");
 
-                                    b2.ToTable("RouteFuelPoints", "FuelRoute");
+                                    b2.ToTable("RouteFuelPoints", "FuelRoutes");
 
                                     b2.WithOwner()
                                         .HasForeignKey("RouteFuelPointFuelPointId");
@@ -112,6 +131,43 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         });
 
                     b.Navigation("FuelPoints");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.MapPoint", b =>
+                {
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", null)
+                        .WithMany("MapPoints")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.OwnsOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.GeoPoint", "GeoPoint", b1 =>
+                        {
+                            b1.Property<Guid>("MapPointId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<double>("Latitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Latitude");
+
+                            b1.Property<double>("Longitude")
+                                .HasColumnType("double precision")
+                                .HasColumnName("Longitude");
+
+                            b1.HasKey("MapPointId");
+
+                            b1.ToTable("MapPoints", "FuelRoutes");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MapPointId");
+                        });
+
+                    b.Navigation("GeoPoint");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", b =>
+                {
+                    b.Navigation("MapPoints");
                 });
 #pragma warning restore 612, 618
         }

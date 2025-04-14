@@ -227,9 +227,9 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route
             public List<object> SectionTolls { get; set; }
 
             [JsonPropertyName("tolls")]
-            public int Tolls { get; set; }
+            public double Tolls { get; set; } // Changed from int to double
         }
-    }
+}
 
 
 

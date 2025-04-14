@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Foruscorp.FuelRoutes.Infrastructure;
+using Foruscorp.FuelStations.Infrastructure.Percistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,6 +24,8 @@ if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    app.ApplyFuelRouteContextMigrations();
 }
 
 app.UseHttpsRedirection();

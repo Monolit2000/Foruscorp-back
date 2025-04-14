@@ -13,14 +13,21 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Percistence
     {
         public DbSet<FuelRoute> FuelRoutes { get; set; }
 
+        public DbSet<MapPoint> MapPoints { get; set; }
+
         public FuelRouteContext(DbContextOptions<FuelRouteContext> options) : base(options)
         {
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await base.SaveChangesAsync(cancellationToken);
         }
+
+        //public async Task BulkInsertAsync<T>(T entity) where T : class
+        //{
+        //    await this.BulkInsertAsync(entity);
+        //}
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

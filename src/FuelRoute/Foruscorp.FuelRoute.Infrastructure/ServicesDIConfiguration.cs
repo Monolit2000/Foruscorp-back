@@ -6,6 +6,9 @@ using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Infrastructure.ApiClients;
 using System.Runtime.Serialization;
+using Microsoft.Extensions.Logging;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Infrastructure.Domain.FuelRoutes;
 
 
 namespace Foruscorp.FuelRoutes.Infrastructure
@@ -31,7 +34,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure
 
             services.AddMemoryCache();
 
+            services.AddScoped<IFuelRouteContext, FuelRouteContext>();
+
             services.AddScoped<ITruckerPathApi, TruckerPathApiClient>();
+            services.AddScoped<IFuelRouteRopository, FuelRouteRopository>();
 
             //services.AddScoped<TreatmentContext>();
 

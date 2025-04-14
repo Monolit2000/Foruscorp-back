@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
-    public interface IFuelRouteRepository
+    public interface IFuelRouteRopository
     {
+        Task BulkInsertAsync<T>(IEnumerable<T> entities) where T : class;
     }
 }
