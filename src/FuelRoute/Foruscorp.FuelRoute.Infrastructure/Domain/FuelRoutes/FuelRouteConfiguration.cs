@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Runtime.CompilerServices;
 
 namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
 {
@@ -30,9 +31,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .IsRequired()
                 .HasMaxLength(100);
 
+            builder.Property(fr => fr.EncodeRoute)
+                .IsRequired(false);
+
             builder.Property(fr => fr.CreatedAt)
                 .IsRequired();
-                
 
             builder.Property(fr => fr.ChangedAt)
                 .IsRequired();

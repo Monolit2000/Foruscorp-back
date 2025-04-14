@@ -37,10 +37,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
             var mupPoints = section.ShowShape
                 .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
 
+            var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
+            fuelRoute.AddEncodedRoute(encodedRoute);
+
             await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
-            await fuelRouteRopository.BulkInsertAsync(mupPoints);
+            //await fuelRouteRopository.BulkInsertAsync(mupPoints);
 
             return Result.Ok();
         }

@@ -7,6 +7,7 @@ using Foruscorp.TrucksTracking.Aplication.Contruct;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
 {
     public class CreateTruckTrackerCommandHandler(
+        ActiveTruckManager activeTruckManager,
         ITuckTrackingContext tuckTrackingContext,
         ILogger<CreateTruckTrackerCommandHandler> logger) : IRequestHandler<CreateTruckTrackerCommand>
     {

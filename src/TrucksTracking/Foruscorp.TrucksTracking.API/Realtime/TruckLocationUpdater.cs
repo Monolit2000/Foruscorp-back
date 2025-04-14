@@ -14,7 +14,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         ActiveTruckManager activeTruckManager) : BackgroundService
     {
 
-        private readonly  Random _random = new();
+        private readonly Random _random = new();
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {

@@ -20,6 +20,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
 
+        public string EncodeRoute { get; private set; } // Base64 encoded route     
         public bool IsAccepted { get; private set; }    
 
         private FuelRoute() { } //For EF core 
@@ -71,6 +72,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         }
 
         // Business methods
+
+        public void AddEncodedRoute(string encodedRoute)
+        {
+            EncodeRoute = encodedRoute; 
+        }
+
         public void AddFuelPoint(RouteFuelPoint fuelPoint)
         {
             if (fuelPoint == null)
