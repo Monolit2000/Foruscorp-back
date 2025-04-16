@@ -11,6 +11,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
     {
         private readonly HttpClient _httpClient;
         private const string ApiUrl = "https://api.truckerpath.com/fleet/route/planning/v3";
+        private JsonSerializerOptions JsonOptions = new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            Converters = { new JsonStringEnumConverter() }
+        };
 
         public TruckerPathApiClient()
         {
@@ -98,21 +103,36 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
 
                 var responseContent = await response.Content.ReadAsStringAsync();
 
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    Converters = { new JsonStringEnumConverter() }
-                };
-
-                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, options);
+                var apiResponse = JsonSerializer.Deserialize<ApiResponse>(responseContent, JsonOptions);
 
                 if (!string.IsNullOrEmpty(apiResponse.Data))
                 {
-                    var data = JsonSerializer.Deserialize<DataObject>(apiResponse.Data, options);
+                    var data = JsonSerializer.Deserialize<DataObject>(apiResponse.Data, JsonOptions);
                     return data;
                 }
 
                 return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception("Failed to communicate with the TruckerPath API", ex);
+            }
+            catch (JsonException ex)
+            {
+                throw new Exception("Failed to deserialize API response", ex);
+            }
+        }
+
+        public async Task ChengePint(string routeId, CancellationToken cancellationToken = default)
+        {
+            var requestUrl = $"{ApiUrl}/{routeId}/routePoints";
+            try
+            {
+                var response = await _httpClient.GetAsync(requestUrl, cancellationToken);
+                response.EnsureSuccessStatusCode();
+                var responseContent = await response.Content.ReadAsStringAsync();
+                var routePointsResponse = JsonSerializer.Deserialize<List<RoutePoint>>(responseContent, JsonOptions);
+                //return routePointsResponse;
             }
             catch (HttpRequestException ex)
             {

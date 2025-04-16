@@ -1,4 +1,5 @@
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -22,5 +23,14 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             var result = await mediator.Send(activateTruckTrackerCommand, cancellationToken);
             return Ok(result);
         }
+
+
+        [HttpPost("deactivate-truck-tracker")]
+        public async Task<ActionResult> DeactivateTruckTracker(DeactivateTruckTrackerCommand deactivateTruckTrackerCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(deactivateTruckTrackerCommand, cancellationToken);
+            return Ok(result);
+        }
+
     }
 }

@@ -104,6 +104,7 @@ services:
     networks:
       - foruscorp-docker-network
 
+
   rabbitmq:
     container_name: rabbitmq
     image: rabbitmq:3-management
@@ -118,6 +119,27 @@ services:
     networks:
       - foruscorp-docker-network
 
+
+  aspire-dashboard:
+    container_name: aspire-dashboard
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:8.0
+    ports:
+      - 18888:18888
+      - 4317:4317 # OpenTelemetry gRPC port for metrics and traces
+    environment:
+      - DOTNET_ENVIRONMENT=Development
+      - Dashboard__Otlp__EndpointUrl=http://aspire-dashboard:4317
+      - Dashboard__Frontend__AuthMode=Unsecured # Set to 'BrowserToken' for secured mode
+      # - Dashboard__Frontend__BrowserToken=your_secure_browser_token # Uncomment for secured mode
+    networks:
+      - foruscorp-docker-network
+    depends_on:
+      - foruscorp.db
+      - rabbitmq
+      - foruscorp.truckstracking.api
+      - foruscorp.fuelstations.api
+      - foruscorp.trucks.api
+      - foruscorp.fuelroutes.api
 
 
 networks:

@@ -1,24 +1,26 @@
-﻿
-using System.Threading.Channels;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-using Foruscorp.TrucksTracking.Domain.Trucks;
-using MediatR;
+﻿using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR;
+using Foruscorp.TrucksTracking.API.Realtime;
+using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 
-namespace Foruscorp.TrucksTracking.API.Realtime
+
+namespace Foruscorp.TrucksTracking.Processing.Services
 {
-    internal sealed class TruckLocationUpdater(
-        //IServiceScopeFactory serviceScopeFactory,
-        IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
-        ILogger<TruckLocationUpdater> logger,
-        ActiveTruckManager activeTruckManager) : BackgroundService
+    public class TruckTrackerProcessor(
+     //IServiceScopeFactory serviceScopeFactory,
+     IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
+     ILogger<TruckTrackerProcessor> logger,
+     ActiveTruckManager activeTruckManager) : BackgroundService
     {
 
         private readonly Random _random = new();
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while(!stoppingToken.IsCancellationRequested)
+            while (!stoppingToken.IsCancellationRequested)
             {
                 await UpdateTruckLocation();
                 await Task.Delay(1000, stoppingToken);
@@ -28,15 +30,15 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
         private async Task UpdateTruckLocation()
         {
-            foreach(var truck in activeTruckManager.GetAllTrucks())
+            foreach (var truck in activeTruckManager.GetAllTrucks())
             {
                 //faker 
                 var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
 
                 var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
 
-                //await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
-                await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
+                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
+                //await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
 
                 logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
                     truck, newLocation.Longitude, newLocation.Latitude);

@@ -18,9 +18,9 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker
                 .FirstOrDefaultAsync(tt => tt.TruckId == request.TruckId);
             
             if (truckTracker == null)
-                return Result.Fail("truckTracker not exist");
+                return Result.Fail("Truck Tracker not exist");
             
-            truckTracker.SetStatus(TruckStatus.Active);
+            truckTracker.ActivateTruckTrucker();
 
             await tuckTrackingContext.SaveChangesAsync(cancellationToken);
 

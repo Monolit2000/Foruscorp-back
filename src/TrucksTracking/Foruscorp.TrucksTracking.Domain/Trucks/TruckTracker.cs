@@ -72,6 +72,21 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             CurrentRouteId = newRouteId;
         }
 
+        public void ActivateTruckTrucker()
+        {
+            if (Status == TruckStatus.Active)
+                return;
+
+            Status = TruckStatus.Active;
+        }
+
+        public void DeactivateTruckTrucker()
+        {
+            if (Status == TruckStatus.Inactive)
+                return;
+            Status = TruckStatus.Inactive;
+        }
+
         public void SetStatus(TruckStatus newStatus)
         {
             if (newStatus == Status)

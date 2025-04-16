@@ -1,14 +1,63 @@
+using System.Diagnostics.Metrics;
 using Foruscorp.TrucksTracking.API.Realtime;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
+using Foruscorp.TrucksTracking.Infrastructure.Processing;
 using Foruscorp.TrucksTracking.Infrastructure.Satup;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+// Create a custom meter for diagnostics
+var meter = new Meter("TrucksTracking.Diagnostics");
+var testCounter = meter.CreateCounter<long>("test_counter");
+
+// Configure OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource
+        .AddService("TrucksTracking.API"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        //.AddSignalRInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+ 
+        .AddSource("TrucksTracking")
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://aspire-dashboard:18889");
+            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        }))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddMeter("TrucksTracking")
+        .AddMeter("TrucksTracking.Diagnostics")
+        .AddOtlpExporter(options =>
+        {
+            options.Endpoint = new Uri("http://aspire-dashboard:18889");
+            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+        }));
+
+// Configure logging
+builder.Logging.AddOpenTelemetry(logging => logging
+    .AddOtlpExporter(options =>
+    {
+        options.Endpoint = new Uri("http://aspire-dashboard:18889");
+        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+    }))
+    .AddConsole(); // Add console logging for debugging
+
+
 // Add services to the container.
+builder.Services.AddSignalR();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddSignalR();
 builder.Services.AddHostedService<TruckLocationUpdater>();
 //builder.Services.AddSingleton<ActiveTruckManager>();
 

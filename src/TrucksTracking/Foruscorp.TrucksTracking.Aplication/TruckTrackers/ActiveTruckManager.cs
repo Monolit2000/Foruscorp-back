@@ -19,6 +19,14 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             }
         }
 
+        public void RemoveTruck(string truckId)
+        {
+            if (_activeTruck.Contains(truckId))
+            {
+                _activeTruck.TryTake(out truckId);
+            }
+        }   
+
         public IReadOnlyCollection<string> GetAllTrucks()
         {
             return _activeTruck.ToList();
