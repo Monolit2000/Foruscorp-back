@@ -19,7 +19,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
 
         [HttpPost("canselation-create-fuel-route-canselation")]
-        public async Task<ActionResult> GetFuelStationsByRadiusCancellation(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
+        public async Task<ActionResult> GetFuelStationsByRadiusCancellation(CancellationToken cancellationToken)
         {
             Console.WriteLine("Start____________________Start");
 
