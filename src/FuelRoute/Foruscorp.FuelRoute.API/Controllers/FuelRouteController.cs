@@ -4,13 +4,16 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class FuelRouteController(
-        ISender mediator) : ControllerBase
+        ISender mediator,
+        ITruckerPathApi truckerPathApi) : ControllerBase
     {
         [HttpPost("create-fuel-route")]
         public async Task<ActionResult> GetFuelStationsByRadius(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
@@ -26,5 +29,14 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             var result = await mediator.Send(acceptFuelRouteCommand, cancellationToken);
             return Ok(result);
         }
+
+
+        [HttpPost("drop-point")]
+        public async Task<ActionResult> DropPoint([FromBody] GeoPoint request, CancellationToken cancellationToken)
+        {
+            var result = await truckerPathApi.DropPoint(request.Latitude, request.Longitude, cancellationToken: cancellationToken); 
+            return Ok(result);  
+        }
+
     }
 }

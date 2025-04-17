@@ -18,7 +18,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
-            var result = await truckerPathApi.PlanRouteAsync(origin, destinations, cancellationToken);
+            var result = await truckerPathApi.PlanRouteAsync(origin, destinations, cancellationToken: cancellationToken);
 
             memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 

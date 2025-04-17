@@ -39,6 +39,9 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
 
         [JsonPropertyName("dwellTime")]
         public int DwellTime { get; set; }
+
+        [JsonPropertyName("via")] // Добавляем поле via
+        public ViaPoint[] Via { get; set; } // Массив точек via
     }
 
     public class TPosition
@@ -46,6 +49,16 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
         [JsonPropertyName("course")]
         public int Course { get; set; }
 
+        [JsonPropertyName("latitude")]
+        public double Latitude { get; set; }
+
+        [JsonPropertyName("longitude")]
+        public double Longitude { get; set; }
+    }
+
+    // Новый класс для точек via
+    public class ViaPoint
+    {
         [JsonPropertyName("latitude")]
         public double Latitude { get; set; }
 

@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
-using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+﻿using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 
 namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
 {
     public interface ITruckerPathApi
     {
-        public Task<DataObject> PlanRouteAsync(GeoPoint origin, GeoPoint destinations, CancellationToken cancellationToken = default);
+        Task<DataObject> PlanRouteAsync(GeoPoint origin, GeoPoint destinations, List<GeoPoint> viaPoints = null, CancellationToken cancellationToken = default);
+        Task<SimpleDropPointResponse> DropPoint(double latitude, double longitude, int level = 4, int radius = 10000, CancellationToken cancellationToken = default);
     }
 }
