@@ -6,6 +6,7 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using System;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
@@ -15,6 +16,21 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         ISender mediator,
         ITruckerPathApi truckerPathApi) : ControllerBase
     {
+
+
+        [HttpPost("canselation-create-fuel-route-canselation")]
+        public async Task<ActionResult> GetFuelStationsByRadiusCancellation(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
+        {
+            Console.WriteLine("Start____________________Start");
+
+            await Task.Delay(5000, cancellationToken);
+
+            Console.WriteLine("End____________________End");
+
+            return Ok();
+        }
+
+
         [HttpPost("create-fuel-route")]
         public async Task<ActionResult> GetFuelStationsByRadius(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
         {

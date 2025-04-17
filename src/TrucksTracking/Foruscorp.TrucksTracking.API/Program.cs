@@ -1,7 +1,6 @@
 using System.Diagnostics.Metrics;
 using Foruscorp.TrucksTracking.API.Realtime;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
-using Foruscorp.TrucksTracking.Infrastructure.Processing;
 using Foruscorp.TrucksTracking.Infrastructure.Satup;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;

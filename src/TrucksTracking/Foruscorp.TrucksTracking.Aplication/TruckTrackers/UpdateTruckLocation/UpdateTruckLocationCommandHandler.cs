@@ -14,6 +14,5 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckLocation
             throw new NotImplementedException();
         }
     }   
-    {
-    }
+ 
 }
