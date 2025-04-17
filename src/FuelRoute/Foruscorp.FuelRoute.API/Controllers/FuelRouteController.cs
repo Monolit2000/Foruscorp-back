@@ -22,11 +22,8 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         public async Task<ActionResult> GetFuelStationsByRadiusCancellation([FromBody] int testvalue, CancellationToken cancellationToken)
         {
             Console.WriteLine("Start____________________Start");
-
             await Task.Delay(5000, cancellationToken);
-
             Console.WriteLine("End____________________End");
-
             return Ok();
         }
 

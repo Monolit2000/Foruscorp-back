@@ -20,7 +20,7 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
         public DropPointData Data { get; set; }
 
         [JsonPropertyName("apiErrors")]
-        public object ApiErrors { get; set; } // Может быть null или массивом ошибок
+        public object ApiErrors { get; set; } 
     }
 
     public class DropPointData
@@ -32,13 +32,13 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
         public RevGeocode RevGeocode { get; set; }
 
         [JsonPropertyName("routeInfo")]
-        public object RouteInfo { get; set; } // null в примере
+        public object RouteInfo { get; set; } 
     }
 
     public class Geometries
     {
         [JsonPropertyName("distance")]
-        public object Distance { get; set; } // null в примере
+        public object Distance { get; set; } 
 
         [JsonPropertyName("nearestLat")]
         public double NearestLat { get; set; }
@@ -47,10 +47,10 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
         public double NearestLon { get; set; }
 
         [JsonPropertyName("layerId")]
-        public object LayerId { get; set; } // null в примере
+        public object LayerId { get; set; } 
 
         [JsonPropertyName("geometry")]
-        public object Geometry { get; set; } // null в примере
+        public object Geometry { get; set; } 
     }
 
     public class RevGeocode
