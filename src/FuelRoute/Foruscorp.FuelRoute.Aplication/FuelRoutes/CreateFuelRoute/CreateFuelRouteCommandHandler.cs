@@ -18,29 +18,20 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
-            Console.WriteLine("DDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDDD");
+            if (request.ViaPoints != null && request.ViaPoints.First().Latitude == 0)
+                request.ViaPoints = null;
 
-            await Task.Delay(4000, cancellationToken);
-
-            Console.WriteLine("TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT");
-
-            var result = await truckerPathApi.PlanRouteAsync(origin, destinations, cancellationToken: cancellationToken);
+            var result = await truckerPathApi.PlanRouteAsync(origin, destinations, request.ViaPoints, cancellationToken: cancellationToken);
 
             memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
-                .Select(s => new 
+                .Select(s => new
                 { 
                     routeId = s.Id,
-                    mapPoints = s.ShowShape
-                        //.Select(p => new
-                        //{
-                        //    Latitude = p[0],
-                        //    Longitude = p[1]
-                        //})
-                        //.ToList()
+                    mapPoints = s.ShowShape.Count()
                 });
 
             return new {

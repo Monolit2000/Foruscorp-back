@@ -16,6 +16,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
     {
         public GeoPoint Origin { get; set; }
         public GeoPoint Destination { get; set; }
-        //public RoutePlanningRequest RoutePlanningRequest { get; set; }  
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<GeoPoint> ViaPoints { get; set; } 
+
     }
 }
