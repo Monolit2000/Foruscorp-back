@@ -31,7 +31,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .Select(s => new
                 { 
                     routeId = s.Id,
-                    mapPoints = s.ShowShape.Count()
+                    mapPoints = s.ShowShape
                 });
 
             return new {
