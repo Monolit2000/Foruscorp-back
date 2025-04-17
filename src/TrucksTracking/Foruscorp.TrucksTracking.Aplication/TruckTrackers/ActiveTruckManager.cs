@@ -1,23 +1,26 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
 {
-    public class ActiveTruckManager 
+    public class ActiveTruckManager : IDisposable
     {
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ConcurrentBag<string> _activeTruck = new();
+        private readonly Timer _refreshTimer;
 
-        private readonly ConcurrentBag<string> _activeTruck = [];
-
-
-        public ActiveTruckManager(IServiceScopeFactory scopeFactory)  
+        public ActiveTruckManager(IServiceScopeFactory scopeFactory)
         {
             _scopeFactory = scopeFactory;
 
-            InitActiveTruckListAsinc();
+            // Set up timer to refresh every 5 minutes
+            _refreshTimer = new Timer(_ => SetActiveTruckList(), null, TimeSpan.Zero, TimeSpan.FromMinutes(5));
         }
-
 
         public void AddTruck(string truckId)
         {
@@ -33,14 +36,14 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             {
                 _activeTruck.TryTake(out truckId);
             }
-        }   
+        }
 
         public IReadOnlyCollection<string> GetAllTrucks()
         {
             return _activeTruck.ToList();
         }
 
-        private void InitActiveTruckListAsinc()
+        private void SetActiveTruckList()
         {
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
@@ -54,7 +57,11 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             {
                 _activeTruck.Add(truck);
             }
+        }
 
+        public void Dispose()
+        {
+            _refreshTimer?.Dispose();
         }
     }
 }
