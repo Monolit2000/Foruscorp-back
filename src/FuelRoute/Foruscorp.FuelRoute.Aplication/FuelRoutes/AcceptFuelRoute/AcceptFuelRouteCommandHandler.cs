@@ -7,7 +7,6 @@ using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 
-
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
     public class AcceptFuelRouteCommandHandler(
@@ -25,7 +24,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
             var section = routeDataValue.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
-                .FirstOrDefault(x => x.Id == request.RouteSectionId);
+                .FirstOrDefault(section => section.Id == request.RouteSectionId);
 
             var fuelRoute = FuelRoute.CreateNew(
                 Guid.NewGuid(),
@@ -73,8 +72,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 //    await context.MapPoints.AddRangeAsync(chunk, cancellationToken);
 //    await context.SaveChangesAsync(cancellationToken);
 //}));
-
-
 
 //_ = Task.Run(async () =>
 //{

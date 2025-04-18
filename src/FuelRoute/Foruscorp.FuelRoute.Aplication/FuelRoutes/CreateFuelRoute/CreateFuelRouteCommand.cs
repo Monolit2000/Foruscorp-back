@@ -1,13 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+﻿using MediatR;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
-using MediatR;
-using Microsoft.VisualBasic;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
