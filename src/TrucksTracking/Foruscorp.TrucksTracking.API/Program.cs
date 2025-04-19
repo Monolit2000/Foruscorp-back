@@ -21,7 +21,7 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
-        .AddRabbitMQInstrumentation() // Added RabbitMQ tracing instrumentation
+        .AddRabbitMQInstrumentation() 
         .AddSource("TrucksTracking")
         .AddOtlpExporter(options =>
         {
@@ -46,8 +46,7 @@ builder.Logging.AddOpenTelemetry(logging => logging
     {
         options.Endpoint = new Uri("http://aspire-dashboard:18889");
         options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-    }))
-    .AddConsole(); // Add console logging for debugging
+    })).AddConsole(); 
 
 // Add services to the container.
 builder.Services.AddSignalR();
