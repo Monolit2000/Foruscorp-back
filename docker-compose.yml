@@ -85,8 +85,10 @@ services:
     image: mcr.microsoft.com/dotnet/nightly/yarp:latest
     volumes:
       - ./appsettings.json:/etc/yarp.config
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx
     ports:
-      - "5000:5000"
+      - "5000:5000" # HTTP
+      - "5011:5011" # HTTPS
     networks:
       - foruscorp-docker-network
 

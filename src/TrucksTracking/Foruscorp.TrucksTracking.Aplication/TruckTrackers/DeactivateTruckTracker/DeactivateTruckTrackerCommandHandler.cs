@@ -1,10 +1,11 @@
 ﻿using MediatR;
 using FluentResults;
-using Foruscorp.TrucksTracking.Aplication.Contruct;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
-using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker;
+
+
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker
 {

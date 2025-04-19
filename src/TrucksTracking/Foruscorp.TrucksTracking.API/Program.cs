@@ -9,7 +9,6 @@ using OpenTelemetry.Trace;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 // Create a custom meter for diagnostics
 var meter = new Meter("TrucksTracking.Diagnostics");
 var testCounter = meter.CreateCounter<long>("test_counter");
@@ -21,9 +20,8 @@ builder.Services.AddOpenTelemetry()
     .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        //.AddSignalRInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
- 
+        .AddRabbitMQInstrumentation() // Added RabbitMQ tracing instrumentation
         .AddSource("TrucksTracking")
         .AddOtlpExporter(options =>
         {
@@ -50,7 +48,6 @@ builder.Logging.AddOpenTelemetry(logging => logging
         options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
     }))
     .AddConsole(); // Add console logging for debugging
-
 
 // Add services to the container.
 builder.Services.AddSignalR();
