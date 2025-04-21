@@ -40,6 +40,18 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.Bonus)
                 .HasColumnType("decimal(18,2)");
 
+            builder.OwnsOne(d => d.Contact, b =>
+            {
+                b.Property(c => c.Phone)
+                    .HasColumnName("PhoneNumber")
+                    .IsRequired()
+                    .HasMaxLength(15);
+
+                b.Property(c => c.Email)
+                    .IsRequired()
+                    .HasMaxLength(100);
+            });
+
 
             builder.HasMany(d => d.Bonuses)
                 .WithOne()

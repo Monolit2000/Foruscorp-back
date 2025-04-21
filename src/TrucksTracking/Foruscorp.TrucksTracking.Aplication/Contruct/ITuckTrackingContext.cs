@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Foruscorp.TrucksTracking.Domain.Trucks;
 
 namespace Foruscorp.TrucksTracking.Aplication.Contruct

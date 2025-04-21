@@ -11,7 +11,8 @@ namespace Foruscorp.Trucks.Domain.Drivers
     public class Driver : Entity, IAggregateRoot
     {
         public Guid? TruckId { get; private set; }
-        public Truck Truck { get; private set; } 
+        public Truck Truck { get; private set; }
+        public Contact Contact { get; private set; } 
 
         public readonly List<DriverBonus> Bonuses = [];
 

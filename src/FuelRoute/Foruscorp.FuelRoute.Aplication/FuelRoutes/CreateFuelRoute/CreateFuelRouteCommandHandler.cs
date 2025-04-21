@@ -1,11 +1,8 @@
-﻿
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
-using MediatR;
+﻿using MediatR;
 using Microsoft.Extensions.Caching.Memory;
-using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
-
+using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
