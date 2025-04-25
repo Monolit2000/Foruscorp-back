@@ -7,6 +7,8 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using System;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
@@ -27,6 +29,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return Ok();
         }
 
+        //[ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FuelStationDto>))]
 
         [HttpPost("create-fuel-route")]
         public async Task<ActionResult> GetFuelStationsByRadius(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)

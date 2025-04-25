@@ -9,12 +9,14 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using System;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
@@ -25,11 +27,18 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddSource("Trucks")
+        .AddRedisInstrumentation(options =>
+        {
+            options.SetVerboseDatabaseStatements = true; // Example configuration
+            options.Enrich = (activity, command) =>
+            {
+                activity.SetTag("redis.command", command?.ToString());
+            };
+        })
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         }))
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
@@ -37,10 +46,10 @@ builder.Services.AddOpenTelemetry()
         .AddRuntimeInstrumentation()
         .AddMeter("Trucks")
         .AddMeter("Trucks.Diagnostics")
+        .AddMeter("Trucks.Redis") // Optional: for custom Redis metrics
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         }));
 
 // Configure logging
@@ -51,8 +60,6 @@ builder.Logging.AddOpenTelemetry(logging => logging
         options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
     })).AddConsole();
 
-
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll",
@@ -60,7 +67,6 @@ builder.Services.AddCors(options =>
                         .AllowAnyMethod()
                         .AllowAnyHeader());
 });
-
 
 builder.Services.AddTrucksServices(builder.Configuration);
 
@@ -77,7 +83,6 @@ if (app.Environment.IsDevelopment())
 //app.UseAuthorization();
 
 app.UseCors("AllowAll");
-
 
 app.MapControllers();
 

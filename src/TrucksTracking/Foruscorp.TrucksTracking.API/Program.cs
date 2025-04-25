@@ -6,6 +6,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using MassTransit; 
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +22,9 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
-        .AddRabbitMQInstrumentation() 
-        .AddSource("TrucksTracking")
+        .AddRabbitMQInstrumentation()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
+
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri("http://aspire-dashboard:18889");

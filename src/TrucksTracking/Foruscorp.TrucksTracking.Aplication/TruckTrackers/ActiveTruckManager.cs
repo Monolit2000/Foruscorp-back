@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
 {
@@ -48,6 +49,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
             var truckTrackers = context.TruckTrackers
+                .Where(tt => tt.Status == TruckStatus.Active)   
                 .Select(tt => tt.TruckId.ToString())
                 .ToList();
 

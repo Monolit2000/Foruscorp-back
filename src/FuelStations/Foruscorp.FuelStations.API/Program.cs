@@ -26,7 +26,7 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddSource("FuelStations")
+        .AddSource()
         .AddOtlpExporter(options =>
         {
             options.Endpoint = new Uri("http://aspire-dashboard:18889");

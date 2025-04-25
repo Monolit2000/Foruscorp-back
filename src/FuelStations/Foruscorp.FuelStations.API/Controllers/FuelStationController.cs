@@ -16,6 +16,7 @@ namespace Foruscorp.FuelStations.API.Controllers
             _mediator = mediator;
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FuelStationDto>))]
         [HttpPost("by-radius")]
         public async Task<ActionResult<IEnumerable<FuelStationDto>>> GetFuelStationsByRadius(
             GetFuelStationsByRadiusQuery getFuelStationsByRadiusQuery,
