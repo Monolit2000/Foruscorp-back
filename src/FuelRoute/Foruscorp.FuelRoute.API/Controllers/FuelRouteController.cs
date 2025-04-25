@@ -46,7 +46,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return Ok(result);
         }
 
-
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(SimpleDropPointResponse))]
         [HttpPost("drop-point")]
         public async Task<ActionResult> DropPoint([FromBody] GeoPoint request, CancellationToken cancellationToken)
         {

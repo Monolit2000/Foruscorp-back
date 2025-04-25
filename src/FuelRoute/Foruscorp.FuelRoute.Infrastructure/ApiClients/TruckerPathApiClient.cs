@@ -151,7 +151,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.ApiClients
                 var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
                 var dropPointResponse = JsonSerializer.Deserialize<DropPointResponse>(responseContent, JsonOptions);
 
-                var simpeleResponce = new SimpleDropPointResponse(dropPointResponse.Data.Geometries.NearestLon, dropPointResponse.Data.Geometries.NearestLon);
+                var simpeleResponce = new SimpleDropPointResponse(dropPointResponse.Data.Geometries.NearestLat, dropPointResponse.Data.Geometries.NearestLon);
 
                 return simpeleResponce;
 

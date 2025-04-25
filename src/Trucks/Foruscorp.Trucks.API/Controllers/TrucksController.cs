@@ -19,7 +19,6 @@ namespace Foruscorp.Trucks.API.Controllers
     public class TrucksController(
         IMediator mediator) : ControllerBase
     {
-
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TruckDto>))]
         [HttpPost("create-truck")]
         public async Task<ActionResult> GetFuelStationsByRadius( CreateTruckCommand createTruckCommand, CancellationToken cancellationToken)

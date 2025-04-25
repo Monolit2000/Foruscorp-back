@@ -7,5 +7,5 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients
 {
-    public record class SimpleDropPointResponse(double NearestLat, double NearestLon);
+    public record class SimpleDropPointResponse(double latitude, double longitude);
 }
