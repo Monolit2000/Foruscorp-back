@@ -62,7 +62,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
         }    
         
         
-        private FuelStationDto ToFuelStationDto(FuelStationResponce fuelStationResponce)
+        public FuelStationDto ToFuelStationDto(FuelStationResponce fuelStationResponce)
         {
             return new FuelStationDto
             {

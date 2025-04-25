@@ -69,8 +69,5 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return NotFound(result.Errors); 
         }
-
-
-
     }
 }
