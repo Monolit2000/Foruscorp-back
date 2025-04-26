@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\BuildingBlocks\Foruscorp.BuildingBlocks.Infastructure\Foruscorp.BuildingBlocks.Infastructure.csproj" />
+    <ProjectReference Include="..\..\FuelStations\Foruscorp.FuelStations.Infrastructure\Foruscorp.FuelStations.Infrastructure.csproj" />
     <ProjectReference Include="..\Foruscorp.FuelRoute.Domain\Foruscorp.FuelRoutes.Domain.csproj" />
   </ItemGroup>
 

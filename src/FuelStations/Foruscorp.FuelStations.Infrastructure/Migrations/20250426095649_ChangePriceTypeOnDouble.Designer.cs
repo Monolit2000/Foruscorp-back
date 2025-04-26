@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelStations.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelStationContext))]
-    partial class FuelStationContextModelSnapshot : ModelSnapshot
+    [Migration("20250426095649_ChangePriceTypeOnDouble")]
+    partial class ChangePriceTypeOnDouble
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -121,12 +124,12 @@ namespace Foruscorp.FuelStations.Infrastructure.Migrations
                             b1.Property<Guid>("FuelStationId")
                                 .HasColumnType("uuid");
 
-                            b1.Property<double>("Latitude")
-                                .HasColumnType("double precision")
+                            b1.Property<decimal>("Latitude")
+                                .HasColumnType("decimal(9,6)")
                                 .HasColumnName("Latitude");
 
-                            b1.Property<double>("Longitude")
-                                .HasColumnType("double precision")
+                            b1.Property<decimal>("Longitude")
+                                .HasColumnType("decimal(9,6)")
                                 .HasColumnName("Longitude");
 
                             b1.HasKey("FuelStationId");

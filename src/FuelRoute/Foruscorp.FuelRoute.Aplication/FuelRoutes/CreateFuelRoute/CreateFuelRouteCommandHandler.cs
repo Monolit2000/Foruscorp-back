@@ -3,14 +3,17 @@ using Microsoft.Extensions.Caching.Memory;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
+using Foruscorp.FuelStations.Aplication.FuelStations;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
     public class CreateFuelRouteCommandHandler(
         IMemoryCache memoryCache,
-        ITruckerPathApi truckerPathApi) : IRequestHandler<CreateFuelRouteCommand, object>
+        ITruckerPathApi truckerPathApi, 
+        ISender sender) : IRequestHandler<CreateFuelRouteCommand, FuelRouteDto>
     {
-        public async Task<object> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
+        public async Task<FuelRouteDto> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
@@ -30,17 +33,100 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
-                .Select(s => new
+                .Select(s => new RouteDto
                 { 
-                    routeId = s.Id,
-                    mapPoints = s.ShowShape
+                    RouteId = s.Id,
+                    MapPoints = s.ShowShape
                 });
 
-            return new {
-                ResponseId = result.Id,  
-                RouteIds = sections
+
+            var points = result.Routes.WaypointsAndShapes
+                .Where(ws => ws != null && ws.Sections != null)
+                .SelectMany(x => x.Sections)
+                .Select(s => new
+                {
+                    routeId = s.Id,
+                    mapPoints = FilterPointsByDistance(s.ShowShape, 15.0) 
+                });
+
+            var resg = points.First();
+
+
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery{ Roads = points.Select(x => new Road{ Id = x.routeId, Points = x.mapPoints}).ToList()});
+
+            var fuelStations = new List<FuelStationDto>();    
+
+            if (fuelStationsResult.IsSuccess)
+                fuelStations = fuelStationsResult.Value;    
+
+
+            return new FuelRouteDto
+            {
+                ResponseId = result.Id,
+                RouteDtos = sections.ToList(),
+                FuelStationDtos = fuelStations
             };   
         }
+
+        public static class GeoUtils
+        {
+            private const double EarthRadiusKm = 6371.0;
+
+            public static double CalculateDistance(double lat1, double lon1, double lat2, double lon2)
+            {
+                var dLat = ToRadians(lat2 - lat1);
+                var dLon = ToRadians(lon2 - lon1);
+
+                var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
+                        Math.Cos(ToRadians(lat1)) * Math.Cos(ToRadians(lat2)) *
+                        Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
+
+                var c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+                return EarthRadiusKm * c;
+            }
+
+            private static double ToRadians(double degrees)
+            {
+                return degrees * Math.PI / 180.0;
+            }
+        }
+
+        public static List<List<double>> FilterPointsByDistance(List<List<double>> points, double targetDistanceKm = 15.0)
+        {
+            if (points == null || points.Count < 2)
+                return points;
+
+            var filteredPoints = new List<List<double>> { points[0] }; 
+            double accumulatedDistance = 0.0;
+            int lastSelectedIndex = 0;
+
+            for (int i = 1; i < points.Count; i++)
+            {
+                var prevPoint = points[i - 1];
+                var currPoint = points[i];
+                double segmentDistance = GeoUtils.CalculateDistance(
+                    prevPoint[0], prevPoint[1],
+                    currPoint[0], currPoint[1]
+                );
+
+                accumulatedDistance += segmentDistance;
+
+                if (accumulatedDistance >= targetDistanceKm)
+                {
+                    filteredPoints.Add(currPoint); 
+                    accumulatedDistance = 0.0; 
+                    lastSelectedIndex = i; 
+                }
+            }
+
+            if (lastSelectedIndex < points.Count - 1)
+            {
+                filteredPoints.Add(points[points.Count - 1]);
+            }
+
+            return filteredPoints;
+        }
+
     }
 }
 

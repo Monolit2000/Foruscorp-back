@@ -9,11 +9,11 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
     public record FuelPrice
     {
         public FuelType FuelType { get; }
-        public decimal Price { get; }
-        public decimal? DiscountedPrice { get; } 
-        public decimal PriceDifference => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : 0; 
+        public double Price { get; }
+        public double? DiscountedPrice { get; } 
+        public double PriceDifference => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : 0; 
 
-        public FuelPrice(FuelType fuelType, decimal price, decimal? discountedPrice = null)
+        public FuelPrice(FuelType fuelType, double price, double? discountedPrice = null)
         {
             if (fuelType == null)
                 throw new ArgumentNullException(nameof(fuelType), "Fuel type cannot be null");
@@ -21,8 +21,8 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
                 throw new ArgumentException("Fuel price cannot be negative", nameof(price));
             if (discountedPrice.HasValue && discountedPrice < 0)
                 throw new ArgumentException("Discounted price cannot be negative", nameof(discountedPrice));
-            if (discountedPrice.HasValue && discountedPrice > price)
-                throw new ArgumentException("Discounted price cannot be higher than regular price", nameof(discountedPrice));
+            //if (discountedPrice.HasValue && discountedPrice > price)
+            //    throw new ArgumentException("Discounted price cannot be higher than regular price", nameof(discountedPrice));
 
             FuelType = fuelType;
             Price = price;
