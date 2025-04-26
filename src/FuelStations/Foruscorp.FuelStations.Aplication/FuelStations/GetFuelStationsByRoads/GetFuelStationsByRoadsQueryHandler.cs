@@ -65,8 +65,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 }
             }
 
-            var stationsDto = uniqueStations.Select(station => new FuelStationDto
+            var stationsDto = uniqueStations.Select((station, index) => new FuelStationDto
             {
+                Id = index + 1,
                 Address = station.Address,
                 Latitude = station.Coordinates.Latitude.ToString(),
                 Longitude = station.Coordinates.Longitude.ToString(),
