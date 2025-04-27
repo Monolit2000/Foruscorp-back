@@ -25,7 +25,12 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
             builder.Property(fs => fs.LastUpdated)
                 .IsRequired();
-            
+
+
+            builder.Property(fs => fs.ProviderName)
+                .IsRequired(false);
+
+
 
             builder.OwnsOne(fs => fs.Coordinates, coordBuilder =>
             {

@@ -16,7 +16,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Percistence
         {
         }
 
-        public async Task SaveChangesAsync(CancellationToken cancellationToken)
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             await base.SaveChangesAsync(cancellationToken);
         }

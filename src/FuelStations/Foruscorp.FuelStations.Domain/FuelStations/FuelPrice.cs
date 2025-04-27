@@ -12,6 +12,10 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public double Price { get; }
         public double? DiscountedPrice { get; } 
         public double PriceDifference => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : 0; 
+        public double PriceAfterDiscount => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : Price; 
+        public double PriceDifferencePercentage => DiscountedPrice.HasValue ? (PriceDifference / Price) * 100 : 0;
+        public double PriceDifferencePercentageWithDiscount => DiscountedPrice.HasValue ? (PriceDifference / DiscountedPrice.Value) * 100 : 0;
+
 
         public FuelPrice(FuelType fuelType, double price, double? discountedPrice = null)
         {

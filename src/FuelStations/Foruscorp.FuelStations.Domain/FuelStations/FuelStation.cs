@@ -14,6 +14,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public readonly List<FuelPrice> FuelPrices = [];
 
         public Guid Id { get; private set; }
+        public string ProviderName { get; private set; } 
         public string Address { get; private set; }
         public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }
@@ -21,9 +22,10 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 
         private FuelStation() { }
 
-        private FuelStation(string address, GeoPoint coordinates, List<FuelPrice> fuelPrices = null)
+        private FuelStation(string address, string providerName, GeoPoint coordinates, List<FuelPrice> fuelPrices = null)
         {
             Id = Guid.NewGuid();
+            ProviderName = providerName;
             Address = address;
             Coordinates = coordinates;
             LastUpdated = DateTime.UtcNow;
@@ -34,12 +36,12 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             }
         }
 
-        public static FuelStation CreateNew(string address, GeoPoint coordinates, List<FuelPrice> fuelPrices = null)
+        public static FuelStation CreateNew(string address, string providerName, GeoPoint coordinates, List<FuelPrice> fuelPrices = null)
         {
             if (string.IsNullOrWhiteSpace(address))
                 throw new ArgumentException("Address cannot be empty", nameof(address));
 
-            return new FuelStation(address, coordinates, fuelPrices);
+            return new FuelStation(address, providerName, coordinates, fuelPrices);
         }
 
         public void UpdateFuelPrices(IEnumerable<FuelPrice> newPrices)

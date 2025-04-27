@@ -4,6 +4,7 @@ using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Domain.FuelStations;
 using System.Globalization;
+using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation
 {
@@ -21,11 +22,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation
             if (!stationResponce.Any() || stationResponce.FirstOrDefault() == null)
                 return;
 
+            await DeleteAllFuelStationsIfAnyExist(cancellationToken);   
+
             var stations = stationResponce.Select(stationResponce => FuelStation.CreateNew(
                 stationResponce.Address,
+                stationResponce.Name,
                 new GeoPoint(
-                    double.Parse(stationResponce.Latitude, System.Globalization.CultureInfo.InvariantCulture),
-                    double.Parse(stationResponce.Longitude, System.Globalization.CultureInfo.InvariantCulture)
+                    double.Parse(stationResponce.Latitude, CultureInfo.InvariantCulture),
+                    double.Parse(stationResponce.Longitude, CultureInfo.InvariantCulture)
                 ),
                 [
                     new FuelPrice(
@@ -41,9 +45,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation
 
             var stationDtos = stationResponce.Select(sr => ToFuelStationDto(sr));
 
-
-
         }
+
+        public async Task DeleteAllFuelStationsIfAnyExist(CancellationToken cancellationToken = default)
+        {
+            if (!await fuelStationContext.FuelStations.AnyAsync())
+                return;
+
+            await fuelStationContext.FuelStations.ExecuteDeleteAsync(cancellationToken);
+            await fuelStationContext.SaveChangesAsync(cancellationToken);
+        }   
 
         public static double SafeParseDouble(string? value)
         {

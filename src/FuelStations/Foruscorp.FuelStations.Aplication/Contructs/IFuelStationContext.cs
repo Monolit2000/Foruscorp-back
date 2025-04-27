@@ -9,6 +9,6 @@ namespace Foruscorp.FuelStations.Aplication.Contructs
         public DbSet<FuelStation> FuelStations { get; set; }
         public DbSet<FuelMapProvaider> FuelMapProvaiders { get; set; }
 
-        Task SaveChangesAsync(CancellationToken cancellationToken);
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
