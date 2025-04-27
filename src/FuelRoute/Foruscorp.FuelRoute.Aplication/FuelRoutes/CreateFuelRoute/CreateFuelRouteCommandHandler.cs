@@ -31,7 +31,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
-                .Where(ws => ws != null && ws.Sections != null)
+                .Where(ws => ws != null && ws.Sections != null)п
                 .SelectMany(x => x.Sections)
                 .Select(s => new RouteDto
                 { 

@@ -12,8 +12,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
     public class GetFuelStationsByRoadsQueryHandler(
         IMemoryCache memoryCache,
-        IFuelStationContext fuelStationContext,
-        IFuelStationsService fuelStationsService)
+        IFuelStationContext fuelStationContext)
         : IRequestHandler<GetFuelStationsByRoadsQuery, Result<List<FuelStationDto>>>
     {
         private const double SearchRadiusKm = 15.0;
@@ -40,9 +39,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (!stations.Any())
                 return Result.Ok(new List<FuelStationDto>());
 
-            string cacheKey = GenerateCacheKey(request.Roads);
-            if (memoryCache.TryGetValue(cacheKey, out List<FuelStationDto> cachedStations))
-                return Result.Ok(cachedStations);
+            //string cacheKey = GenerateCacheKey(request.Roads);
+            //if (memoryCache.TryGetValue(cacheKey, out List<FuelStationDto> cachedStations))
+            //    return Result.Ok(cachedStations);
 
 
             var uniqueStations = request.Roads
@@ -56,7 +55,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var stationsDto = uniqueStations
                 .Select((station, index) => FuelStationToDto(station, index + 1)).ToList();
 
-            memoryCache.Set(cacheKey, stationsDto, TimeSpan.FromMinutes(30));
+            //memoryCache.Set(cacheKey, stationsDto, TimeSpan.FromMinutes(30));
 
             return Result.Ok(stationsDto);
         }

@@ -37,7 +37,10 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         public async Task<ActionResult> GetFuelStationsByRadius(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(createFuelRouteCommand, cancellationToken);
-            return Ok(result);
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
         }
 
 
