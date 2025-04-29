@@ -25,19 +25,23 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
             builder.Property(fs => fs.LastUpdated)
                 .IsRequired();
-            
+
+
+            builder.Property(fs => fs.ProviderName)
+                .IsRequired(false);
+
+
 
             builder.OwnsOne(fs => fs.Coordinates, coordBuilder =>
             {
                 coordBuilder.Property(c => c.Latitude)
                     .HasColumnName("Latitude")
-                    .IsRequired()
-                    .HasColumnType("decimal(9,6)");
+                    .IsRequired();
 
                 coordBuilder.Property(c => c.Longitude)
                     .HasColumnName("Longitude")
-                    .IsRequired()
-                    .HasColumnType("decimal(9,6)");
+                    .IsRequired();
+
             });
 
             builder.OwnsMany(fs => fs.FuelPrices, priceBuilder =>
@@ -60,11 +64,9 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
                     .HasMaxLength(50);
 
                 priceBuilder.Property(fp => fp.Price)
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)");
+                    .IsRequired();
 
-                priceBuilder.Property(fp => fp.DiscountedPrice)
-                    .HasColumnType("decimal(18,2)");
+                priceBuilder.Property(fp => fp.DiscountedPrice);
             });
 
             builder.HasIndex(fs => fs.Address);

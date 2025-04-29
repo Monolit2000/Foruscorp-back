@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System.Globalization;
 
 namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
 {
@@ -9,10 +10,10 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
         public int Id { get; set; }
 
         [JsonProperty("latitude")]
-        public string Latitude { get; set; }
+        public string Latitude { get; set; } = "0";
 
         [JsonProperty("longitude")]
-        public string Longitude { get; set; }
+        public string Longitude { get; set; } = "0";
 
         [JsonProperty("name")]
         public string Name { get; set; }
@@ -45,19 +46,19 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
         public string? GetPriceAsString() => Price switch
         {
             decimal d => d.ToString("F3"), 
-            double d => d.ToString("F3"), 
+            double d => d.ToString(CultureInfo.InvariantCulture), 
             string s when s == "N/A" => "N/A",
             string s => s,                
-            _ => null                      
+            _ => "N/A"
         };
 
         public string? GetDiscountAsStringl() => Discount switch
         {
             decimal d => d.ToString("F3"),
-            double d => d.ToString("F3"),
+            double d => d.ToString(CultureInfo.InvariantCulture),
             string s when s == "N/A" => "N/A",
             string s => s,
-            _ => null
+            _ => "N/A"
         };
 
 

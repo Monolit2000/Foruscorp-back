@@ -16,6 +16,10 @@ namespace Foruscorp.FuelStations.Infrastructure.Percistence
         {
         }
 
+        public async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            await base.SaveChangesAsync(cancellationToken);
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);

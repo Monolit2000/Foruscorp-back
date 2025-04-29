@@ -8,12 +8,12 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 {
     public class GeoPoint
     {
-        public decimal Latitude { get; private set; }
-        public decimal Longitude { get; private set; }
+        public double Latitude { get; private set; }
+        public double Longitude { get; private set; }
 
         private GeoPoint() { }
 
-        public GeoPoint(decimal latitude, decimal longitude)
+        public GeoPoint(double latitude, double longitude)
         {
             if (latitude < -90 || latitude > 90)
                 throw new ArgumentException("Latitude must be between -90 and 90", nameof(latitude));

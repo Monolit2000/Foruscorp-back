@@ -9,6 +9,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using System;
+using Foruscorp.FuelStations.Infrastructure;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -71,6 +72,12 @@ builder.Services.AddCors(options =>
 //builder.Services.AddHttpClient<IBasketService, BasketService>();
 
 builder.Services.AddPersistenceServices(builder.Configuration); 
+
+
+builder.Services.AddFuelStationServices(builder.Configuration); 
+
+
+
 
 var app = builder.Build();
 

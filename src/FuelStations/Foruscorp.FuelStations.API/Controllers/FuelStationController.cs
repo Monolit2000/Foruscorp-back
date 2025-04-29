@@ -2,6 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Foruscorp.FuelStations.Aplication.FuelStations;
+using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 
 namespace Foruscorp.FuelStations.API.Controllers
 {
@@ -26,6 +27,18 @@ namespace Foruscorp.FuelStations.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [HttpPost("lodad-fuelStations")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> LodadFuelStations(
+            CancellationToken cancellationToken)
+        {
+            var query = new LodadFuelStationCommand();
+            await _mediator.Send(query, cancellationToken);
+            return Ok();
+        }
+
 
 
         [HttpGet("get-by-radius")]
