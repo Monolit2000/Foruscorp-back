@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
@@ -33,6 +34,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FuelRouteDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("create-fuel-route")]
         public async Task<ActionResult> GetFuelStationsByRadius(CreateFuelRouteCommand createFuelRouteCommand, CancellationToken cancellationToken)
         {

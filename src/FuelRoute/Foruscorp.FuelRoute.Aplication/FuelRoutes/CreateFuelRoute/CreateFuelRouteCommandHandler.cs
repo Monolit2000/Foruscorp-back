@@ -26,12 +26,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var result = await truckerPathApi.PlanRouteAsync(origin, destinations, request.ViaPoints, cancellationToken: cancellationToken);
 
             if (result == null)
-                throw new Exception("ivalid route");
+               return Result.Fail("ivalid route");
 
             memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
-                .Where(ws => ws != null && ws.Sections != null)п
+                .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
                 .Select(s => new RouteDto
                 { 
