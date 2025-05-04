@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Foruscorp.Trucks.Aplication.Contruct;
 using MassTransit;
+using Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient;
 
 namespace Foruscorp.Trucks.Infrastructure.Satup
 {
@@ -41,6 +42,8 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
             });
 
             services.AddScoped<ITuckContext, TuckContext>();
+
+            services.AddScoped<ITruckProviderService, SamsaraApiService>();
 
             return services;
         }

@@ -20,19 +20,21 @@ namespace Foruscorp.Trucks.Aplication.Trucks.CreateTruck
     {
         public async Task<TruckDto> Handle(CreateTruckCommand request, CancellationToken cancellationToken)
         {
-            var truck = Truck.CreateNew(
-                request.Ulid,
-                request.LicensePlate);
+            //var truck = Truck.CreateNew(
+            //    request.Ulid,
+            //    request.LicensePlate);
 
-            await context.Trucks.AddAsync(truck, cancellationToken);
+            //await context.Trucks.AddAsync(truck, cancellationToken);
 
-            await context.SaveChangesAsync(cancellationToken);
+            //await context.SaveChangesAsync(cancellationToken);
 
-            var truckDto = truck.ToTruckDto();
+            //var truckDto = truck.ToTruckDto();
 
-            await publishEndpoint.Publish(new TruckCreatedIntegrationEvent() { TruckId = truckDto.Id });
+            //await publishEndpoint.Publish(new TruckCreatedIntegrationEvent() { TruckId = truckDto.Id });
 
-            return truckDto;    
+            //return truckDto;    
+
+            throw new NotImplementedException("Truck creation is not implemented yet.");    
         }
     }
 }

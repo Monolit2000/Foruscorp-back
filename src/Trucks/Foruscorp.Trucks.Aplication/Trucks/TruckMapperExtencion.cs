@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.Trucks.Aplication.Contruct.Samasara;
 using Foruscorp.Trucks.Domain.Trucks;
 
 namespace Foruscorp.Trucks.Aplication.Trucks
@@ -23,6 +24,21 @@ namespace Foruscorp.Trucks.Aplication.Trucks
                     truck.Driver.FullName,
                     truck.Driver.Status.ToString()) 
             };
+        }
+
+
+        public static Truck ToTruck(this Vehicle vehicle)
+        {
+            return Truck.CreateNew(
+                "ulid", 
+                vehicle.Id, 
+                vehicle.Vin,
+                vehicle.Serial, 
+                vehicle.Make, 
+                vehicle.Model,
+                vehicle.HarshAccelerationSettingType,
+                vehicle.LicensePlate);
+          
         }
     }
 }
