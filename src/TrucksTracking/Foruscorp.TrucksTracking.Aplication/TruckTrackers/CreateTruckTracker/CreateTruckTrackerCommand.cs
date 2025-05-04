@@ -9,6 +9,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
 {
     public class CreateTruckTrackerCommand : IRequest
     {
-        public Guid TruckId { get; set; }    
+        public Guid TruckId { get; set; }
+
+        public string ProviderTruckId { get; set; }
     }
 }

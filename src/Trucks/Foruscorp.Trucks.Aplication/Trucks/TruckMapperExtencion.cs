@@ -15,6 +15,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks
             return new TruckDto
             {
                 Id = truck.Id,
+                ProviderTruckId = truck.ProviderTruckId,
                 Ulid = truck.Ulid,
                 LicensePlate = truck.LicensePlate,
                 Status = truck.Status.ToString(),
@@ -22,7 +23,16 @@ namespace Foruscorp.Trucks.Aplication.Trucks
                 Driver = truck.Driver == null ? null : new DriverDto(
                     truck.Driver.Id,
                     truck.Driver.FullName,
-                    truck.Driver.Status.ToString()) 
+                    truck.Driver.Status.ToString()),
+                Name = truck.Name,
+                Vin = truck.Vin,
+                Serial = truck.Serial,
+                Make = truck.Make,
+                Model = truck.Model,
+                HarshAccelerationSettingType = truck.HarshAccelerationSettingType,
+                Year = truck.Year,
+                CreatedAtTime = truck.CreatedAtTime,
+                UpdatedAtTime = truck.UpdatedAtTime
             };
         }
 
@@ -30,15 +40,40 @@ namespace Foruscorp.Trucks.Aplication.Trucks
         public static Truck ToTruck(this Vehicle vehicle)
         {
             return Truck.CreateNew(
-                "ulid", 
+                "ulid",
+                vehicle.Name,
                 vehicle.Id, 
                 vehicle.Vin,
                 vehicle.Serial, 
                 vehicle.Make, 
                 vehicle.Model,
                 vehicle.HarshAccelerationSettingType,
-                vehicle.LicensePlate);
-          
+                vehicle.LicensePlate,
+                vehicle.Year,
+                vehicle.CreatedAtTime,
+                vehicle.UpdatedAtTime);
+        }
+
+        public static TruckDto ToTruckDto(this Vehicle vehicle)
+        {
+            return new TruckDto
+            {
+                ProviderTruckId = vehicle.Id,
+                Ulid = "ulid", // Consider generating a proper ULID if needed
+                LicensePlate = vehicle.LicensePlate,
+                Status = string.Empty, // Vehicle may not have Status; set default or adjust as needed
+                DriverId = Guid.Empty, // Vehicle may not have Driver; set default
+                Driver = null, // Vehicle may not have Driver; set default
+                Name = vehicle.Name,
+                Vin = vehicle.Vin,
+                Serial = vehicle.Serial,
+                Make = vehicle.Make,
+                Model = vehicle.Model,
+                HarshAccelerationSettingType = vehicle.HarshAccelerationSettingType,
+                Year = vehicle.Year,
+                CreatedAtTime = vehicle.CreatedAtTime,
+                UpdatedAtTime = vehicle.UpdatedAtTime
+            };
         }
     }
 }

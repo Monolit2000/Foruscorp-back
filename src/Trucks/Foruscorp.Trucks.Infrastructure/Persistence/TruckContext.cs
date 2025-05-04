@@ -6,7 +6,7 @@ using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 
 namespace Foruscorp.Trucks.Infrastructure.Persistence
 {
-    public class TuckContext : DbContext, ITuckContext
+    public class TruckContext : DbContext, ITruckContext
     {
         public DbSet<Truck> Trucks { get; set; }
         
@@ -17,7 +17,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
         public DbSet<DriverFuelHistory> DriverFuelHistories { get; set; }
 
 
-        public TuckContext(DbContextOptions<TuckContext> options) : base(options)
+        public TruckContext(DbContextOptions<TruckContext> options) : base(options)
         {
         }
         public async Task SaveChangesAsync(CancellationToken cancellationToken)
@@ -28,7 +28,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.HasDefaultSchema("Tuck");
-            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TuckContext).Assembly);
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(TruckContext).Assembly);
         }
     }
 }

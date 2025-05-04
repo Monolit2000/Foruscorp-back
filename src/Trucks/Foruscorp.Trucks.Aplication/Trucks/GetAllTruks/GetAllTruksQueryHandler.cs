@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.GetAllTruks
 {
-    public class GetAllTruksQueryHandler(ITuckContext truckContext) : IRequestHandler<GetAllTruksQuery, List<TruckDto>>
+    public class GetAllTruksQueryHandler(ITruckContext truckContext) : IRequestHandler<GetAllTruksQuery, List<TruckDto>>
     {
         public async Task<List<TruckDto>> Handle(GetAllTruksQuery request, CancellationToken cancellationToken)
         {

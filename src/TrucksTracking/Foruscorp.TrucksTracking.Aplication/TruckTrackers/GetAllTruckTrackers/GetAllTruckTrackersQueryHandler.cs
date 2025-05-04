@@ -14,6 +14,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers
                 {
                     TrackerId = tt.Id,
                     TruckId = tt.TruckId,
+                    ProviderTruckId = tt.ProviderTruckId,
                     Status = tt.Status.ToString()
                 }).ToListAsync(cancellationToken);
 

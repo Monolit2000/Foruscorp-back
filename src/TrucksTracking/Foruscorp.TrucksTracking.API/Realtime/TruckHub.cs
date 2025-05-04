@@ -9,7 +9,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         Task ReceiveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
     }
 
-    public sealed record TruckLocationUpdate(string TruckId, decimal Longitude, decimal Latitude);
+    public sealed record TruckLocationUpdate(string TruckId, double Longitude, double Latitude);
 
     public sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {

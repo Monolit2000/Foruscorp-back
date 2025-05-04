@@ -10,7 +10,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
         {
             using IServiceScope scope = app.ApplicationServices.CreateScope();
 
-            using TuckContext workContext = scope.ServiceProvider.GetRequiredService<TuckContext>();
+            using TruckContext workContext = scope.ServiceProvider.GetRequiredService<TruckContext>();
 
             workContext.Database.Migrate();
         }

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
 {
-    public class GetAllDriversQueryHandler(ITuckContext context) : IRequestHandler<GetAllDriversQuery, List<DriverDto>>
+    public class GetAllDriversQueryHandler(ITruckContext context) : IRequestHandler<GetAllDriversQuery, List<DriverDto>>
     {
 
         public async Task<List<DriverDto>> Handle(GetAllDriversQuery request, CancellationToken cancellationToken)

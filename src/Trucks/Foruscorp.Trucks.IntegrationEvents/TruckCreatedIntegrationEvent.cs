@@ -8,6 +8,7 @@ namespace Foruscorp.Trucks.IntegrationEvents
 {
     public class TruckCreatedIntegrationEvent
     {
-        public Guid TruckId { get; set; }   
+        public Guid TruckId { get; set; }
+        public string ProviderTruckId { get; set; }
     }
 }

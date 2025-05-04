@@ -4,9 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.Trucks.Aplication.Contruct.Samasara
+namespace Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider
 {
-    // Data models
     public class VehicleResponse
     {
         public Vehicle[] Data { get; set; }

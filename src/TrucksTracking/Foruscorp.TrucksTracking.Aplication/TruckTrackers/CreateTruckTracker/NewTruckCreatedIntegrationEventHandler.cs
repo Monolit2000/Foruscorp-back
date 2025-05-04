@@ -16,7 +16,11 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
     {
         public async Task Consume(ConsumeContext<TruckCreatedIntegrationEvent> context)
         {
-            await sender.Send(new CreateTruckTrackerCommand() {TruckId = context.Message.TruckId });
+            await sender.Send(new CreateTruckTrackerCommand() 
+            {
+                TruckId = context.Message.TruckId,
+                ProviderTruckId = context.Message.ProviderTruckId,      
+            });
         }
     }
 }

@@ -12,7 +12,7 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
     {
         public static IServiceCollection AddTrucksServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<TuckContext>((sp, options) =>
+            services.AddDbContext<TruckContext>((sp, options) =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
@@ -41,7 +41,7 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
                 busConfiguration.AddConsumers(typeof(IApplication).Assembly);
             });
 
-            services.AddScoped<ITuckContext, TuckContext>();
+            services.AddScoped<ITruckContext, TruckContext>();
 
             services.AddScoped<ITruckProviderService, SamsaraApiService>();
 

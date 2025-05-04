@@ -8,7 +8,7 @@ using MediatR;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.LoadTrucks
 {
-    public class LoadTrucksCommand : IRequest<Result<TruckDto>>
+    public class LoadTrucksCommand : IRequest<Result<List<TruckDto>>>
     {
     }
 }

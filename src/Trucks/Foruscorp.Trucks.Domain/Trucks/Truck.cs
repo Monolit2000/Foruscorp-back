@@ -9,17 +9,17 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public Guid Id { get; private set; }
         public string Ulid { get; private set; }
 
-        //new Fields
         public string ProviderTruckId { get; private set; }
+        public string Name { get; set; }
         public string Vin { get; private set; }
         public string Serial { get; private set; }
         public string Make { get; private set; }
         public string Model { get; private set; }
         public string HarshAccelerationSettingType { get; private set; }
         public string LicensePlate { get; private set; }
+        public string Year { get; set; }
         public DateTime CreatedAtTime { get; private set; }
         public DateTime UpdatedAtTime { get; private set; }
-        //
 
         public TruckStatus Status { get; private set; }
         public Guid? DriverId { get; private set; }
@@ -29,13 +29,17 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
         private Truck(
              string ulid,
+             string name,
              string providerTruckId,
              string vin,
              string serial,
              string make,
              string model,
              string harshAccelerationSettingType,
-             string licensePlate)
+             string licensePlate,
+             string year,
+             DateTime createdAtTime,
+             DateTime updatedAtTime)
         {
             if (string.IsNullOrWhiteSpace(ulid))
                 throw new ArgumentException("ULID cannot be empty.", nameof(ulid));
@@ -43,17 +47,18 @@ namespace Foruscorp.Trucks.Domain.Trucks
                 throw new ArgumentException("ProviderTruckId cannot be empty.", nameof(providerTruckId));
             if (string.IsNullOrWhiteSpace(vin))
                 throw new ArgumentException("VIN cannot be empty.", nameof(vin));
-            if (string.IsNullOrWhiteSpace(serial))
-                throw new ArgumentException("Serial cannot be empty.", nameof(serial));
+            //if (string.IsNullOrWhiteSpace(serial))
+            //    throw new ArgumentException("Serial cannot be empty.", nameof(serial));
             if (string.IsNullOrWhiteSpace(make))
                 throw new ArgumentException("Make cannot be empty.", nameof(make));
             if (string.IsNullOrWhiteSpace(model))
                 throw new ArgumentException("Model cannot be empty.", nameof(model));
-            if (string.IsNullOrWhiteSpace(licensePlate))
-                throw new ArgumentException("License plate cannot be empty.", nameof(licensePlate));
+            //if (string.IsNullOrWhiteSpace(licensePlate))
+            //    throw new ArgumentException("License plate cannot be empty.", nameof(licensePlate));
 
             Id = Guid.NewGuid();
             Ulid = ulid;
+            Name = name;
             ProviderTruckId = providerTruckId;
             Vin = vin;
             Serial = serial;
@@ -61,8 +66,10 @@ namespace Foruscorp.Trucks.Domain.Trucks
             Model = model;
             HarshAccelerationSettingType = harshAccelerationSettingType; // Optional, can be null
             LicensePlate = licensePlate;
-            CreatedAtTime = DateTime.UtcNow;
-            UpdatedAtTime = DateTime.UtcNow;
+            Year = year;
+            CreatedAtTime = createdAtTime;
+            UpdatedAtTime = updatedAtTime;
+        
             Status = TruckStatus.Inactive;
 
             AddDomainEvent(new TruckCreatedEvent(this));
@@ -70,23 +77,31 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
         public static Truck CreateNew(
             string ulid,
+            string name,
             string providerTruckId,
             string vin,
             string serial,
             string make,
             string model,
             string harshAccelerationSettingType,
-            string licensePlate)
+            string licensePlate,
+            string year,
+            DateTime createdAtTime,
+            DateTime updatedAtTime)
         {
             return new Truck(
                 ulid,
+                name,
                 providerTruckId,
                 vin,
                 serial,
                 make,
                 model,
                 harshAccelerationSettingType,
-                licensePlate);
+                licensePlate,
+                year,
+                createdAtTime,
+                updatedAtTime);
         }
 
         public void Update(

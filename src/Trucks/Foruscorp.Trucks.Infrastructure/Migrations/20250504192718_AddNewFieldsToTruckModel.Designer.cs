@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TruckContext))]
-    [Migration("20250405231208_OneDriverToOneTruckMigartionsdfassdfsdfdsdfgdfgfjhgg")]
-    partial class OneDriverToOneTruckMigartionsdfassdfsdfdsdfgdfgfjhgg
+    [Migration("20250504192718_AddNewFieldsToTruckModel")]
+    partial class AddNewFieldsToTruckModel
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -21,7 +21,7 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("Tuck")
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -87,7 +87,8 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.HasIndex("LicenseNumber")
                         .IsUnique();
 
-                    b.HasIndex("TruckId");
+                    b.HasIndex("TruckId")
+                        .IsUnique();
 
                     b.ToTable("Drivers", "Tuck");
                 });
@@ -156,13 +157,37 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("DriverId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("HarshAccelerationSettingType")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
                     b.Property<string>("LicensePlate")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("character varying(20)");
+
+                    b.Property<string>("Make")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Model")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProviderTruckId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Serial")
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -172,16 +197,26 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasMaxLength(26)
                         .HasColumnType("character varying(26)");
 
+                    b.Property<DateTime>("UpdatedAtTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Vin")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Year")
+                        .HasColumnType("text");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("DriverId")
-                        .IsUnique();
+                    b.HasIndex("DriverId");
 
-                    b.HasIndex("LicensePlate")
-                        .IsUnique();
+                    b.HasIndex("LicensePlate");
 
-                    b.HasIndex("Ulid")
-                        .IsUnique();
+                    b.HasIndex("Serial");
+
+                    b.HasIndex("Ulid");
+
+                    b.HasIndex("Vin");
 
                     b.ToTable("Trucks", "Tuck");
                 });
@@ -193,6 +228,42 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasForeignKey("DriverId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Driver", b =>
+                {
+                    b.HasOne("Foruscorp.Trucks.Domain.Trucks.Truck", "Truck")
+                        .WithOne("Driver")
+                        .HasForeignKey("Foruscorp.Trucks.Domain.Drivers.Driver", "TruckId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("Foruscorp.Trucks.Domain.Drivers.Contact", "Contact", b1 =>
+                        {
+                            b1.Property<Guid>("DriverId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Email")
+                                .IsRequired()
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)");
+
+                            b1.Property<string>("Phone")
+                                .IsRequired()
+                                .HasMaxLength(15)
+                                .HasColumnType("character varying(15)")
+                                .HasColumnName("PhoneNumber");
+
+                            b1.HasKey("DriverId");
+
+                            b1.ToTable("Drivers", "Tuck");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DriverId");
+                        });
+
+                    b.Navigation("Contact");
+
+                    b.Navigation("Truck");
                 });
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.DriverBonus", b =>
@@ -215,23 +286,16 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.Navigation("Driver");
                 });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Trucks.Truck", b =>
-                {
-                    b.HasOne("Foruscorp.Trucks.Domain.Drivers.Driver", "Driver")
-                        .WithOne("Truck")
-                        .HasForeignKey("Foruscorp.Trucks.Domain.Trucks.Truck", "DriverId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Driver");
-                });
-
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Driver", b =>
                 {
                     b.Navigation("Bonuses");
 
                     b.Navigation("FuelHistories");
+                });
 
-                    b.Navigation("Truck");
+            modelBuilder.Entity("Foruscorp.Trucks.Domain.Trucks.Truck", b =>
+                {
+                    b.Navigation("Driver");
                 });
 #pragma warning restore 612, 618
         }

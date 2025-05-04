@@ -1,18 +1,18 @@
 ﻿using System.Text.Json;
 using System.Net.Http.Headers;
-using Foruscorp.Trucks.Aplication.Contruct;
-using Foruscorp.Trucks.Aplication.Contruct.Samasara;
 using Microsoft.Extensions.Configuration;
+using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 
-namespace Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient
+namespace Foruscorp.TrucksTracking.Infrastructure.Services
 {
-    public class SamsaraApiService : ITruckProviderService
+    public class TruckProviderService : ITruckProviderService
     {
         private readonly HttpClient _httpClient;
         private readonly string _baseUrl = "https://api.samsara.com";
         private readonly string _apiToken;
 
-        public SamsaraApiService(IConfiguration configuration)
+        public TruckProviderService(IConfiguration configuration)
         {
             _apiToken = configuration["SamsaraApi:ApiToken"]
                 ?? throw new ArgumentNullException("API token is missing in configuration.");
@@ -73,7 +73,7 @@ namespace Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient
             }
         }
 
-        public async Task<VehicleStatsResponse> GetVehicleStatsFeedAsync(string vehicleId = null, string after = null, CancellationToken cancellationToken = default)
+        public async Task<VehicleStatsResponse> GetVehicleStatsFeedAsync(List<string> vehicleIds = null, string after = null, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -82,9 +82,9 @@ namespace Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient
                 {
                     { "types", string.Join(",", types) }
                 };
-                if (!string.IsNullOrEmpty(vehicleId))
+                if (vehicleIds != null || !vehicleIds!.Any())
                 {
-                    queryParams["vehicleIds"] = vehicleId;
+                    queryParams["vehicleIds"] = string.Join(",", vehicleIds);
                 }
                 if (!string.IsNullOrEmpty(after))
                 {
@@ -99,9 +99,6 @@ namespace Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient
 
                 var content = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine("Raw JSON Response: " + content);
-
-
                 var options = new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
@@ -111,18 +108,8 @@ namespace Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient
             }
             catch (HttpRequestException ex)
             {
-                throw new Exception($"Failed to fetch stats for vehicle {vehicleId} from Samsara API", ex);
+                throw new Exception($"Failed to fetch stats for vehicle from Samsara API", ex);
             }
         }
-
     }
 }
-
-
-
-//using Polly;
-////  GetVehicleStatsFeedAsync
-//var response = await Policy
-//    .Handle<HttpRequestException>()
-//    .WaitAndRetryAsync(3, attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)))
-//    .ExecuteAsync(() => _httpClient.GetAsync(url));

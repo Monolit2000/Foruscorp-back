@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
-    [DbContext(typeof(TuckContext))]
+    [DbContext(typeof(TruckContext))]
     partial class TuckContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
@@ -176,6 +176,9 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
                     b.Property<string>("ProviderTruckId")
                         .HasColumnType("text");
 
@@ -195,6 +198,9 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Vin")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Year")
                         .HasColumnType("text");
 
                     b.HasKey("Id");

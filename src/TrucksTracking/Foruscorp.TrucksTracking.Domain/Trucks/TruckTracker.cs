@@ -14,20 +14,29 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
 
         public Guid Id { get; private set; }
+
+        public string ProviderTruckId { get; private set; }
         public Guid CurrentRouteId { get; private set; }
         public TruckStatus Status { get; private set; }
         public decimal FuelStatus { get; private set; }
         public TruckLocation CurrentTruckLocation { get; set; }
 
-        private TruckTracker(Guid truckId)
+        private TruckTracker(
+            Guid truckId, 
+            string providerTruckId)
         {
             Id = Guid.NewGuid();
             TruckId = truckId;
+            ProviderTruckId = providerTruckId;
             Status = TruckStatus.Inactive;
         }
 
-        public static TruckTracker Create(Guid truckId)
-            => new TruckTracker(truckId);
+        public static TruckTracker Create(
+            Guid truckId,
+            string providerTruckId)
+            => new TruckTracker(
+                truckId,
+                providerTruckId);
 
 
 

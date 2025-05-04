@@ -15,7 +15,7 @@ using Foruscorp.Trucks.IntegrationEvents;
 namespace Foruscorp.Trucks.Aplication.Trucks.CreateTruck
 {
     public class CreateTruckCommandHandler(
-        ITuckContext context,
+        ITruckContext context,
         IPublishEndpoint publishEndpoint) : IRequestHandler<CreateTruckCommand, TruckDto>
     {
         public async Task<TruckDto> Handle(CreateTruckCommand request, CancellationToken cancellationToken)

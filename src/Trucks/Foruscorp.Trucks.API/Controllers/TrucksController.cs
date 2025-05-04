@@ -14,6 +14,7 @@ using FluentResults;
 using Foruscorp.Trucks.Aplication.Contruct;
 using Foruscorp.Trucks.Aplication.Contruct.Samasara;
 using System.Linq;
+using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
@@ -86,11 +87,6 @@ namespace Foruscorp.Trucks.API.Controllers
         [HttpGet("vehicle-stats")]
         public async Task<ActionResult> GetVehicleStats(string vehicleId = null,string after = null, CancellationToken cancellationToken = default)
         {
-            //if (string.IsNullOrEmpty(vehicleId))
-            //{
-            //    return BadRequest("Vehicle ID is required.");
-            //}
-
             var result = await truckProviderService.GetVehicleStatsFeedAsync(vehicleId, after);
 
             result.Data = result.Data
@@ -100,6 +96,17 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("load-trucks")]
+        public async Task<ActionResult> LoadTrucks(CancellationToken cancellationToken = default)
+        {
+            var result = await mediator.Send(new LoadTrucksCommand(), cancellationToken);
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
+        }
 
     }
 

@@ -11,7 +11,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
-    [DbContext(typeof(TuckContext))]
+    [DbContext(typeof(TruckContext))]
     [Migration("20250504151212_AddedNewFields")]
     partial class AddedNewFields
     {

@@ -1,9 +1,11 @@
-﻿
-using System.Threading.Channels;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+﻿using Microsoft.AspNetCore.SignalR;
 using Foruscorp.TrucksTracking.Domain.Trucks;
-using MediatR;
-using Microsoft.AspNetCore.SignalR;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Microsoft.EntityFrameworkCore;
+using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -11,7 +13,9 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         //IServiceScopeFactory serviceScopeFactory,
         IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
         ILogger<TruckLocationUpdater> logger,
-        ActiveTruckManager activeTruckManager) : BackgroundService
+        ActiveTruckManager activeTruckManager,
+        IServiceScopeFactory scopeFactory,
+        ITruckProviderService truckProviderService) : BackgroundService
     {
 
         private readonly Random _random = new();
@@ -22,44 +26,77 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 await UpdateTruckLocation();
                 //await UpdateTruckFuel();
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(1500, stoppingToken);
             }
         }
 
 
         private async Task UpdateTruckLocation()
         {
-            foreach(var truck in activeTruckManager.GetAllTrucks())
-            {
-                //faker 
-                var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
+            var trucks = await UpdateTrucksStat();
 
-                var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
+            if (!trucks.Any())
+                return;
+
+            foreach (var truck in trucks)
+            {
+                var update = new TruckLocationUpdate(
+                    truck.Name, 
+                    truck.Gps.FirstOrDefault().Longitude, 
+                    truck.Gps.FirstOrDefault().Latitude);
 
                 //await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
-                await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
+                await hubContext.Clients.Group(truck.Id.ToString()).ReceiveTruckLocationUpdate(update);
 
                 logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
-                    truck, newLocation.Longitude, newLocation.Latitude);
+                    truck, truck.Gps.FirstOrDefault().Longitude, truck.Gps.FirstOrDefault().Latitude);
             }
         }
 
-        private async Task UpdateTruckFuel()
+
+
+        private async Task<List<VehicleStat>> UpdateTrucksStat()
         {
-            foreach (var truck in activeTruckManager.GetAllTrucks())
-            {
-                //faker 
-                var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
+            using var scope = scopeFactory.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
 
-                var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
+            var asdsad = activeTruckManager.GetAllTrucks();
 
-                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
-                //await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
+            var trackers = await context.TruckTrackers
+                .AsNoTracking()
+                .Where(t => activeTruckManager.GetAllTrucks().Contains(t.TruckId.ToString()))
+                .ToListAsync();
 
-                logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
-                    truck, newLocation.Longitude, newLocation.Latitude);
-            }
+            if (!trackers.Any())
+                return new List<VehicleStat>();
+
+            var responce = await truckProviderService.GetVehicleStatsFeedAsync(new List<string>());
+                //trackers.Select(tt => tt.ProviderTruckId)
+                //.ToList()
+
+            responce.Data.Where(vs => trackers.Select(t => t.ProviderTruckId).Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true)
+                .ToList();  
+
+            return responce.Data.ToList();    
+
         }
+
+        //private async Task UpdateTruckFuel()
+        //{
+        //    foreach (var truck in activeTruckManager.GetAllTrucks())
+        //    {
+        //        //faker 
+        //        var newLocation = CalculateNewLocation(new GeoPoint(12.23m, 123.32m));
+
+        //        var update = new TruckLocationUpdate(truck, newLocation.Longitude, newLocation.Latitude);
+
+        //        await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
+        //        //await hubContext.Clients.Group(truck).ReceiveTruckLocationUpdate(update);
+
+        //        logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
+        //            truck, newLocation.Longitude, newLocation.Latitude);
+        //    }
+        //}
 
 
         private GeoPoint CalculateNewLocation(GeoPoint currentLocation)
