@@ -1,5 +1,5 @@
-﻿
-name: CI/CD for ASP.NET Core with Docker Compose on EC2
+﻿name: CI/CD for ASP.NET Core with Docker Compose on EC2
+
 
 on:
   push:
@@ -27,8 +27,8 @@ jobs:
             echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
             chmod 600 ~/.ssh/id_ed25519
             echo "Scanning host: ${{ secrets.EC2_HOST }}"
-            ssh-keyscan -t rsa ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
+            ssh-keyscan -t rsa ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts || true
+            cat ~/.ssh/known_hosts
     
       - name: Deploy to EC2
         # env:
@@ -41,13 +41,8 @@ jobs:
             git fetch --all &&
             git reset --hard origin/main &&
             git pull origin main &&
-            export CONNECTION_STRING="${CONNECTION_STRING}" &&
-            export DB_PASSWORD="${DB_PASSWORD}" &&
-            docker-compose -f docker-compose.yml up -d --build
+            docker-compose -f docker-compose.yml up -d --build '
           
-
-
-
       # - name: Test API
       #   run: |
       #     sleep 10 
@@ -57,7 +52,6 @@ jobs:
         if: always()
         run: |
           rm -f ~/.ssh/id_ed25519
-
 # name: Build
 
 # on:
@@ -126,4 +120,3 @@ jobs:
   #   - name: Deploy with docker-compose
   #     run: |
   #       ssh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "cd /path/to/deploy && docker-compose pull && docker-compose up -d"
-
