@@ -15,6 +15,8 @@ using Foruscorp.Trucks.Aplication.Contruct;
 using Foruscorp.Trucks.Aplication.Contruct.Samasara;
 using System.Linq;
 using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
+using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
+using System;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
@@ -30,6 +32,18 @@ namespace Foruscorp.Trucks.API.Controllers
         {
             var result = await mediator.Send(createTruckCommand, cancellationToken);
             return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TruckDto))]
+        [HttpGet("get-truckBy-id")]
+        public async Task<ActionResult> GetTruckById(Guid truckId, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new GetTruckByIdQuery { TruckId = truckId }, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);   
+
+            return Ok(result.Value);
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Result>))]
