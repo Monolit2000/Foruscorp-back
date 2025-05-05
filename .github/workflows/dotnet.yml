@@ -42,7 +42,7 @@ jobs:
             git fetch --all &&
             git reset --hard origin/main &&
             git pull origin main &&
-            docker-compose -f docker-compose.yml up -d --build
+            docker-compose -f docker-compose.yml up -d --build '
           
 
 
