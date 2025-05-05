@@ -1,28 +1,84 @@
-﻿name: Build
+
+name: CI/CD for ASP.NET Core with Docker Compose on EC2
 
 on:
   push:
-    branches: [ "master" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "master" ]
+    branches:
+      - main
 
 jobs:
-  Build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+     
+      - name: Configure SSH
+        run: |
+          mkdir -p ~/.ssh/
+          echo "${{ secrets.EC2_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -t rsa ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+
+    
+      - name: Deploy to EC2
+        # env:
+        #   CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
+        #   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ec2-user@${{ secrets.EC2_HOST }} '
+            cd /home/ec2-user/Foruscorp-back &&
+            git checkout main &&
+            git fetch --all &&
+            git reset --hard origin/main &&
+            git pull origin main &&
+            export CONNECTION_STRING="${CONNECTION_STRING}" &&
+            export DB_PASSWORD="${DB_PASSWORD}" &&
+            docker-compose -f docker-compose.yml up -d --build
+          
+
+
+
+      # - name: Test API
+      #   run: |
+      #     sleep 10 
+      #     curl --retry 5 --retry-delay 5 --retry-max-time 30 http://${{ secrets.EC2_HOST }}:5000/api/health || exit 1
+
+      - name: Clean up SSH key
+        if: always()
+        run: |
+          rm -f ~/.ssh/id_ed25519
+
+# name: Build
+
+# on:
+#   push:
+#     branches: [ "master" ]
+#   pull_request:
+#     branches: [ "master" ]
+
+# jobs:
+#   Build:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#     - uses: actions/checkout@v4
   
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v4
-      with:
-        dotnet-version: 8.0.x
+#     - name: Setup .NET
+#       uses: actions/setup-dotnet@v4
+#       with:
+#         dotnet-version: 8.0.x
         
-    - name: Restore dependencies 📂
-      run: dotnet restore ./Foruscorp.sln
+#     - name: Restore dependencies 📂
+#       run: dotnet restore ./Foruscorp.sln
       
-    - name: Build 🧱
-      run: dotnet build ./Foruscorp.sln --no-restore
+#     - name: Build 🧱
+#       run: dotnet build ./Foruscorp.sln --no-restore
 
     # - name: Test 🧪
     # run: dotnet test ./I3Lab.sln --no-build --verbosity normal
