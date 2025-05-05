@@ -22,6 +22,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetTruckById
             var truckDto = truck.ToTruckDto();
 
             return Result.Ok(truckDto); 
+
         }
     }
 }
