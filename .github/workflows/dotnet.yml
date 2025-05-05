@@ -42,8 +42,6 @@ jobs:
             git fetch --all &&
             git reset --hard origin/main &&
             git pull origin main &&
-            export CONNECTION_STRING="${CONNECTION_STRING}" &&
-            export DB_PASSWORD="${DB_PASSWORD}" &&
             docker-compose -f docker-compose.yml up -d --build
           
 
