@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.AttachDriver
 {
-    public class AttachDriverCommandHandler(ITuckContext context) : IRequestHandler<AttachDriverCommand, Result>
+    public class AttachDriverCommandHandler(ITruckContext context) : IRequestHandler<AttachDriverCommand, Result>
     {
 
         public async Task<Result> Handle(AttachDriverCommand command, CancellationToken cancellationToken)

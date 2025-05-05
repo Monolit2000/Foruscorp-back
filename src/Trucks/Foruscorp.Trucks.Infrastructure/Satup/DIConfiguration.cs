@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Foruscorp.Trucks.Aplication.Contruct;
 using MassTransit;
+using Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient;
 
 namespace Foruscorp.Trucks.Infrastructure.Satup
 {
@@ -11,7 +12,7 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
     {
         public static IServiceCollection AddTrucksServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<TuckContext>((sp, options) =>
+            services.AddDbContext<TruckContext>((sp, options) =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
@@ -40,7 +41,9 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
                 busConfiguration.AddConsumers(typeof(IApplication).Assembly);
             });
 
-            services.AddScoped<ITuckContext, TuckContext>();
+            services.AddScoped<ITruckContext, TruckContext>();
+
+            services.AddScoped<ITruckProviderService, SamsaraApiService>();
 
             return services;
         }

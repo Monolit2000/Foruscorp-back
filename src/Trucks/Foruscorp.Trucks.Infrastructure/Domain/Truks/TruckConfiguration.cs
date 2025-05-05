@@ -1,15 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Domain.Trucks;
-using Foruscorp.Trucks.Infrastructure.Migrations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
-namespace Foruscorp.Trucks.Infrastructure.Domain.Truks
+namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
 {
     public class TruckConfiguration : IEntityTypeConfiguration<Truck>
     {
@@ -21,11 +15,39 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Truks
 
             builder.Property(t => t.Ulid)
                 .IsRequired()
-                .HasMaxLength(26); 
+                .HasMaxLength(26);
+
+            builder.Property(t => t.ProviderTruckId);
+
+            builder.Property(t => t.Vin)
+                .IsRequired(false);
+                //.HasMaxLength(17); // Standard VIN length
+
+            builder.Property(t => t.Serial)
+                .IsRequired(false)
+                .HasMaxLength(50);
+
+            builder.Property(t => t.Make)
+                .IsRequired(false)
+                .HasMaxLength(50);
+
+            builder.Property(t => t.Model)
+                .IsRequired(false)
+                .HasMaxLength(50);
+
+            builder.Property(t => t.HarshAccelerationSettingType)
+                .IsRequired(false) 
+                .HasMaxLength(50);
 
             builder.Property(t => t.LicensePlate)
-                .IsRequired()
-                .HasMaxLength(20); 
+                .IsRequired(false)
+                .HasMaxLength(20);
+
+            builder.Property(t => t.CreatedAtTime)
+                .IsRequired();
+
+            builder.Property(t => t.UpdatedAtTime)
+                .IsRequired();
 
             builder.Property(t => t.Status)
                 .IsRequired()
@@ -34,16 +56,19 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Truks
             builder.Property(t => t.DriverId)
                 .IsRequired(false);
 
-            //builder.HasOne(t => t.Driver) 
-            //    .WithOne(d => d.Truck)
-            //    .HasForeignKey<Truck>(t => t.DriverId);
+            // Uncomment if the Driver relationship is needed
+            // builder.HasOne(t => t.Driver)
+            //     .WithOne(d => d.Truck)
+            //     .HasForeignKey<Truck>(t => t.DriverId);
 
             // Indexes
-            builder.HasIndex(t => t.Ulid)
-                .IsUnique(); 
+            builder.HasIndex(t => t.Ulid);
 
-            builder.HasIndex(t => t.LicensePlate)
-                .IsUnique(); 
+            builder.HasIndex(t => t.Vin);
+
+            builder.HasIndex(t => t.Serial);
+
+            builder.HasIndex(t => t.LicensePlate);
 
             builder.HasIndex(t => t.DriverId);
         }

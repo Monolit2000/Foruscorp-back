@@ -10,7 +10,7 @@ using MediatR;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
 {
-    public class CreateDriverCommandHandler(ITuckContext context) : IRequestHandler<CreateDriverCommand, DriverDto>
+    public class CreateDriverCommandHandler(ITruckContext context) : IRequestHandler<CreateDriverCommand, DriverDto>
     {
         public async Task<DriverDto> Handle(CreateDriverCommand request, CancellationToken cancellationToken)
         {

@@ -11,13 +11,20 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using Foruscorp.Trucks.Aplication.Trucks;
 using FluentResults;
+using Foruscorp.Trucks.Aplication.Contruct;
+using Foruscorp.Trucks.Aplication.Contruct.Samasara;
+using System.Linq;
+using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
+using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
+using System;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class TrucksController(
-        IMediator mediator) : ControllerBase
+        IMediator mediator,
+        ITruckProviderService truckProviderService) : ControllerBase
     {
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TruckDto>))]
         [HttpPost("create-truck")]
@@ -25,6 +32,18 @@ namespace Foruscorp.Trucks.API.Controllers
         {
             var result = await mediator.Send(createTruckCommand, cancellationToken);
             return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TruckDto))]
+        [HttpGet("get-truckBy-id")]
+        public async Task<ActionResult> GetTruckById(Guid truckId, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new GetTruckByIdQuery { TruckId = truckId }, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);   
+
+            return Ok(result.Value);
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Result>))]
@@ -37,7 +56,7 @@ namespace Foruscorp.Trucks.API.Controllers
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckDto>))]
         [HttpGet("get-truck-list")]
-        public async Task<ActionResult> GetFuelStationsByRadiusGet( CancellationToken cancellationToken)
+        public async Task<ActionResult> GetTruckList( CancellationToken cancellationToken)
         {
             var result = await mediator.Send(new GetAllTruksQuery(), cancellationToken);
             return Ok(result);
@@ -60,5 +79,55 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleResponse))]
+        [HttpGet("get-fleat")]
+        public async Task<ActionResult> GetTruckFormSamsara(CancellationToken cancellationToken)
+        {
+            var result = await truckProviderService.GetVehiclesAsync(cancellationToken);    
+            return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleStatsResponse))]
+        [HttpGet("fleet-locations")]
+        public async Task<ActionResult> GetFleetLocations([FromQuery] string after = null, CancellationToken cancellationToken = default)
+        {
+            var result = await truckProviderService.GetVehicleLocationsFeedAsync(after);
+            return Ok(result);
+        }
+
+     
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(VehicleStatsResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [HttpGet("vehicle-stats")]
+        public async Task<ActionResult> GetVehicleStats(string vehicleId = null,string after = null, CancellationToken cancellationToken = default)
+        {
+            var result = await truckProviderService.GetVehicleStatsFeedAsync(vehicleId, after);
+
+            result.Data = result.Data
+                        .Where(vs => vs.EngineStates?.Any(es => es.Value == "On") == true)
+                        .ToArray();
+
+            return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("load-trucks")]
+        public async Task<ActionResult> LoadTrucks(CancellationToken cancellationToken = default)
+        {
+            var result = await mediator.Send(new LoadTrucksCommand(), cancellationToken);
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
+        }
+
     }
+
+    public class Request()
+    {
+        public string VehicleId { get; set; }
+        public string After { get; set; }   
+    }
+
 }

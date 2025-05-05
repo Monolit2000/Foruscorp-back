@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.Trucks.Aplication.Contruct
 {
-    public interface ITuckContext : IDisposable
+    public interface ITruckContext : IDisposable
     {
         DbSet<Truck> Trucks { get; set; }
 

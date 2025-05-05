@@ -18,7 +18,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 #pragma warning disable 612, 618
             modelBuilder
                 .HasDefaultSchema("TuckTracking")
-                .HasAnnotation("ProductVersion", "9.0.3")
+                .HasAnnotation("ProductVersion", "9.0.4")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -35,6 +35,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.Property<decimal>("FuelStatus")
                         .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("ProviderTruckId")
+                        .HasColumnType("text");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
