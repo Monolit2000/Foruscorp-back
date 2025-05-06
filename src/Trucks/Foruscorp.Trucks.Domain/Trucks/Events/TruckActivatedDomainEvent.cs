@@ -10,13 +10,11 @@ namespace Foruscorp.Trucks.Domain.Trucks.Events
     public class TruckActivatedEvent : DomainEventBase
     {
         public Guid TruckId { get; }
-        public string Ulid { get; }
         public DateTime ActivatedAt { get; }
 
-        public TruckActivatedEvent(Guid truckId, string ulid)
+        public TruckActivatedEvent(Guid truckId)
         {
             TruckId = truckId;
-            Ulid = ulid;
             ActivatedAt = DateTime.UtcNow;
         }
     }
