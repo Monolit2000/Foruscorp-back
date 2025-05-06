@@ -78,6 +78,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
 
 
 
+
             Console.WriteLine("========================================================" +_apiToken + "========================================================");
 
 
