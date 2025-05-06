@@ -75,14 +75,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
 
         public async Task<VehicleStatsResponse> GetVehicleStatsFeedAsync(List<string> vehicleIds = null, string after = null, CancellationToken cancellationToken = default)
         {
-
-
-
-
-            Console.WriteLine("========================================================" +_apiToken + "========================================================");
-
-
-
             try
             {
                 var types = new[] { "gps", "fuelPercents", "engineStates" };
