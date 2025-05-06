@@ -14,11 +14,9 @@ namespace Foruscorp.Trucks.Domain.Trucks.Events
         public DateTime DeactivatedAt { get; }
 
         public TruckDeactivatedEvent(
-            Guid truckId, 
-            string ulid)
+            Guid truckId)
         {
             TruckId = truckId;
-            Ulid = ulid;
             DeactivatedAt = DateTime.UtcNow;
         }
     }

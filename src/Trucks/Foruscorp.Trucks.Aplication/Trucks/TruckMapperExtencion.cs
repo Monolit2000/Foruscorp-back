@@ -16,7 +16,6 @@ namespace Foruscorp.Trucks.Aplication.Trucks
             {
                 Id = truck.Id,
                 ProviderTruckId = truck.ProviderTruckId,
-                Ulid = truck.Ulid,
                 LicensePlate = truck.LicensePlate,
                 Status = truck.Status.ToString(),
                 DriverId = truck.Driver == null ? Guid.Empty : truck.Driver.Id,
@@ -59,11 +58,10 @@ namespace Foruscorp.Trucks.Aplication.Trucks
             return new TruckDto
             {
                 ProviderTruckId = vehicle.Id,
-                Ulid = "ulid", // Consider generating a proper ULID if needed
                 LicensePlate = vehicle.LicensePlate,
                 Status = string.Empty, // Vehicle may not have Status; set default or adjust as needed
                 DriverId = Guid.Empty, // Vehicle may not have Driver; set default
-                Driver = null, // Vehicle may not have Driver; set default
+                Driver = null,         // Vehicle may not have Driver; set default
                 Name = vehicle.Name,
                 Vin = vehicle.Vin,
                 Serial = vehicle.Serial,

@@ -13,15 +13,10 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
 
             builder.HasKey(t => t.Id);
 
-            builder.Property(t => t.Ulid)
-                .IsRequired()
-                .HasMaxLength(26);
-
             builder.Property(t => t.ProviderTruckId);
 
             builder.Property(t => t.Vin)
                 .IsRequired(false);
-                //.HasMaxLength(17); // Standard VIN length
 
             builder.Property(t => t.Serial)
                 .IsRequired(false)
@@ -62,8 +57,6 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
             //     .HasForeignKey<Truck>(t => t.DriverId);
 
             // Indexes
-            builder.HasIndex(t => t.Ulid);
-
             builder.HasIndex(t => t.Vin);
 
             builder.HasIndex(t => t.Serial);

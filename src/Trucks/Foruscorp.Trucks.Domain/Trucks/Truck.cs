@@ -7,8 +7,6 @@ namespace Foruscorp.Trucks.Domain.Trucks
     public class Truck : Entity, IAggregateRoot
     {
         public Guid Id { get; private set; }
-        public string Ulid { get; private set; }
-
         public string ProviderTruckId { get; private set; }
         public string Name { get; set; }
         public string Vin { get; private set; }
@@ -20,7 +18,6 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public string Year { get; set; }
         public DateTime CreatedAtTime { get; private set; }
         public DateTime UpdatedAtTime { get; private set; }
-
         public TruckStatus Status { get; private set; }
         public Guid? DriverId { get; private set; }
         public Driver Driver { get; private set; }
@@ -57,7 +54,6 @@ namespace Foruscorp.Trucks.Domain.Trucks
             //    throw new ArgumentException("License plate cannot be empty.", nameof(licensePlate));
 
             Id = Guid.NewGuid();
-            Ulid = ulid;
             Name = name;
             ProviderTruckId = providerTruckId;
             Vin = vin;
@@ -166,7 +162,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
             Status = TruckStatus.Active;
 
-            AddDomainEvent(new TruckActivatedEvent(Id, Ulid));
+            AddDomainEvent(new TruckActivatedEvent(Id));
         }
 
         public void SetInactiveStatus()
@@ -176,7 +172,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
             Status = TruckStatus.Active;
 
-            AddDomainEvent(new TruckDeactivatedEvent(Id, Ulid));    
+            AddDomainEvent(new TruckDeactivatedEvent(Id));    
         }
 
     }
