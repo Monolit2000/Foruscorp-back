@@ -57,7 +57,7 @@ jobs:
             export SAMSARA_API_TOKEN='$SAMSARA_API_TOKEN' &&
             echo 'SAMSARA_API_TOKEN is: $SAMSARA_API_TOKEN' &&
             SAMSARA_API_TOKEN='$SAMSARA_API_TOKEN' sudo docker-compose down &&
-            SAMSARA_API_TOKEN='$SAMSARA_API_TOKEN' sudo docker-compose up -d --build "
+            SAMSARA_API_TOKEN='$SAMSARA_API_TOKEN' sudo docker-compose up -d --build '
           
 
 
