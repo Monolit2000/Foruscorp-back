@@ -60,11 +60,10 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             using var scope = scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
 
-            var asdsad = activeTruckManager.GetAllTrucks();
-
             var trackers = await context.TruckTrackers
                 .AsNoTracking()
                 .Where(t => activeTruckManager.GetAllTrucks().Contains(t.TruckId.ToString()))
+                .Select(t => t.ProviderTruckId)
                 .ToListAsync();
 
             if (!trackers.Any())
@@ -74,12 +73,11 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 //trackers.Select(tt => tt.ProviderTruckId)
                 //.ToList()
 
-            responce.Data.Where(vs => trackers.Select(t => t.ProviderTruckId).Contains(vs.Id) ||
-            vs.EngineStates?.Any(es => es.Value == "On") == true)
+            responce.Data
+                .Where(vs => trackers.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true)
                 .ToList();  
 
             return responce.Data.ToList();    
-
         }
 
         //private async Task UpdateTruckFuel()

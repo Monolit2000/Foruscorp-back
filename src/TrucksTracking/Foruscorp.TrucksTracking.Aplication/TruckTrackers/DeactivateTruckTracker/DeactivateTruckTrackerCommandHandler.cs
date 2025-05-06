@@ -5,8 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker;
 
-
-
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker
 {
     public class DeactivateTruckTrackerCommandHandler(
@@ -31,5 +29,4 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTrack
             return Result.Ok(); 
         }
     }   
-    
 }
