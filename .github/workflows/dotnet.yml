@@ -18,16 +18,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
   
-      # - name: Setup .NET
-      #   uses: actions/setup-dotnet@v4
-      #   with:
-      #      otnet-version: 8.0.x
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          otnet-version: 8.0.x
         
-      # - name: Restore dependencies 📂
-      #   run: dotnet restore ./Foruscorp.sln
+      - name: Restore dependencies 📂
+        run: dotnet restore ./Foruscorp.sln
       
-      # - name: Build 🧱
-      #   run: dotnet build ./Foruscorp.sln --no-restore
+      - name: Build 🧱
+        run: dotnet build ./Foruscorp.sln --no-restore
 
 
      
@@ -58,6 +58,7 @@ jobs:
             echo 'SAMSARA_API_TOKEN written to .env' &&
             cat .env &&
             sudo docker-compose down &&
+            sudo docker system prune -a -f &&
             sudo docker-compose up -d --build &&
             echo 'Checking running containers' &&
             sudo docker ps '
