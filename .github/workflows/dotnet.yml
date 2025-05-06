@@ -39,10 +39,10 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ec2-user@${{ secrets.EC2_HOST }} '
             cd /home/ec2-user/Foruscorp-back &&
-            git checkout main &&
+            git checkout master &&
             git fetch --all &&
-            git reset --hard origin/main &&
-            git pull origin main &&
+            git reset --hard origin/master &&
+            git pull origin master &&
             docker-compose -f docker-compose.yml up -d --build '
           
 
