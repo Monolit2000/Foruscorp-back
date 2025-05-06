@@ -17,6 +17,18 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+  
+      # - name: Setup .NET
+      #   uses: actions/setup-dotnet@v4
+      #   with:
+      #      otnet-version: 8.0.x
+        
+      # - name: Restore dependencies 📂
+      #   run: dotnet restore ./Foruscorp.sln
+      
+      # - name: Build 🧱
+      #   run: dotnet build ./Foruscorp.sln --no-restore
+
 
      
       - name: Configure SSH
@@ -33,9 +45,8 @@ jobs:
 
     
       - name: Deploy to EC2
-        # env:
-        #   CONNECTION_STRING: ${{ secrets.CONNECTION_STRING }}
-        #   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+        env:
+          SAMSARA_API_TOKEN: ${{ secrets.SAMSARA_API_TOKEN }}
         run: |
           ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_ed25519 ec2-user@${{ secrets.EC2_HOST }} '
             cd /home/ec2-user/Foruscorp-back &&
