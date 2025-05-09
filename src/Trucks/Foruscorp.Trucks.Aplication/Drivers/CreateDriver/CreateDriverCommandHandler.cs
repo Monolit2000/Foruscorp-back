@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection.Metadata.Ecma335;
-using System.Text;
-using System.Threading.Tasks;
-using Foruscorp.Trucks.Aplication.Contruct;
+﻿using MediatR;
 using Foruscorp.Trucks.Domain.Drivers;
-using MediatR;
+using Foruscorp.Trucks.Aplication.Contruct;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
 {
@@ -14,18 +8,13 @@ namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
     {
         public async Task<DriverDto> Handle(CreateDriverCommand request, CancellationToken cancellationToken)
         {
-            var driver = Driver.CreateNew(request.Name);
+            var driver = Driver.CreateNew(request.Name, request.Phone, request.Email, request.TelegramLink);
 
             await context.Drivers.AddAsync(driver, cancellationToken);
 
             await context.SaveChangesAsync(cancellationToken);
 
-            return new DriverDto() 
-            {
-                Id = driver.Id,
-                FullName = driver.FullName
-            };
-
+            return driver.ToDriverDto();
         }
     }   
 }

@@ -25,61 +25,46 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public DateTime HireDate { get; private set; }
         public int ExperienceYears { get; private set; }
         public decimal Bonus { get; private set; } 
-
-
         public decimal TotalBonus => Bonuses.Sum(b => b.Amount);
 
         private Driver() { }
 
-        private Driver(string fullName)
+        private Driver(
+            string fullName,
+            string phoneNumber = null,
+            string email = null,
+            string telegramLink = null)
         {
             Id = Guid.NewGuid();
             FullName = fullName;
+
+            Contact = Contact.Create(
+                phoneNumber,
+                email,
+                telegramLink); 
         }
 
 
-        public static Driver CreateNew(string fullName)
+        public static Driver CreateNew(
+            string fullName, 
+            string phoneNumber = null, 
+            string email = null,
+            string telegramLink = null)
         {
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
-            return new Driver(fullName);
+            return new Driver(fullName, phoneNumber, email, telegramLink);
         }
 
-        //private Driver(
-        //    string fullName, 
-        //    string licenseNumber,
-        //    DateTime hireDate, 
-        //    int experienceYears)
-        //{
-        //    if (string.IsNullOrWhiteSpace(fullName))
-        //        throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
-        //    if (string.IsNullOrWhiteSpace(licenseNumber))
-        //        throw new ArgumentException("License number cannot be empty.", nameof(licenseNumber));
-        //    if (experienceYears < 0)
-        //        throw new ArgumentException("Experience years cannot be negative.", nameof(experienceYears));
-
-        //    Id = Guid.NewGuid();
-        //    FullName = fullName;
-        //    LicenseNumber = licenseNumber;
-        //    Status = DriverStatus.Active;
-        //    HireDate = hireDate;
-        //    ExperienceYears = experienceYears;
-        //    Bonus = 0;
-        //    TruckId = null;
-        //}
-
-        //public static Driver CreateNew(
-        //    string fullName,
-        //    string licenseNumber, 
-        //    DateTime hireDate, 
-        //    int experienceYears) 
-        //    => new Driver(
-        //        fullName, 
-        //        licenseNumber,
-        //        hireDate, 
-        //        experienceYears);
 
 
+        public void UpdateContact(
+            string phoneNumber = null,
+            string email = null,
+            string telegramLink = null)
+        {
+            Contact = Contact.Create(phoneNumber, email, telegramLink);
+        }   
 
         public RouteOffer ProposeRouteOffer(string description)
         {

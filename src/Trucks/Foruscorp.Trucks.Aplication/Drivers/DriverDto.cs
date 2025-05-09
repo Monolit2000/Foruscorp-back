@@ -10,6 +10,9 @@ namespace Foruscorp.Trucks.Aplication.Drivers
     {
         public Guid Id { get; set; }
         public Guid TruckId { get; set; }   
-        public string FullName { get; set; } 
+        public string FullName { get; set; }
+        public string Phone { get; set; }
+        public string Email { get; set; }
+        public string TelegramLink { get; set; }
     }
 }

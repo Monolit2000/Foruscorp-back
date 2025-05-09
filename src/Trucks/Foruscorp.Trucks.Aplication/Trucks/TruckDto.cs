@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.Trucks.Aplication.Drivers;
 using Foruscorp.Trucks.Domain.Drivers;
 
 namespace Foruscorp.Trucks.Aplication.Trucks

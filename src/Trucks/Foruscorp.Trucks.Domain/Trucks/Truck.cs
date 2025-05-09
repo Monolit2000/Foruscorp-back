@@ -139,7 +139,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
             if (Driver != null)
                 throw new InvalidOperationException("Truck already has an assigned driver.");
 
-            //DriverId = driver.Id;
+            DriverId = driver.Id;
             Driver = driver;
 
             AddDomainEvent(new TruckDriverAttachedDomainEvent(Id, Driver.Id));

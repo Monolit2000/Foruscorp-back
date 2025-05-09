@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Domain.Trucks;
+using System.Runtime.CompilerServices;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 {
@@ -44,11 +45,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             {
                 b.Property(c => c.Phone)
                     .HasColumnName("PhoneNumber")
-                    .IsRequired()
-                    .HasMaxLength(15);
+                    .IsRequired(false)
+                    .HasMaxLength(50);
 
                 b.Property(c => c.Email)
-                    .IsRequired()
+                    .IsRequired(false)
+                    .HasMaxLength(100);
+
+
+                b.Property(c => c.TelegramLink)
+                    .IsRequired(false)
                     .HasMaxLength(100);
             });
 
@@ -70,7 +76,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 
             builder.HasOne(d => d.Truck)
                 .WithOne(t => t.Driver)
-                .HasForeignKey<Driver>(d => d.TruckId)
+                .HasForeignKey<Driver>(/*d => d.TruckId*/)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Indexes
