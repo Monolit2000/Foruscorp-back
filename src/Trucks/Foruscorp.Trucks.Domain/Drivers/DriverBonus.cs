@@ -9,15 +9,17 @@ namespace Foruscorp.Trucks.Domain.Drivers
 {
     public class DriverBonus : Entity
     {
+        public Guid UserId { get; set; }    
+
         public Guid Id { get; private set; }
         public Guid DriverId { get; private set; }
-        public decimal Amount { get; private set; }
+        public int Amount { get; private set; }
         public DateTime AwardedAt { get; private set; }
         public string Reason { get; private set; }
 
         private DriverBonus() { }
 
-        private DriverBonus(Guid driverId, decimal amount, string reason)
+        private DriverBonus(Guid driverId, int amount, string reason)
         {
             if (amount <= 0)
                 throw new ArgumentException("Bonus amount must be positive.", nameof(amount));
@@ -32,8 +34,8 @@ namespace Foruscorp.Trucks.Domain.Drivers
         }
 
         public static DriverBonus CreateNew(
-            Guid driverId, 
-            decimal amount,
+            Guid driverId,
+            int amount,
             string reason)
         {
             return new DriverBonus(
@@ -43,7 +45,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         }   
 
 
-        internal void UpdateAmount(decimal newAmount)
+        internal void UpdateAmount(int newAmount)
         {
             if (newAmount <= 0)
                 throw new ArgumentException("Bonus amount must be positive.", nameof(newAmount));

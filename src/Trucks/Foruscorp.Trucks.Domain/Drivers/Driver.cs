@@ -14,7 +14,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public Truck Truck { get; private set; }
         public Contact Contact { get; private set; } 
 
-        public readonly List<DriverBonus> Bonuses = [];
+        public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
 
@@ -25,7 +25,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public DateTime HireDate { get; private set; }
         public int ExperienceYears { get; private set; }
         public decimal Bonus { get; private set; } 
-        public decimal TotalBonus => Bonuses.Sum(b => b.Amount);
+        public int TotalBonus => Bonuses.Sum(b => b.Amount);
 
         private Driver() { }
 
@@ -98,7 +98,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         }
 
  
-        public void IncreaseBonus(decimal amount, string reason)
+        public void IncreaseBonus(int amount, string reason)
         {
             var bonus = DriverBonus.CreateNew(this.Id, amount, reason);
             Bonuses.Add(bonus);
@@ -106,7 +106,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
             AddDomainEvent(new DriverBonusAddedDomainEvent(this.Id, amount, reason));   
         }
 
-        public void DecreaseBonus(decimal amount, string reason)
+        public void DecreaseBonus(int amount, string reason)
         {
             if (TotalBonus - amount < 0)
                 throw new InvalidOperationException("Total bonus cannot be negative.");
