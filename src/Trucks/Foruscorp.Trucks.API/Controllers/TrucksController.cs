@@ -38,9 +38,6 @@ namespace Foruscorp.Trucks.API.Controllers
         [HttpGet("get-truckBy-id")]
         public async Task<ActionResult> GetTruckById(Guid truckId, CancellationToken cancellationToken)
         {
-
-         
-
             var result = await mediator.Send(new GetTruckByIdQuery { TruckId = truckId }, cancellationToken);
 
             if (result.IsFailed)
@@ -61,13 +58,11 @@ namespace Foruscorp.Trucks.API.Controllers
         [HttpGet("get-truck-list")]
         public async Task<ActionResult> GetTruckList( CancellationToken cancellationToken)
         {
-
             await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken);
 
             var result = await mediator.Send(new GetAllTruksQuery(), cancellationToken);
             return Ok(result);
         }
-
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
         [HttpPost("create-driver")]

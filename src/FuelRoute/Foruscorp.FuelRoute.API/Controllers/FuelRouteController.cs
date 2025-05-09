@@ -25,7 +25,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
 
         [HttpPost("canselation-create-fuel-route-canselation")]
-        public async Task<ActionResult> GetFuelStationsByRadiusCancellation([FromBody] int testvalue, CancellationToken cancellationToken)
+        public async Task<ActionResult> GetFuelStationsByRadiusCancellation(CancellationToken cancellationToken)
         {
             Console.WriteLine("Start____________________Start");
             await Task.Delay(5000, cancellationToken);
