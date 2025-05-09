@@ -5,6 +5,7 @@ using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
+using Foruscorp.FuelStations.Infrastructure.Processing;
 
 namespace Foruscorp.FuelStations.Infrastructure
 {
@@ -20,6 +21,8 @@ namespace Foruscorp.FuelStations.Infrastructure
             services.AddScoped<IFuelStationsService, FuelStationsService>();
 
             services.AddScoped<IFuelStationContext, FuelStationContext>();
+
+            services.AddHostedService<FuelStationProcessor>();
 
             services.AddMemoryCache();
 
