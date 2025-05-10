@@ -29,7 +29,7 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                     destination,
                     date = "2025-04-02",
                     distanceFilterId = radius.ToString(),
-                    locationFilterId = new List<string>() { "AB", "AL", "AR", "AZ", "BC", "CA", "CO", "CT", "FL", "GA", "IA", "ID", "IL    ", "IL", "IN", "KS", "KY", "LA", "MA", "MB", "MD", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "ON", "OR", "PA", "QC", "RI", "SC", "SD", "SK", "TN", "TX", "UT", "VA", "WA", "WI", "WV", "WY" },
+                    locationFilterId = new List<string>() { "AB", "AL", "AR", "AZ", "BC", "CA", "CO", "CT", "FL", "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MB", "MD", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "ON", "OR", "PA", "QC", "RI", "SC", "SD", "SK", "TN", "TX", "UT", "VA", "WA", "WI", "WV", "WY" },
                     truckStopChainFilterId = new List<string>() { "Pilot", "Loves", "Road Rangers", "TA Petro", "Palmetto", "Compass", "Sapp Bros" }
                 };
 

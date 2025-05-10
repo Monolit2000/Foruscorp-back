@@ -278,7 +278,7 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 Console.WriteLine("Waiting for autocomplete suggestions...");
 
                 await page.PressAsync(originInput, "ArrowDown");
-                await Task.Delay(500); 
+                await Task.Delay(500);
                 await page.PressAsync(originInput, "Enter");
 
 
