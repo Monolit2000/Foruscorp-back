@@ -15,7 +15,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         IFuelStationContext fuelStationContext)
         : IRequestHandler<GetFuelStationsByRoadsQuery, Result<List<FuelStationDto>>>
     {
-        private const double SearchRadiusKm = 15.0;
+        private const double SearchRadiusKm = 20.0;
         private const double LatLonBuffer = 0.15;
 
         public async Task<Result<List<FuelStationDto>>> Handle(GetFuelStationsByRoadsQuery request, CancellationToken cancellationToken)
