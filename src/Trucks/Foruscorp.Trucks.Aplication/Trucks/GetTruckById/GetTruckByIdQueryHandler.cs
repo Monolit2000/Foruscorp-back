@@ -13,6 +13,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetTruckById
         {
             var truck = await truckContext.Trucks
                 .Include(t => t.Driver)
+                .ThenInclude(d => d.Bonuses)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(t => t.Id == request.TruckId);
 

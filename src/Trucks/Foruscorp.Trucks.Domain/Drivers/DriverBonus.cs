@@ -21,8 +21,6 @@ namespace Foruscorp.Trucks.Domain.Drivers
 
         private DriverBonus(Guid driverId, int amount, string reason)
         {
-            if (amount <= 0)
-                throw new ArgumentException("Bonus amount must be positive.", nameof(amount));
             if (string.IsNullOrWhiteSpace(reason))
                 throw new ArgumentException("Reason cannot be empty.", nameof(reason));
 

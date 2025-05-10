@@ -98,15 +98,17 @@ namespace Foruscorp.Trucks.Domain.Drivers
         }
 
  
-        public void IncreaseBonus(int amount, string reason)
+        public DriverBonus IncreaseBonus(int amount, string reason)
         {
             var bonus = DriverBonus.CreateNew(this.Id, amount, reason);
             Bonuses.Add(bonus);
 
-            AddDomainEvent(new DriverBonusAddedDomainEvent(this.Id, amount, reason));   
+            AddDomainEvent(new DriverBonusAddedDomainEvent(this.Id, amount, reason));
+
+            return bonus;
         }
 
-        public void DecreaseBonus(int amount, string reason)
+        public DriverBonus DecreaseBonus(int amount, string reason)
         {
             if (TotalBonus - amount < 0)
                 throw new InvalidOperationException("Total bonus cannot be negative.");
@@ -115,6 +117,8 @@ namespace Foruscorp.Trucks.Domain.Drivers
             Bonuses.Add(negativeBonus);
 
             AddDomainEvent(new DriverBonusDecreasedDomainEvent(this.Id, -amount, reason));  
+
+            return negativeBonus;   
         }
 
         public void Deactivate()

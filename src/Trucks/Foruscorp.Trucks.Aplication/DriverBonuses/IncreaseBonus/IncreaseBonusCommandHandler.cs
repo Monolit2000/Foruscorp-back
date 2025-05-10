@@ -11,13 +11,14 @@ namespace Foruscorp.Trucks.Aplication.DriverBonuses.IncreaseBonus
         public async Task<Result> Handle(IncreaseBonusCommand request, CancellationToken cancellationToken)
         {
             var driver = truckContext.Drivers
-                .Include(d => d.Bonuses)
                 .FirstOrDefault(d => d.Id == request.DriverId);
 
             if (driver == null)
                 return Result.Fail("Driver not found");
 
-            driver.IncreaseBonus(request.Bonus, request.Reason);
+            var bonus = driver.IncreaseBonus(request.Bonus, request.Reason);
+
+            await truckContext.DriverBonuses.AddAsync(bonus);
 
             await truckContext.SaveChangesAsync(cancellationToken);
 
