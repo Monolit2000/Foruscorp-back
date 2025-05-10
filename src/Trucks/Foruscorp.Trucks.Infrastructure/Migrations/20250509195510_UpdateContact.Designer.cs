@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TruckContext))]
-    partial class TuckContextModelSnapshot : ModelSnapshot
+    [Migration("20250509195510_UpdateContact")]
+    partial class UpdateContact
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -97,8 +100,8 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("BonusId");
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<DateTime>("AwardedAt")
                         .HasColumnType("timestamp with time zone");
@@ -110,9 +113,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("character varying(200)");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
 
                     b.HasKey("Id");
 
@@ -236,12 +236,14 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                                 .HasColumnType("uuid");
 
                             b1.Property<string>("Email")
+                                .IsRequired()
                                 .HasMaxLength(100)
                                 .HasColumnType("character varying(100)");
 
                             b1.Property<string>("Phone")
-                                .HasMaxLength(50)
-                                .HasColumnType("character varying(50)")
+                                .IsRequired()
+                                .HasMaxLength(15)
+                                .HasColumnType("character varying(15)")
                                 .HasColumnName("PhoneNumber");
 
                             b1.Property<string>("TelegramLink")

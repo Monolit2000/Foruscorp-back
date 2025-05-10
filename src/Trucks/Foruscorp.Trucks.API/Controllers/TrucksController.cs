@@ -17,6 +17,10 @@ using System.Linq;
 using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
 using System;
+using Foruscorp.Trucks.Aplication.Drivers;
+using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
+using Foruscorp.Trucks.Aplication.DriverBonuses.DecreaseBonus;
+using Foruscorp.Trucks.Aplication.DriverBonuses.IncreaseBonus;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
@@ -70,6 +74,37 @@ namespace Foruscorp.Trucks.API.Controllers
             var result = await mediator.Send(createDriverCommand, cancellationToken);
             return Ok(result);
         }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("update-driver-contact")]
+        public async Task<ActionResult> CreateDriver(UpdateDriverContactCommand updateDriverContactCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(updateDriverContactCommand, cancellationToken);
+            return Ok(result);
+        }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("increase-driver-bonus")]
+        public async Task<ActionResult> IncreaseBonus(IncreaseBonusCommand increaseBonusCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(increaseBonusCommand, cancellationToken);
+            return Ok(result);
+        }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("decrease-driver-bonus")]
+        public async Task<ActionResult> DecreaseBonus(DecreaseBonusCommand decreaseBonusCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(decreaseBonusCommand, cancellationToken);
+            return Ok(result);
+        }
+
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<DriverDto>))]
         [HttpGet("get-all-drivers")]

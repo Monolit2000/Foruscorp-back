@@ -1,18 +1,16 @@
 ﻿using MediatR;
+using FluentResults;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
-using Foruscorp.FuelRoutes.Domain.FuelRoutes;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
-using System;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
-using FluentResults;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
@@ -22,16 +20,6 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         ISender mediator,
         ITruckerPathApi truckerPathApi) : ControllerBase
     {
-
-
-        [HttpPost("canselation-create-fuel-route-canselation")]
-        public async Task<ActionResult> GetFuelStationsByRadiusCancellation([FromBody] int testvalue, CancellationToken cancellationToken)
-        {
-            Console.WriteLine("Start____________________Start");
-            await Task.Delay(5000, cancellationToken);
-            Console.WriteLine("End____________________End");
-            return Ok();
-        }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FuelRouteDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]

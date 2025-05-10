@@ -1,18 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using MediatR;
 using FluentResults;
-using Foruscorp.Trucks.Aplication.Contruct;
-using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Foruscorp.Trucks.Aplication.Contruct;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.AttachDriver
 {
     public class AttachDriverCommandHandler(ITruckContext context) : IRequestHandler<AttachDriverCommand, Result>
     {
-
         public async Task<Result> Handle(AttachDriverCommand command, CancellationToken cancellationToken)
         {
             var truck = await context.Trucks.FirstOrDefaultAsync(t => t.Id == command.TruckId, cancellationToken);

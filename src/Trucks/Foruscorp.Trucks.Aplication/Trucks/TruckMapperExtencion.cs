@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Foruscorp.Trucks.Aplication.Contruct.Samasara;
+using Foruscorp.Trucks.Aplication.Drivers;
 using Foruscorp.Trucks.Domain.Trucks;
 
 namespace Foruscorp.Trucks.Aplication.Trucks
@@ -19,10 +20,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks
                 LicensePlate = truck.LicensePlate,
                 Status = truck.Status.ToString(),
                 DriverId = truck.Driver == null ? Guid.Empty : truck.Driver.Id,
-                Driver = truck.Driver == null ? null : new DriverDto(
-                    truck.Driver.Id,
-                    truck.Driver.FullName,
-                    truck.Driver.Status.ToString()),
+                Driver = truck.Driver == null ? null : truck.Driver.ToDriverDto(),
                 Name = truck.Name,
                 Vin = truck.Vin,
                 Serial = truck.Serial,

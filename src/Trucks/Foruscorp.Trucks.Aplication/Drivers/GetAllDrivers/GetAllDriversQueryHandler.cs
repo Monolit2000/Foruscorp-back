@@ -7,7 +7,6 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
 {
     public class GetAllDriversQueryHandler(ITruckContext context) : IRequestHandler<GetAllDriversQuery, List<DriverDto>>
     {
-
         public async Task<List<DriverDto>> Handle(GetAllDriversQuery request, CancellationToken cancellationToken)
         {
             var drivers = await context.Drivers
@@ -18,15 +17,11 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
             if (!drivers.Any())
                 return new List<DriverDto>();
 
-            var driverDtos = drivers.Select(d => new DriverDto
-            {
-                Id = d.Id,
-                FullName = d.FullName,
-                TruckId = d.TruckId ?? Guid.Empty 
-            }).ToList();
+            var driverDtos = drivers
+                .Select(d => d.ToDriverDto())
+                .ToList();
 
             return driverDtos;
         }
-
     }
 }

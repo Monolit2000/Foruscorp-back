@@ -14,7 +14,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public Truck Truck { get; private set; }
         public Contact Contact { get; private set; } 
 
-        public readonly List<DriverBonus> Bonuses = [];
+        public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
 
@@ -25,61 +25,46 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public DateTime HireDate { get; private set; }
         public int ExperienceYears { get; private set; }
         public decimal Bonus { get; private set; } 
-
-
-        public decimal TotalBonus => Bonuses.Sum(b => b.Amount);
+        public int TotalBonus => Bonuses.Sum(b => b.Amount);
 
         private Driver() { }
 
-        private Driver(string fullName)
+        private Driver(
+            string fullName,
+            string phoneNumber = null,
+            string email = null,
+            string telegramLink = null)
         {
             Id = Guid.NewGuid();
             FullName = fullName;
+
+            Contact = Contact.Create(
+                phoneNumber,
+                email,
+                telegramLink); 
         }
 
 
-        public static Driver CreateNew(string fullName)
+        public static Driver CreateNew(
+            string fullName, 
+            string phoneNumber = null, 
+            string email = null,
+            string telegramLink = null)
         {
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
-            return new Driver(fullName);
+            return new Driver(fullName, phoneNumber, email, telegramLink);
         }
 
-        //private Driver(
-        //    string fullName, 
-        //    string licenseNumber,
-        //    DateTime hireDate, 
-        //    int experienceYears)
-        //{
-        //    if (string.IsNullOrWhiteSpace(fullName))
-        //        throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
-        //    if (string.IsNullOrWhiteSpace(licenseNumber))
-        //        throw new ArgumentException("License number cannot be empty.", nameof(licenseNumber));
-        //    if (experienceYears < 0)
-        //        throw new ArgumentException("Experience years cannot be negative.", nameof(experienceYears));
-
-        //    Id = Guid.NewGuid();
-        //    FullName = fullName;
-        //    LicenseNumber = licenseNumber;
-        //    Status = DriverStatus.Active;
-        //    HireDate = hireDate;
-        //    ExperienceYears = experienceYears;
-        //    Bonus = 0;
-        //    TruckId = null;
-        //}
-
-        //public static Driver CreateNew(
-        //    string fullName,
-        //    string licenseNumber, 
-        //    DateTime hireDate, 
-        //    int experienceYears) 
-        //    => new Driver(
-        //        fullName, 
-        //        licenseNumber,
-        //        hireDate, 
-        //        experienceYears);
 
 
+        public void UpdateContact(
+            string phoneNumber = null,
+            string email = null,
+            string telegramLink = null)
+        {
+            Contact = Contact.Create(phoneNumber, email, telegramLink);
+        }   
 
         public RouteOffer ProposeRouteOffer(string description)
         {
@@ -113,15 +98,17 @@ namespace Foruscorp.Trucks.Domain.Drivers
         }
 
  
-        public void IncreaseBonus(decimal amount, string reason)
+        public DriverBonus IncreaseBonus(int amount, string reason)
         {
             var bonus = DriverBonus.CreateNew(this.Id, amount, reason);
             Bonuses.Add(bonus);
 
-            AddDomainEvent(new DriverBonusAddedDomainEvent(this.Id, amount, reason));   
+            AddDomainEvent(new DriverBonusAddedDomainEvent(this.Id, amount, reason));
+
+            return bonus;
         }
 
-        public void DecreaseBonus(decimal amount, string reason)
+        public DriverBonus DecreaseBonus(int amount, string reason)
         {
             if (TotalBonus - amount < 0)
                 throw new InvalidOperationException("Total bonus cannot be negative.");
@@ -130,6 +117,8 @@ namespace Foruscorp.Trucks.Domain.Drivers
             Bonuses.Add(negativeBonus);
 
             AddDomainEvent(new DriverBonusDecreasedDomainEvent(this.Id, -amount, reason));  
+
+            return negativeBonus;   
         }
 
         public void Deactivate()

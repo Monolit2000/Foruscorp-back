@@ -53,7 +53,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
             }
             finally
             {
-                // Оставляем открытым для отладки, в продакшене можно закрыть
                 await page.CloseAsync();
                 await context.CloseAsync();
             }
@@ -245,7 +244,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
 
 
-                //await Task.Delay(500);
                 Console.WriteLine("Typing username...");
                 await page.TypeAsync("input[name='username']", "Truckag", new PageTypeOptions { Delay = 100 });
 
@@ -258,7 +256,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 Console.WriteLine("Clicking Sign In button...");
                 await page.ClickAsync("button[type='submit']");
 
-                // Ждем загрузки страницы после логина
                 Console.WriteLine("Waiting for login response...");
                 await page.WaitForLoadStateAsync(LoadState.Load, new PageWaitForLoadStateOptions { Timeout = 30000 });
 
@@ -271,25 +268,19 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
                 Console.WriteLine("Both elements are visible!");
 
-                //await Task.Delay(5000);
 
-                // Работа с полем Origin (с автодополнением)
                 Console.WriteLine("Filling Origin field...");
                 var originInput = "input[placeholder='Origin']";
                 await page.TypeAsync(originInput, "Los Angeles, Калифорния, США", new PageTypeOptions { Delay = 100 });
 
                 await Task.Delay(1000);
 
-                // Ждем появления выпадающего списка (pac-item - стандартный класс для Google Places)
                 Console.WriteLine("Waiting for autocomplete suggestions...");
-                //await page.WaitForSelectorAsync(".pac-item", new PageWaitForSelectorOptions { Timeout = 5000 });
 
-                // Выбираем первый элемент из списка (нажимаем ArrowDown и Enter)
                 await page.PressAsync(originInput, "ArrowDown");
-                await Task.Delay(500); // Небольшая задержка для стабильности
+                await Task.Delay(500); 
                 await page.PressAsync(originInput, "Enter");
 
-                // Работа с полем Destination (с автодополнением)
 
 
                 Console.WriteLine("Filling Destination field...");
@@ -298,11 +289,8 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
                 await Task.Delay(1000);
 
-                // Ждем появления выпадающего списка
                 Console.WriteLine("Waiting for autocomplete suggestions...");
-                //await page.WaitForSelectorAsync(".pac-item", new PageWaitForSelectorOptions { Timeout = 5000 });
 
-                // Выбираем первый элемент из списка
                 await page.PressAsync(destinationInput, "ArrowDown");
                 await Task.Delay(500);
                 await page.PressAsync(destinationInput, "Enter");
@@ -320,14 +308,11 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                     }
                 };
 
-                // Нажимаем кнопку "Show route"
                 Console.WriteLine("Clicking Show route button...");
                 await page.ClickAsync("button.chakra-button.css-shzi2m");
 
                 await Task.Delay(5000);
 
-                // Ждем загрузки маршрута (можно добавить ожидание какого-то элемента, связанного с маршрутом)
-                //await page.WaitForLoadStateAsync(LoadState.Load, new PageWaitForLoadStateOptions { Timeout = 30000 });
                 Console.WriteLine("Route displayed. New page title: " + await page.TitleAsync());
 
                 RemoveBearer(bearerToken);
@@ -343,7 +328,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
             }
             finally
             {
-                // Оставляем браузер открытым для проверки
                 await page.CloseAsync();
                 await context.CloseAsync();
             }
