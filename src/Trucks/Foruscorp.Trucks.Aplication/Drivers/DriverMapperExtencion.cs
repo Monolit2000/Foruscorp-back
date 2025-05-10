@@ -20,6 +20,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers
                 FullName = driver.FullName,
                 Phone = driver.Contact?.Phone,
                 Email = driver.Contact?.Email,
+                Bonus = driver.TotalBonus,
                 TelegramLink = driver.Contact?.TelegramLink
             };
         }

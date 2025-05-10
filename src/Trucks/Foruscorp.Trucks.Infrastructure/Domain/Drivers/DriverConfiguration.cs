@@ -76,7 +76,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 
             builder.HasOne(d => d.Truck)
                 .WithOne(t => t.Driver)
-                .HasForeignKey<Driver>(/*d => d.TruckId*/)
+                .HasForeignKey<Driver>(d => d.TruckId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Indexes
@@ -95,6 +95,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 
             builder.HasKey(b => b.Id);
 
+            builder.Property(b => b.UserId);
+
             builder.Property(b => b.Id)
                 .HasColumnName("BonusId");
 
@@ -102,8 +104,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
                 .IsRequired();
 
             builder.Property(b => b.Amount)
-                .IsRequired()
-                .HasColumnType("decimal(18,2)");
+                .IsRequired();
 
             builder.Property(b => b.AwardedAt)
                 .IsRequired();

@@ -244,7 +244,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
 
 
-                //await Task.Delay(500);
                 Console.WriteLine("Typing username...");
                 await page.TypeAsync("input[name='username']", "Truckag", new PageTypeOptions { Delay = 100 });
 
@@ -269,7 +268,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
                 Console.WriteLine("Both elements are visible!");
 
-                //await Task.Delay(5000);
 
                 Console.WriteLine("Filling Origin field...");
                 var originInput = "input[placeholder='Origin']";
@@ -278,7 +276,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 await Task.Delay(1000);
 
                 Console.WriteLine("Waiting for autocomplete suggestions...");
-                //await page.WaitForSelectorAsync(".pac-item", new PageWaitForSelectorOptions { Timeout = 5000 });
 
                 await page.PressAsync(originInput, "ArrowDown");
                 await Task.Delay(500);
@@ -293,7 +290,6 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 await Task.Delay(1000);
 
                 Console.WriteLine("Waiting for autocomplete suggestions...");
-                //await page.WaitForSelectorAsync(".pac-item", new PageWaitForSelectorOptions { Timeout = 5000 });
 
                 await page.PressAsync(destinationInput, "ArrowDown");
                 await Task.Delay(500);

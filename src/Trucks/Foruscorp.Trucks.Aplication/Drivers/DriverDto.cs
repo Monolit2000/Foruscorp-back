@@ -13,6 +13,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers
         public string FullName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
+        public int Bonus { get; set; }
         public string TelegramLink { get; set; }
     }
 }
