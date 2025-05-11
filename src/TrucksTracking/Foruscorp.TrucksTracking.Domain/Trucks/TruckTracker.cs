@@ -40,6 +40,14 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
 
 
+
+        public void UpdateTruckTracker(Guid truckId, string providerTruckId)
+        {
+            TruckId = truckId;
+            ProviderTruckId = providerTruckId;
+        }
+
+
         public void UpdateTruck(GeoPoint geoPoint, decimal newFuelStatus)
         {
             UpdateCurrentTruckLocation(geoPoint);

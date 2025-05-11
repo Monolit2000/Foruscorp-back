@@ -29,7 +29,25 @@ namespace Foruscorp.Trucks.Aplication.Trucks.LoadTrucks
             if (!truks.Any() || truks.FirstOrDefault() == null)
                 return Result.Fail("Empty responce");
 
-            await DeleteAllTrucksIfAnyExist(cancellationToken);
+
+            var truckEntity = await tuckContext.Trucks
+                .AsNoTracking()
+                .Where(t => truks.Select(x => x.ProviderTruckId).ToList().Contains(t.ProviderTruckId))
+                .ToListAsync(cancellationToken);
+
+            if(truckEntity.Any())
+            {
+                tuckContext.Trucks.UpdateRange(truckEntity);
+                await tuckContext.SaveChangesAsync(cancellationToken);
+                await PublishToMassageBrocker(truckEntity);
+
+                //return truckEntity.Select(t => t.ToTruckDto()).ToList();
+
+                truks = truks.Where(t => !truckEntity.Select(te => te.ProviderTruckId).Contains(t.ProviderTruckId)).ToList();
+            }
+
+            if (!truks.Any())
+                return truks.Select(t => t.ToTruckDto()).ToList();
 
             await tuckContext.Trucks.AddRangeAsync(truks, cancellationToken);
 
