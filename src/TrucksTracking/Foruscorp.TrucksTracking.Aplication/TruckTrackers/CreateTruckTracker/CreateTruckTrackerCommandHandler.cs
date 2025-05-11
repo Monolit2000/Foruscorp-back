@@ -13,8 +13,14 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
     {
         public async Task Handle(CreateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
-            if (await tuckTrackingContext.TruckTrackers.AnyAsync(tt => tt.TruckId == request.TruckId || tt.ProviderTruckId == request.ProviderTruckId))
+            var tracker = await tuckTrackingContext.TruckTrackers.FirstOrDefaultAsync(tt => tt.TruckId == request.TruckId || tt.ProviderTruckId == request.ProviderTruckId);
+            if(tracker != null)
+            {
+                tracker.UpdateTruckTracker(request.TruckId, request.ProviderTruckId);
+                tuckTrackingContext.TruckTrackers.Update(tracker);
+                await tuckTrackingContext.SaveChangesAsync(cancellationToken);
                 return;
+            }
 
             var truckTracker = TruckTracker.Create(request.TruckId, request.ProviderTruckId);
 
