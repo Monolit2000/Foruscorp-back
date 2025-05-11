@@ -45,7 +45,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                     truck.Gps.FirstOrDefault().Longitude, 
                     truck.Gps.FirstOrDefault().Latitude);
 
-                //await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
+                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
                 await hubContext.Clients.Group(truck.Id.ToString()).ReceiveTruckLocationUpdate(update);
 
                 logger.LogInformation("Updated {Tiker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
