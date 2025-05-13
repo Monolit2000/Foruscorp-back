@@ -20,6 +20,7 @@ services:
     networks:
       - foruscorp-docker-network
 
+
   foruscorp.fuelstations.api:
     container_name: fuelstations-api
     image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
