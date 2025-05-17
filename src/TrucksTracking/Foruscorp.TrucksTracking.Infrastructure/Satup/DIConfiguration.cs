@@ -21,6 +21,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 
             services.AddScoped<ITuckTrackingContext, TuckTrackingContext>();
 
+
             services.AddMediatR(cfg =>
             {
                 cfg.RegisterServicesFromAssembly(typeof(IApplication).Assembly);
@@ -46,6 +47,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
             });
 
 
+            services.AddMemoryCache();
             services.AddSingleton<ActiveTruckManager, ActiveTruckManager>();  
             services.AddSingleton<ITruckProviderService, TruckProviderService>();
 
