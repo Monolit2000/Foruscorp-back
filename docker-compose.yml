@@ -21,6 +21,7 @@ services:
       - foruscorp-docker-network
     restart: unless-stopped
 
+
   foruscorp.fuelstations.api:
     container_name: fuelstations-api
     image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
@@ -76,7 +77,6 @@ services:
       - MessageBroker__HostName=rabbitmq://rabbitmq
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
-      - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
     depends_on:
       - foruscorp.db
       - rabbitmq
