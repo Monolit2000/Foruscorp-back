@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
+﻿using System.Collections.Concurrent;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
-using Foruscorp.TrucksTracking.Domain.Trucks;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
 {

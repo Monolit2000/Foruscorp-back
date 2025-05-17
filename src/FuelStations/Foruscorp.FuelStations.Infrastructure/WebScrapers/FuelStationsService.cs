@@ -2,6 +2,7 @@
 using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
+using Microsoft.VisualBasic;
 
 namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 {
@@ -27,7 +28,7 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 {
                     source,
                     destination,
-                    date = "2025-04-02",
+                    date = DateTime.UtcNow.Date.AddDays(-1).ToString(),
                     distanceFilterId = radius.ToString(),
                     locationFilterId = new List<string>() { "AB", "AL", "AR", "AZ", "BC", "CA", "CO", "CT", "FL", "GA", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MB", "MD", "MI", "MN", "MO", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "ON", "OR", "PA", "QC", "RI", "SC", "SD", "SK", "TN", "TX", "UT", "VA", "WA", "WI", "WV", "WY" },
                     truckStopChainFilterId = new List<string>() { "Pilot", "Loves", "Road Rangers", "TA Petro", "Palmetto", "Compass", "Sapp Bros" }
