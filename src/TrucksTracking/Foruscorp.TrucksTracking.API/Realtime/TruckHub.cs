@@ -1,4 +1,5 @@
 ﻿using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 using Microsoft.AspNetCore.SignalR;
 using System.Runtime.CompilerServices;
 
@@ -7,9 +8,11 @@ namespace Foruscorp.TrucksTracking.API.Realtime
     public interface ITruckLocationUpdateClient
     {
         Task ReceiveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
+        Task ReceiveTruckFuelUpdate(TruckFuelUpdate truckLocationUpdate);
     }
 
-    public sealed record TruckLocationUpdate(string TruckId, double Longitude, double Latitude);
+    public sealed record TruckLocationUpdate(string TruckId, string TruckName, double Longitude, double Latitude, string Time, double HeadingDegrees);
+    public sealed record TruckFuelUpdate(string TruckId, double fuelProcentage);
 
     public sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {
@@ -18,5 +21,20 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             activeTruckManager.AddTruck(truckId);
             await Groups.AddToGroupAsync(Context.ConnectionId, truckId);
         }
+
+        public override async Task OnDisconnectedAsync(Exception? exception)
+        {
+            // Find the truckId associated with this connection
+            var truckId = Context.ConnectionId;
+            if (truckId != null)
+            {
+                activeTruckManager.RemoveTruck(truckId);
+                await Groups.RemoveFromGroupAsync(Context.ConnectionId, truckId);
+            }
+
+            await base.OnDisconnectedAsync(exception);
+        }
     }
+
+
 }

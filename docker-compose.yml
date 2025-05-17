@@ -19,6 +19,7 @@ services:
       - rabbitmq
     networks:
       - foruscorp-docker-network
+    restart: unless-stopped
 
 
   foruscorp.fuelstations.api:

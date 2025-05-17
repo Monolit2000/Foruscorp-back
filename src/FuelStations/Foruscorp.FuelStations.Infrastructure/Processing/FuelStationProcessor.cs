@@ -17,7 +17,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Processing
                 using var scope = scopeFactory.CreateScope();
                 var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
 
-                //await mediator.Send(new LodadFuelStationCommand());
+                await mediator.Send(new LodadFuelStationCommand());
                 logger.LogInformation("FuelStationProcessor executed at: {time}", DateTimeOffset.Now);  
                 await Task.Delay(TimeSpan.FromHours(2), stoppingToken);
             }

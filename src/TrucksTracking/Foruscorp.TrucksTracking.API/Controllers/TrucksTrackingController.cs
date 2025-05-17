@@ -1,3 +1,4 @@
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
@@ -8,7 +9,9 @@ namespace Foruscorp.TrucksTracking.API.Controllers
 {
     [ApiController]
     [Route("[controller]")]
-    public class TrucksTrackingController(IMediator mediator) : ControllerBase
+    public class TrucksTrackingController(
+        IMediator mediator,
+        ITruckProviderService truckProviderService) : ControllerBase
     {
         [HttpGet("get-all-truck-trackers")]
         public async Task<ActionResult> GetFuelStationsByRadiusGet(CancellationToken cancellationToken)
@@ -31,6 +34,24 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             var result = await mediator.Send(deactivateTruckTrackerCommand, cancellationToken);
             return Ok(result);
         }
+
+
+        [HttpPost("get-vehicle-stats")]
+        public async Task<ActionResult> Deactivate(CancellationToken cancellationToken)
+        {
+            var result = await truckProviderService.GetHistoricalStatsAsync(new List<string>(), DateTime.UtcNow, cancellationToken); 
+            return Ok(result);
+        }
+
+        [HttpPost("GetVehicleStatsFeedAsync")]
+        public async Task<ActionResult> GetVehicleStatsFeedAsync(CancellationToken cancellationToken)
+        {
+            var result = await truckProviderService.GetVehicleStatsFeedAsync(new List<string>(), DateTime.UtcNow, cancellationToken); 
+            return Ok(result);
+        }
+
+
+
 
     }
 }
