@@ -53,9 +53,6 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 //await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
 
-                await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
-                await hubContext.Clients.Group(truck.Id.ToString()).ReceiveTruckLocationUpdate(update);
-
                 var locationUpdate = new TruckLocationUpdate(
                     truck.TruckId,
                     truck.TruckName,
