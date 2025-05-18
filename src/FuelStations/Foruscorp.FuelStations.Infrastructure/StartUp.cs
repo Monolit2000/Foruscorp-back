@@ -6,6 +6,7 @@ using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.Processing;
+using Foruscorp.FuelStations.Aplication.Contructs.Services;
 
 namespace Foruscorp.FuelStations.Infrastructure
 {
@@ -18,10 +19,6 @@ namespace Foruscorp.FuelStations.Infrastructure
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
 
-            services.AddScoped<IFuelStationsService, FuelStationsService>();
-
-            services.AddScoped<IFuelStationContext, FuelStationContext>();
-
             services.AddHostedService<FuelStationProcessor>();
 
             services.AddMemoryCache();
@@ -30,6 +27,10 @@ namespace Foruscorp.FuelStations.Infrastructure
             {
                 cfg.RegisterServicesFromAssembly(typeof(IApplication).Assembly);
             });
+
+            services.AddScoped<IFuelStationContext, FuelStationContext>();
+            services.AddScoped<IFuelStationsService, FuelStationsService>();
+            services.AddScoped<IXMlFuelStationService, XMlFuelStationService>();
 
             return services;
         }
