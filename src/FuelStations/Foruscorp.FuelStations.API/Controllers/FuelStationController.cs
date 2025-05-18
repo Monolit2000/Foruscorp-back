@@ -3,6 +3,9 @@ using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Foruscorp.FuelStations.Aplication.FuelStations;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
+using Foruscorp.FuelStations.Aplication.CompanyPriceMultipliers.CompanyFuelPriceMultipliers;
+using Foruscorp.FuelStations.Aplication.CompanyFuelPriceMultipliers.GetAllCompanyPriceMultipliers;
+using Foruscorp.FuelStations.Aplication.CompanyPriceMultipliers;
 
 namespace Foruscorp.FuelStations.API.Controllers
 {
@@ -40,7 +43,6 @@ namespace Foruscorp.FuelStations.API.Controllers
         }
 
 
-
         [HttpGet("get-by-radius")]
         public async Task<ActionResult<IEnumerable<FuelStationDto>>> GetFuelStationsByRadiusGet([FromQuery]
           GetFuelStationsByRadiusQuery getFuelStationsByRadiusQuery,
@@ -50,5 +52,25 @@ namespace Foruscorp.FuelStations.API.Controllers
             var result = await _mediator.Send(query, cancellationToken);
             return Ok(result);
         }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyPriceMultiplierDto))]
+        [HttpPost("create-company-fuel-price-multiplier")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> CreateCompanyFuelPriceMultiplier(
+          CreateCompanyFuelPriceMultiplierCommand createCompanyFuelPriceMultiplierCommand,
+          CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(createCompanyFuelPriceMultiplierCommand, cancellationToken);
+            return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CompanyPriceMultiplierDto>))]
+        [HttpGet("get-all-company-fuel-price-multiplier")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> GetAllCompanyPriceMultipliers(
+          CancellationToken cancellationToken)
+        {
+            var result = await _mediator.Send(new GetAllCompanyPriceMultipliersQuery(), cancellationToken);
+            return Ok(result);
+        }
+
     }
 }

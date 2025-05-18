@@ -1,8 +1,8 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Microsoft.Extensions.DependencyInjection;
+using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 
 namespace Foruscorp.FuelStations.Infrastructure.Processing
 {

@@ -1,8 +1,10 @@
 ﻿
 
+using Foruscorp.BuildingBlocks.Domain;
+
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
-    public class FuelStation
+    public class FuelStation : Entity, IAggregateRoot
     {
         public readonly List<FuelPrice> FuelPrices = [];
 

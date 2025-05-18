@@ -1,7 +1,9 @@
 ﻿
+using Foruscorp.BuildingBlocks.Domain;
+
 namespace Foruscorp.FuelStations.Domain.FuelMapProvaiders
 {
-    public class FuelMapProvaider
+    public class FuelMapProvaider : Entity, IAggregateRoot
     {
         public Guid Id { get; set; }
 

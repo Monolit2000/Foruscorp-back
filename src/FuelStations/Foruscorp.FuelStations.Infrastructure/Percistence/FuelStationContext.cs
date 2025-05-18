@@ -3,6 +3,7 @@ using Foruscorp.FuelStations.Domain.FuelMapProvaiders;
 
 using Microsoft.EntityFrameworkCore;
 using Foruscorp.FuelStations.Aplication.Contructs;
+using Foruscorp.FuelStations.Domain.CompanyFuelPriceMultipliers;
 
 namespace Foruscorp.FuelStations.Infrastructure.Percistence
 {
@@ -10,6 +11,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Percistence
     {
         public DbSet<FuelStation> FuelStations { get; set; }
         public DbSet<FuelMapProvaider> FuelMapProvaiders { get; set; }
+        public DbSet<CompanyFuelPriceMultiplier> CompanyPriceMultipliers { get; set; }
         
 
         public FuelStationContext(DbContextOptions<FuelStationContext> options) : base(options)
