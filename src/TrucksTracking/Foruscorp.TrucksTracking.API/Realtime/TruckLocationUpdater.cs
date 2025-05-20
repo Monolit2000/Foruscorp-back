@@ -70,6 +70,9 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
                 logger.LogInformation("Updated {@Tracker} location",
                     truck);
+
+                logger.LogInformation("Updated {@FuelUpdate} location",
+                    fuelUpdate);
             }
         }
 
