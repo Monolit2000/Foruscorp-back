@@ -31,7 +31,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 try
                 {
                     await UpdateTruckLocation();
-                    await Task.Delay(1500, stoppingToken);
+                    await Task.Delay(2000, stoppingToken);
                 }
                 catch (Exception ex)
                 {
@@ -68,8 +68,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckLocationUpdate(locationUpdate);
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckFuelUpdate(fuelUpdate);
 
-                logger.LogInformation("Updated {Tracker} location to Longitude: {newLocation.Longitude}, Longitude: {newLocation.Latitude}",
-                    truck, truck.Longitude, truck.Latitude);
+                logger.LogInformation("Updated {@Tracker} location",
+                    truck);
             }
         }
 
