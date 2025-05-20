@@ -14,9 +14,11 @@ services:
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
       - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
+      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341 # Add Seq URL for Serilog
     depends_on:
       - foruscorp.db
       - rabbitmq
+      - seq # Add dependency on Seq
     networks:
       - foruscorp-docker-network
     restart: unless-stopped
@@ -148,6 +150,21 @@ services:
       - foruscorp.fuelroutes.api
 
 
+  seq:
+    container_name: seq
+    image: datalust/seq:latest
+    ports:
+      - 5341:80
+      - 5342:5341
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - seq-data:/data
+    networks:
+      - foruscorp-docker-network
+    restart: unless-stopped
+
+
 networks:
   foruscorp-docker-network:
     driver: bridge
@@ -156,4 +173,6 @@ volumes:
   postgres-data:
     driver: local
   rabbitmq-data:
+    driver: local
+  seq-data:
     driver: local
