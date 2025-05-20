@@ -6,7 +6,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using MassTransit; 
+using MassTransit;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -42,13 +43,25 @@ builder.Services.AddOpenTelemetry()
             //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
         }));
 
-// Configure logging
-builder.Logging.AddOpenTelemetry(logging => logging
-    .AddOtlpExporter(options =>
-    {
-        options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-    })).AddConsole(); 
+//// Configure logging
+//builder.Logging.AddOpenTelemetry(logging => logging
+//    .AddOtlpExporter(options =>
+//    {
+//        options.Endpoint = new Uri("http://aspire-dashboard:18889");
+//        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+//    })).AddConsole();
+
+
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration
+        .ReadFrom.Configuration(context.Configuration) // Read settings from appsettings.json
+        .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .WriteTo.Console() // Keep console logging
+        .WriteTo.Seq("http://seq:5341"); // Seq server URL (adjust as needed)
+});
+
 
 // Add services to the container.
 builder.Services.AddSignalR();
@@ -82,6 +95,9 @@ if (app.Environment.IsDevelopment())
 app.UseCors("AllowAll");
 
 app.MapHub<TruckHub>("/truck-tracking");
+
+
+app.UseSerilogRequestLogging();
 
 //app.UseHttpsRedirection();
 
