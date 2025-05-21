@@ -78,30 +78,35 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             var trackers = await memoryCache.GetOrCreateAsync(TrackersCacheKey, async entry =>
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5); 
-
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
                 return await context.TruckTrackers
                     .AsNoTracking()
-                    //.Where(t => activeTruckManager.GetAllTrucks().Contains(t.TruckId.ToString()))
                     .Select(t => new { t.TruckId, t.ProviderTruckId })
                     .ToListAsync();
             });
 
-
-            if (!trackers.Any())
+            if (trackers == null || !trackers.Any())
+            {
+                logger.LogWarning("No trackers found in cache or database.");
                 return new List<TruckStatsUpdate>();
+            }
 
             var providerIds = trackers.Select(t => t.ProviderTruckId).ToList();
-
             var response = await truckProviderService.GetVehicleStatsFeedAsync();
+
+            if (response == null || response.Data == null)
+            {
+                logger.LogWarning("Vehicle stats feed response or data is null.");
+                return new List<TruckStatsUpdate>();
+            }
 
             var updates = response.Data
                 .Where(vs => providerIds.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true)
                 .Join(trackers,
-                    vs => vs.Id, 
-                    t => t.ProviderTruckId, 
+                    vs => vs.Id,
+                    t => t.ProviderTruckId,
                     (vs, t) => new TruckStatsUpdate(
-                        t.TruckId.ToString(), 
+                        t.TruckId.ToString(),
                         vs.Name,
                         vs.Gps.FirstOrDefault()?.Longitude ?? 0,
                         vs.Gps.FirstOrDefault()?.Latitude ?? 0,
@@ -110,6 +115,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                         vs.FuelPercents.FirstOrDefault()?.Value ?? 0))
                 .ToList();
 
+            logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
             return updates;
         }
     }
