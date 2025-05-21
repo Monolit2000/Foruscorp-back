@@ -1,7 +1,5 @@
-﻿using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-using Foruscorp.TrucksTracking.Domain.Trucks;
-using Microsoft.AspNetCore.SignalR;
-using System.Runtime.CompilerServices;
+﻿using Microsoft.AspNetCore.SignalR;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -20,7 +18,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         double HeadingDegrees);
     public sealed record TruckFuelUpdate(
         string TruckId, 
-        double fuelProcentage);
+        double fuelPercentage);
 
     public sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {
