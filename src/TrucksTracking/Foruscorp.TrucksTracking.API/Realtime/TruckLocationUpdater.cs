@@ -1,13 +1,8 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Foruscorp.TrucksTracking.Domain.Trucks;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-using Microsoft.EntityFrameworkCore;
-using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
-using System.Diagnostics.CodeAnalysis;
-using System.Linq;
-using System.Collections.Concurrent;
-using Microsoft.Extensions.Caching.Memory;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -51,8 +46,6 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             foreach (var truck in trucks)
             {
-                //await hubContext.Clients.All.ReceiveTruckLocationUpdate(update);
-
                 var locationUpdate = new TruckLocationUpdate(
                     truck.TruckId,
                     truck.TruckName,
@@ -112,7 +105,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                         vs.Name,
                         vs.Gps.FirstOrDefault()?.Longitude ?? 0,
                         vs.Gps.FirstOrDefault()?.Latitude ?? 0,
-                        vs.Gps.FirstOrDefault()?.Time,
+                        vs.Gps.FirstOrDefault()?.Time == null ? DateTime.UtcNow.ToString() : vs.Gps.FirstOrDefault().Time,
                         vs.Gps.FirstOrDefault()?.HeadingDegrees ?? 0,
                         vs.FuelPercents.FirstOrDefault()?.Value ?? 0))
                 .ToList();
