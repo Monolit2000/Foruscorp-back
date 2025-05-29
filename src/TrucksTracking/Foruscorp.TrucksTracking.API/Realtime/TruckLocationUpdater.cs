@@ -91,6 +91,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 return new List<TruckStatsUpdate>();
             }
 
+            trackers = trackers.Where(t => t.ProviderTruckId != null).ToList();
+
             var providerIds = trackers.Where(t => t.ProviderTruckId != null).Select(t => t.ProviderTruckId).ToList();
             var response = await truckProviderService.GetVehicleStatsFeedAsync();
 
