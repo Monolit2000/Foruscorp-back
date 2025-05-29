@@ -93,7 +93,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             trackers = trackers.Where(t => t.ProviderTruckId != null).ToList();
 
-            var providerIds = trackers.Where(t => t.ProviderTruckId != null).Select(t => t.ProviderTruckId).ToList();
+            var providerIds = trackers.Select(t => t.ProviderTruckId).ToList();
             var response = await truckProviderService.GetVehicleStatsFeedAsync();
 
             if (response == null || response.Data == null)
@@ -102,8 +102,17 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 return new List<TruckStatsUpdate>();
             }
 
-            var updates = response.Data
+            var filteredData = response.Data
                 .Where(vs => providerIds.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true)
+                .ToList(); // Materialize the filtered data to avoid null issues
+
+            if (!filteredData.Any())
+            {
+                logger.LogWarning("No vehicle stats matched the filter criteria.");
+                return new List<TruckStatsUpdate>();
+            }
+
+            var updates = filteredData
                 .Join(trackers,
                     vs => vs.Id,
                     t => t.ProviderTruckId,
