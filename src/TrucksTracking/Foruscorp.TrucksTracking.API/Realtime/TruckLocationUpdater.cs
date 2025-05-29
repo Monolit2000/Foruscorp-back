@@ -116,6 +116,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 .ToList();
 
             logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
+
             return updates;
         }
     }
