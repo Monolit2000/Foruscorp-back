@@ -103,8 +103,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             }
 
             var filteredData = response.Data
-                .Where(vs => providerIds.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true)
-                .ToList(); // Materialize the filtered data to avoid null issues
+                .Where(vs => vs.Id != null && (providerIds.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true))
+                .ToList();
 
             if (!filteredData.Any())
             {
@@ -116,14 +116,20 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 .Join(trackers,
                     vs => vs.Id,
                     t => t.ProviderTruckId,
-                    (vs, t) => new TruckStatsUpdate(
-                        t.TruckId.ToString(),
-                        vs.Name,
-                        vs.Gps.FirstOrDefault()?.Longitude ?? 0,
-                        vs.Gps.FirstOrDefault()?.Latitude ?? 0,
-                        vs.Gps.FirstOrDefault()?.Time == null ? DateTime.UtcNow.ToString() : vs.Gps.FirstOrDefault().Time,
-                        vs.Gps.FirstOrDefault()?.HeadingDegrees ?? 0,
-                        vs.FuelPercents.FirstOrDefault()?.Value ?? 0))
+                    (vs, t) =>
+                    {
+                        var gps = vs.Gps != null ? vs.Gps.FirstOrDefault() : null;
+                        var fuel = vs.FuelPercents != null ? vs.FuelPercents.FirstOrDefault() : null;
+
+                        return new TruckStatsUpdate(
+                            t.TruckId.ToString(),
+                            vs.Name ?? "Unknown",
+                            gps?.Longitude ?? 0,
+                            gps?.Latitude ?? 0,
+                            gps?.Time ?? DateTime.UtcNow.ToString(),
+                            gps?.HeadingDegrees ?? 0,
+                            fuel?.Value ?? 0);
+                    })
                 .ToList();
 
             logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
