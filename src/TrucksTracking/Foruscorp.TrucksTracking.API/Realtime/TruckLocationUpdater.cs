@@ -46,6 +46,12 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             foreach (var truck in trucks)
             {
+
+                if (truck == null)
+                {
+                    break;
+                }
+
                 var locationUpdate = new TruckLocationUpdate(
                     truck.TruckId,
                     truck.TruckName,

@@ -74,7 +74,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             return new FuelStationDto
             {
-                Id = index,
+                Id = fuelStation.Id,
                 Address = fuelStation.Address,
                 Name = fuelStation.ProviderName,    
                 Latitude = fuelStation.Coordinates.Latitude.ToString(),

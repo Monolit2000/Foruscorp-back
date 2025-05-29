@@ -1,17 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-
+﻿
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
     public class MapPoint
     {
         public Guid RouteId { get; private set; } 
-
         public Guid Id { get; private set; }    
 
         public GeoPoint GeoPoint { get; private set; }
