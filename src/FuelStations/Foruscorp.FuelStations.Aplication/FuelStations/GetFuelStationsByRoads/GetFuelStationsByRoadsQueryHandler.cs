@@ -23,6 +23,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (request?.Roads == null || !request.Roads.Any(r => r.Points?.Any(p => p?.Count >= 2) == true))
                 return Result.Fail("No valid roads or points provided.");
 
+            request.InitialFuelLiters = 200.0;
+
             if (request.InitialFuelLiters <= 0 || request.InitialFuelLiters > TruckTankCapacityL)
                 return Result.Fail("Invalid initial fuel amount.");
 
