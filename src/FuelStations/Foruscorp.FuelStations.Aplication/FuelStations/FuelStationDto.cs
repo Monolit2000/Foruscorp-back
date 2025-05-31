@@ -8,7 +8,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations
 {
     public class FuelStationDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }    
         public string Latitude { get; set; }
         public string Longitude { get; set; }
         public string Name { get; set; }
