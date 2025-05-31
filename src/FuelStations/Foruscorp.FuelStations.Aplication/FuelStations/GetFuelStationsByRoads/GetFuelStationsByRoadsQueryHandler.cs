@@ -18,15 +18,12 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private const double TruckTankCapacityL = 600.0; // Tank capacity in liters
         private const double MinFuelThresholdL = 50.0; // Minimum fuel to keep in tank
 
-        public async Task<Result<List<FuelStationDto>>> Handle(GetFuelStationsByRoadsQuery request, CancellationToken cancellationToken)
+
+
+        public async Task<Result<List<FuelStationDto>>> Handlev1(GetFuelStationsByRoadsQuery request, CancellationToken cancellationToken)
         {
             if (request?.Roads == null || !request.Roads.Any(r => r.Points?.Any(p => p?.Count >= 2) == true))
                 return Result.Fail("No valid roads or points provided.");
-
-            request.InitialFuelLiters = 200.0;
-
-            if (request.InitialFuelLiters <= 0 || request.InitialFuelLiters > TruckTankCapacityL)
-                return Result.Fail("Invalid initial fuel amount.");
 
             var points = request.Roads.SelectMany(r => r.Points.Where(p => p?.Count >= 2));
             var minLat = points.Min(p => p[0]) - LatLonBuffer;
@@ -40,28 +37,128 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                             s.Coordinates.Longitude >= minLon && s.Coordinates.Longitude <= maxLon)
                 .ToListAsync(cancellationToken);
 
+
             if (!stations.Any())
                 return Result.Ok(new List<FuelStationDto>());
 
-            var routePoints = request.Roads
+            //string cacheKey = GenerateCacheKey(request.Roads);
+            //if (memoryCache.TryGetValue(cacheKey, out List<FuelStationDto> cachedStations))
+            //    return Result.Ok(cachedStations);
+
+
+            var uniqueStations = request.Roads
                 .SelectMany(r => r.Points?.Where(p => p?.Count >= 2) ?? Enumerable.Empty<List<double>>())
                 .Select(p => new GeoPoint(p[0], p[1]))
+                .SelectMany(geoPoint => stations
+                    .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
+                .DistinctBy(s => s.Id)
                 .ToList();
 
-            var stationsDto = stations
-                .Select(s => new
-                {
-                    Station = s,
-                    DistanceToRoute = routePoints.Min(p => GeoCalculator.CalculateHaversineDistance(p, s.Coordinates))
-                })
-                .Where(s => s.DistanceToRoute <= SearchRadiusKm)
-                .Select(s => FuelStationToDto(s.Station))
-                .ToList();
 
-            var optimalStops = FindOptimalFuelStops(stationsDto, routePoints, request.InitialFuelLiters);
 
-            return Result.Ok(optimalStops);
+
+
+            var stationsDto = uniqueStations
+                .Select((station, index) => FuelStationToDto(station, index + 1)).ToList();
+
+            //memoryCache.Set(cacheKey, stationsDto, TimeSpan.FromMinutes(30));
+
+            return Result.Ok(stationsDto);
         }
+
+    
+
+
+
+        public async Task<Result<List<FuelStationDto>>> Handle(GetFuelStationsByRoadsQuery request, CancellationToken cancellationToken)
+        {
+            if (request?.Roads == null || !request.Roads.Any(r => r.Points?.Any(p => p?.Count >= 2) == true))
+                return Result.Fail("No valid roads or points provided.");
+
+            var points = request.Roads.SelectMany(r => r.Points.Where(p => p?.Count >= 2));
+            var routePoints = points.Select(p => new GeoPoint(p[0], p[1])).ToList();
+
+            var minLat = routePoints.Min(p => p.Latitude) - LatLonBuffer;
+            var maxLat = routePoints.Max(p => p.Latitude) + LatLonBuffer;
+            var minLon = routePoints.Min(p => p.Longitude) - LatLonBuffer;
+            var maxLon = routePoints.Max(p => p.Longitude) + LatLonBuffer;
+
+            var stations = await fuelStationContext.FuelStations
+                .Include(s => s.FuelPrices)
+                .AsNoTracking()
+                .Where(s => s.Coordinates.Latitude >= minLat && s.Coordinates.Latitude <= maxLat &&
+                            s.Coordinates.Longitude >= minLon && s.Coordinates.Longitude <= maxLon)
+                .ToListAsync(cancellationToken);
+
+            if (!stations.Any())
+                return Result.Ok(new List<FuelStationDto>());
+
+            var stopPlan = PlanStops(
+                routePoints,
+                stations,
+                TruckFuelConsumptionLPerKm,
+                60,
+                TruckTankCapacityL
+            );
+
+            var stationsDto = stopPlan
+                .Select((s, index) => FuelStationToDto(s.Station, index + 1))
+                .ToList();
+
+            return Result.Ok(stationsDto);
+        }
+
+
+        private List<FuelStopPlan> PlanStops(
+    List<GeoPoint> routePoints,
+    List<FuelStation> stations,
+    double fuelConsumptionPer100Km,
+    double currentFuelLiters,
+    double tankCapacity)
+        {
+            var result = new List<FuelStopPlan>();
+            double remainingFuel = currentFuelLiters;
+            double distanceTraveled = 0;
+            const double maxSearchRadius = 20.0;
+
+            for (int i = 1; i < routePoints.Count; i++)
+            {
+                var segmentDistance = GeoCalculator.CalculateHaversineDistance(routePoints[i - 1], routePoints[i]);
+                distanceTraveled += segmentDistance;
+                double fuelNeeded = segmentDistance * fuelConsumptionPer100Km / 100;
+
+                if (fuelNeeded > remainingFuel)
+                {
+                    var nearbyStations = stations
+                        .Where(s => GeoCalculator.IsPointWithinRadius(routePoints[i - 1], s.Coordinates, maxSearchRadius))
+                        .OrderBy(s => s.FuelPrices.First().Price) // найнижча ціна
+                        .ToList();
+
+                    if (!nearbyStations.Any())
+                        throw new Exception("No fuel station found within reachable radius.");
+
+                    var bestStation = nearbyStations.First();
+                    double refillAmount = tankCapacity - remainingFuel;
+
+                    result.Add(new FuelStopPlan
+                    {
+                        Station = bestStation,
+                        RefillLiters = refillAmount,
+                        StopAt = routePoints[i - 1]
+                    });
+
+                    remainingFuel = refillAmount;
+                }
+
+                remainingFuel -= fuelNeeded;
+            }
+
+            return result;
+        }
+
+
+
+
 
         private List<FuelStationDto> FindOptimalFuelStops(
        List<FuelStationDto> stationsDto,
@@ -243,6 +340,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 StopOrder = index
             };
         }
+    }
+
+
+    public class FuelStopPlan
+    {
+        public FuelStation Station { get; set; }
+        public GeoPoint StopAt { get; set; }
+        public double RefillLiters { get; set; }
     }
 }
 
