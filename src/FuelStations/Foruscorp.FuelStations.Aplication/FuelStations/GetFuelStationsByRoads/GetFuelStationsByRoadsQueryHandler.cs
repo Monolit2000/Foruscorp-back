@@ -49,8 +49,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(p => new GeoPoint(p[0], p[1]))
                 .SelectMany(geoPoint => stations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                .Distinct()
+                .DistinctBy(s => s.Id)
                 .ToList();
+
+
 
             var stationsDto = uniqueStations
                 .Select((station, index) => FuelStationToDto(station, index + 1)).ToList();
