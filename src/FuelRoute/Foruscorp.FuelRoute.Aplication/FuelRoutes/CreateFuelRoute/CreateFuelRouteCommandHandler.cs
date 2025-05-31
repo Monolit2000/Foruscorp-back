@@ -59,6 +59,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 fuelStations = fuelStationsResult.Value;    
 
 
+
+
+
+
+
+
+
             return new FuelRouteDto
             {
                 ResponseId = result.Id,

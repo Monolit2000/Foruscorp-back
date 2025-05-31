@@ -1,8 +1,10 @@
 ﻿
 
+using Foruscorp.BuildingBlocks.Domain;
+
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
-    public class FuelStation
+    public class FuelStation : Entity, IAggregateRoot
     {
         public readonly List<FuelPrice> FuelPrices = [];
 
@@ -122,7 +124,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             return CalculateHaversineDistance(center, point) <= radiusKm;
         }
 
-        private static double CalculateHaversineDistance(GeoPoint point1, GeoPoint point2)
+        public static double CalculateHaversineDistance(GeoPoint point1, GeoPoint point2)
         {
             const double EarthRadiusKm = 6371;
 
