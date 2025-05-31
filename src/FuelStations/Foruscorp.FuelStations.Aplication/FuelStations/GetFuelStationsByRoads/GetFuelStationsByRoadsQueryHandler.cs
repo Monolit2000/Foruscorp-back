@@ -64,57 +64,108 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
         private List<FuelStationDto> FindOptimalFuelStops(
-            List<FuelStationDto> stationsDto,
-            List<GeoPoint> routePoints,
-            double initialFuelLiters)
+       List<FuelStationDto> stationsDto,
+       List<GeoPoint> routePoints,
+       double initialFuelLiters)
         {
             var optimalStops = new List<FuelStationDto>();
+            var availableStations = new List<FuelStationDto>(stationsDto);
             double currentFuel = initialFuelLiters;
             double totalDistance = CalculateRouteDistance(routePoints);
             double currentDistance = 0;
-            int currentPointIndex = 0;
             int stopOrder = 1;
 
-            while (currentPointIndex < routePoints.Count - 1 && currentFuel > MinFuelThresholdL)
+            while (currentDistance < totalDistance && currentFuel > MinFuelThresholdL)
             {
-                var maxReachableDistance = currentFuel / TruckFuelConsumptionLPerKm;
+                var maxReachableDistance = (currentFuel - MinFuelThresholdL) / TruckFuelConsumptionLPerKm;
+                var remainingDistance = totalDistance - currentDistance;
+
+                // Check if we can reach the destination without refueling
+                if (maxReachableDistance >= remainingDistance)
+                    break;
 
                 // Find stations within reachable distance
-                var reachable = stationsDto
-                    .Select(s => new
+                var reachable = availableStations
+                    .Select(s =>
                     {
-                        Station = s,
-                        DistanceToRoute = routePoints.Min(p => GeoCalculator.CalculateHaversineDistance(
-                            p,
-                            new GeoPoint(
-                                double.Parse(s.Latitude, System.Globalization.CultureInfo.InvariantCulture),
-                                double.Parse(s.Longitude, System.Globalization.CultureInfo.InvariantCulture)
-                            )
-                        )),
-                        EffectivePrice = s.PriceAfterDiscount != null
-                            ? double.Parse(s.PriceAfterDiscount, System.Globalization.CultureInfo.InvariantCulture)
-                            : double.Parse(s.Price, System.Globalization.CultureInfo.InvariantCulture)
+                        var stationPoint = new GeoPoint(
+                            double.Parse(s.Latitude, System.Globalization.CultureInfo.InvariantCulture),
+                            double.Parse(s.Longitude, System.Globalization.CultureInfo.InvariantCulture)
+                        );
+
+                        // Find the closest point on the route and its cumulative distance
+                        var closestPointInfo = routePoints
+                            .Select((p, i) => new
+                            {
+                                Point = p,
+                                Index = i,
+                                DistanceToStation = GeoCalculator.CalculateHaversineDistance(p, stationPoint),
+                                CumulativeDistance = i == 0 ? 0 : CalculateRouteDistance(routePoints.Take(i + 1).ToList())
+                            })
+                            .OrderBy(p => p.DistanceToStation)
+                            .First();
+
+                        // Only consider stations ahead of current position
+                        if (closestPointInfo.CumulativeDistance < currentDistance)
+                            return null;
+
+                        // Total distance to station: distance along route + perpendicular distance
+                        var distanceAlongRoute = closestPointInfo.CumulativeDistance - currentDistance;
+                        var totalDistanceToStation = distanceAlongRoute + closestPointInfo.DistanceToStation;
+
+                        return new
+                        {
+                            Station = s,
+                            TotalDistanceToStation = totalDistanceToStation,
+                            DistanceToRoute = closestPointInfo.DistanceToStation,
+                            CumulativeDistance = closestPointInfo.CumulativeDistance,
+                            EffectivePrice = s.PriceAfterDiscount != null
+                                ? double.Parse(s.PriceAfterDiscount, System.Globalization.CultureInfo.InvariantCulture)
+                                : double.Parse(s.Price, System.Globalization.CultureInfo.InvariantCulture)
+                        };
                     })
-                    .Where(s => s.DistanceToRoute + currentDistance <= maxReachableDistance)
+                    .Where(s => s != null && s.TotalDistanceToStation <= maxReachableDistance)
                     .OrderBy(s => s.EffectivePrice)
+                    .ThenBy(s => s.TotalDistanceToStation)
                     .ToList();
 
                 if (!reachable.Any())
                 {
-                    // If no station is reachable, try to find the closest one
-                    var closest = stationsDto
-                        .Select(s => new
+                    // If no station is reachable, try to find the closest one ahead
+                    var closest = availableStations
+                        .Select(s =>
                         {
-                            Station = s,
-                            DistanceToRoute = routePoints.Min(p => GeoCalculator.CalculateHaversineDistance(
-                                p,
-                                new GeoPoint(
-                                    double.Parse(s.Latitude, System.Globalization.CultureInfo.InvariantCulture),
-                                    double.Parse(s.Longitude, System.Globalization.CultureInfo.InvariantCulture)
-                                )
-                            ))
+                            var stationPoint = new GeoPoint(
+                                double.Parse(s.Latitude, System.Globalization.CultureInfo.InvariantCulture),
+                                double.Parse(s.Longitude, System.Globalization.CultureInfo.InvariantCulture)
+                            );
+
+                            var closestPointInfo = routePoints
+                                .Select((p, i) => new
+                                {
+                                    Point = p,
+                                    Index = i,
+                                    DistanceToStation = GeoCalculator.CalculateHaversineDistance(p, stationPoint),
+                                    CumulativeDistance = i == 0 ? 0 : CalculateRouteDistance(routePoints.Take(i + 1).ToList())
+                                })
+                                .OrderBy(p => p.DistanceToStation)
+                                .First();
+
+                            if (closestPointInfo.CumulativeDistance < currentDistance)
+                                return null;
+
+                            var distanceAlongRoute = closestPointInfo.CumulativeDistance - currentDistance;
+                            var totalDistanceToStation = distanceAlongRoute + closestPointInfo.DistanceToStation;
+
+                            return new
+                            {
+                                Station = s,
+                                TotalDistanceToStation = totalDistanceToStation,
+                                CumulativeDistance = closestPointInfo.CumulativeDistance
+                            };
                         })
-                        .OrderBy(s => s.DistanceToRoute)
+                        .Where(s => s != null)
+                        .OrderBy(s => s.TotalDistanceToStation)
                         .FirstOrDefault();
 
                     if (closest != null && !optimalStops.Any(os => os.Id == closest.Station.Id))
@@ -122,27 +173,31 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         var stop = closest.Station;
                         stop.StopOrder = stopOrder++;
                         optimalStops.Add(stop);
-                        currentFuel = TruckTankCapacityL; // Assume full tank after refueling
+                        availableStations.Remove(stop);
+                        currentFuel = TruckTankCapacityL;
+                        currentDistance = closest.CumulativeDistance;
                     }
-                    break;
+                    else
+                    {
+                        break; // Cannot continue without fuel
+                    }
+                    continue;
                 }
 
                 // Select the cheapest station within reach
                 var bestStation = reachable.First().Station;
                 bestStation.StopOrder = stopOrder++;
                 optimalStops.Add(bestStation);
+                availableStations.Remove(bestStation);
 
                 // Calculate fuel needed to reach this station
-                double distanceToStation = reachable.First().DistanceToRoute;
+                double distanceToStation = reachable.First().TotalDistanceToStation;
                 double fuelConsumed = distanceToStation * TruckFuelConsumptionLPerKm;
                 currentFuel -= fuelConsumed;
-                currentDistance += distanceToStation;
+                currentDistance = reachable.First().CumulativeDistance;
 
                 // Refuel to full tank
                 currentFuel = TruckTankCapacityL;
-
-                // Move to next route segment
-                currentPointIndex++;
             }
 
             return optimalStops;
@@ -157,6 +212,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             }
             return totalDistance;
         }
+
 
         private static string GenerateCacheKey(List<Road> roads)
         {
