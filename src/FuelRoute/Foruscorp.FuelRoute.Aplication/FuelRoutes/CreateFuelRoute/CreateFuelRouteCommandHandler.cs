@@ -7,6 +7,8 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using Foruscorp.FuelStations.Aplication.FuelStations;
 using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Configuration.GeoTools;
+using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
+
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {

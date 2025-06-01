@@ -1,8 +1,10 @@
 ﻿
 
+using Foruscorp.BuildingBlocks.Domain;
+
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
-    public class FuelStation
+    public class FuelStation : Entity, IAggregateRoot
     {
         public readonly List<FuelPrice> FuelPrices = [];
 
@@ -122,7 +124,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             return CalculateHaversineDistance(center, point) <= radiusKm;
         }
 
-        private static double CalculateHaversineDistance(GeoPoint point1, GeoPoint point2)
+        public static double CalculateHaversineDistance(GeoPoint point1, GeoPoint point2)
         {
             const double EarthRadiusKm = 6371;
 
@@ -137,9 +139,93 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             return EarthRadiusKm * c;
         }
 
+        //private static double ToRadians(double degrees)
+        //{
+        //    return (double)(degrees * (double)Math.PI / 180);
+        //}
+
         private static double ToRadians(double degrees)
         {
-            return (double)(degrees * (double)Math.PI / 180);
+            return degrees * Math.PI / 180.0;
         }
+
+        // <summary>
+        /// Вычисляет кратчайшее расстояние (в км) от точки p до отрезка AB (каждый задан GeoPoint).
+        /// По сути, проекция точки на бесконечную прямую, затем проверка, попадает ли проекция внутрь отрезка.
+        /// Если проекция за пределами AB, берётся расстояние до ближайшей вершины A или B.
+        /// </summary>
+        public static double DistanceFromPointToSegmentKm(GeoPoint p, GeoPoint a, GeoPoint b)
+        {
+            // Перевод координат в радианы для более точного результата, но здесь допустимо работать в градусах,
+            // т.к. потом мы всё равно используем Haversine для финального расстояния до проекции.
+            // Однако, для параметра t (позиции вдоль AB) достаточно обычных градусных разниц.
+
+            double lat1 = a.Latitude;
+            double lon1 = a.Longitude;
+            double lat2 = b.Latitude;
+            double lon2 = b.Longitude;
+            double lat3 = p.Latitude;
+            double lon3 = p.Longitude;
+
+            double dx = lat2 - lat1;
+            double dy = lon2 - lon1;
+
+            if (dx == 0 && dy == 0)
+            {
+                // A и B совпадают — возвращаем просто расстояние A↔P
+                return CalculateHaversineDistance(p, a);
+            }
+
+            // Коэффициент проекции точки P на бесконечную прямую AB (в пределах [0,1] – внутри отрезка)
+            double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
+            t = Math.Max(0.0, Math.Min(1.0, t)); // ограничиваем в [0,1]
+
+            // Координаты «точки проекции» внутри отрезка AB
+            double projLat = lat1 + t * dx;
+            double projLon = lon1 + t * dy;
+            var projPoint = new GeoPoint(projLat, projLon);
+
+            // Возвращаем расстояние Гаверсина от P до проекции
+            return CalculateHaversineDistance(p, projPoint);
+        }
+
+        /// <summary>
+        /// Вычисляет «километровую позицию» вдоль отрезка AB, куда проецируется точка p. 
+        /// То есть, если точка (или её проекция) лежит внутри сегмента AB, возвращает расстояние (в км) от A до этой проекции.
+        /// Если проекция упала за пределы отрезка AB, то возвращает 0 (для A) или длину всего отрезка AB (для B).
+        /// Этот метод нужен, чтобы понять, на каком «километре вдоль маршрута» находится станция.
+        /// </summary>
+        public static double DistanceAlongSegment(GeoPoint a, GeoPoint b, GeoPoint p)
+        {
+            double lat1 = a.Latitude;
+            double lon1 = a.Longitude;
+            double lat2 = b.Latitude;
+            double lon2 = b.Longitude;
+            double lat3 = p.Latitude;
+            double lon3 = p.Longitude;
+
+            double dx = lat2 - lat1;
+            double dy = lon2 - lon1;
+
+            if (dx == 0 && dy == 0)
+            {
+                // A и B совпадают
+                return 0.0;
+            }
+
+            // Коэффициент проекции P на бесконечную прямую AB
+            double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
+            t = Math.Max(0.0, Math.Min(1.0, t));
+
+            // Точка проекции внутри отрезка AB
+            double projLat = lat1 + t * dx;
+            double projLon = lon1 + t * dy;
+            var projPoint = new GeoPoint(projLat, projLon);
+
+            // Возвращаем длину отрезка A→проекции (в километрах)
+            return CalculateHaversineDistance(a, projPoint);
+        }
+
+     
     }
 }

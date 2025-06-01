@@ -1,4 +1,5 @@
-﻿using Foruscorp.FuelStations.Aplication.FuelStations;
+﻿
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using System;
 using System.Collections.Generic;
 using System.Linq;

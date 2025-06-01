@@ -5,7 +5,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
     public class GetFuelStationsByRoadsQuery : IRequest<Result<List<FuelStationDto>>>
     {
-        public List<Road> Roads { get; set; } = new List<Road>();   
+        public List<Road> Roads { get; set; } = new List<Road>();
     }
 
 
