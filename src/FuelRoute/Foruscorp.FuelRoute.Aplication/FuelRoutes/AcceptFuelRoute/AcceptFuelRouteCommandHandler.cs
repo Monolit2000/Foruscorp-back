@@ -11,7 +11,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
     public class AcceptFuelRouteCommandHandler(
         IMemoryCache memoryCache,
-        IServiceScopeFactory scopeFactory,
         IFuelRouteContext fuelRouteContext,
         IFuelRouteRopository fuelRouteRopository) : IRequestHandler<AcceptFuelRouteCommand, Result>
     {
@@ -30,7 +29,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 Guid.NewGuid(),
                 "origin",
                 "destinztion",
-                new List<RouteFuelPoint>(),
+                new List<RouteFuelStation>(),
                 new List<MapPoint>());
 
             var mupPoints = section.ShowShape
