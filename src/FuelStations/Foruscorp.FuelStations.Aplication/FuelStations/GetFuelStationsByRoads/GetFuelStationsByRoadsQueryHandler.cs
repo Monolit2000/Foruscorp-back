@@ -132,17 +132,45 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             }
 
 
-            foreach (var resultStation in fuelstationWithoutAlgorithm)
+            var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
             {
-                var matchingStation = resultDto.FirstOrDefault(s => s.Id == resultStation.Id);
+                var matchingStation = resultDto.FirstOrDefault(s => s.Id == station.Id);
                 if (matchingStation != null)
                 {
-                    resultStation.IsAlgorithm = matchingStation.IsAlgorithm;
-                    resultStation.Refill = matchingStation.Refill;
-                    resultStation.StopOrder = matchingStation.StopOrder;
-                    resultStation.NextDistanceKm = matchingStation.NextDistanceKm;
+                    // Создаем новый объект FuelStationDto с обновленными полями
+                    return new FuelStationDto
+                    {
+                        Id = station.Id,
+                        Name = station.Name,
+                        Address = station.Address,
+                        Latitude = station.Latitude,
+                        Longitude = station.Longitude,
+                        Price = station.Price,
+                        Discount = station.Discount,
+                        PriceAfterDiscount = station.PriceAfterDiscount,
+                        IsAlgorithm = matchingStation.IsAlgorithm,
+                        Refill = matchingStation.Refill,
+                        StopOrder = matchingStation.StopOrder,
+                        NextDistanceKm = matchingStation.NextDistanceKm
+                    };
                 }
-            }
+                // Возвращаем копию станции без изменений, если совпадений нет
+                return new FuelStationDto
+                {
+                    Id = station.Id,
+                    Name = station.Name,
+                    Address = station.Address,
+                    Latitude = station.Latitude,
+                    Longitude = station.Longitude,
+                    Price = station.Price,
+                    Discount = station.Discount,
+                    PriceAfterDiscount = station.PriceAfterDiscount,
+                    IsAlgorithm = station.IsAlgorithm,
+                    Refill = station.Refill,
+                    StopOrder = station.StopOrder,
+                    NextDistanceKm = station.NextDistanceKm
+                };
+            }).ToList();
 
 
 
@@ -151,7 +179,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             //    .Select((plan, idx) => FuelStationToDto(plan.Station, idx + 1, plan.RefillLiters))
             //    .ToList();
 
-            return Result.Ok(fuelstationWithoutAlgorithm.ToList());
+            return Result.Ok(updatedFuelStations);
         }
 
         // --------------------------------------------------------
