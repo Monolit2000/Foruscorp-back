@@ -13,7 +13,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public readonly List<MapPoint> MapPoints = [];
 
-        public readonly List<RouteSection> RouteSections = [];
+        public readonly List<FuelRouteSection> RouteSections = [];
 
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }
@@ -80,7 +80,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             EncodeRoute = encodedRoute; 
         }
 
-        public void SetRouteSections(IEnumerable<RouteSection> sections)
+        public void SetRouteSections(IEnumerable<FuelRouteSection> sections)
         {
             if (sections == null || !sections.Any())
                 throw new ArgumentException("Sections cannot be null or empty", nameof(sections));

@@ -6,15 +6,15 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
-    public class RouteSection
+    public class FuelRouteSection
     {
         public Guid Id { get; private set; }
         public Guid RouteId { get; private set; }
         public string EncodeRoute { get; private set; } // Base64 encoded route
 
-        private RouteSection() { } 
+        public FuelRouteSection() { } 
 
-        public RouteSection(Guid routeId, string encodeRoute)
+        public FuelRouteSection(Guid routeId, string encodeRoute)
         {
             Id = Guid.NewGuid();
             RouteId = routeId; 
