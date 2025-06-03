@@ -61,11 +61,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var truckId = Guid.NewGuid(); 
             
+            var originPoint = LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude);
+            var destinationPoint = LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude); 
 
             var fuelRoute = FuelRoute.CreateNew(
                 Guid.NewGuid(),
-                "origin",
-                "destinztion",
+                originPoint,
+                destinationPoint,
                 new List<RouteFuelStation>(),
                 new List<MapPoint>());
 
@@ -76,6 +78,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             fuelRoute.SetRouteSections(routeSections);
 
+            await fuelRouteContext.SaveChangesAsync(cancellationToken);   
+
             return new FuelRouteDto
             {
                 ResponseId = result.Id,
@@ -83,11 +87,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 FuelStationDtos = fuelStations
             };   
         }
-
-
-
-       
-
     }
 }
 

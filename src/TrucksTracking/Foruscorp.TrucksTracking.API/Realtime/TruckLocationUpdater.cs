@@ -64,6 +64,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                     truck.TruckId,
                     truck.fuelPercents);
 
+
+
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckLocationUpdate(locationUpdate);
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckFuelUpdate(fuelUpdate);
 
