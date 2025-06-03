@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Runtime.CompilerServices;
 
@@ -40,6 +41,19 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.ChangedAt)
                 .IsRequired();
 
+
+            builder.OwnsMany(fr => fr.RouteSections, routeSectionBuilder =>
+            {
+                routeSectionBuilder.HasKey(fp => fp.Id);
+
+                routeSectionBuilder.ToTable("RouteSections");
+
+                routeSectionBuilder.WithOwner().HasForeignKey(rs => rs.RouteId);
+
+                routeSectionBuilder.Property(rs => rs.EncodeRoute).IsRequired(true);    
+            });
+
+
             builder.OwnsMany(fr => fr.FuelPoints, fuelPointBuilder =>
             {
                 fuelPointBuilder.ToTable("RouteFuelPoints");
@@ -68,7 +82,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
 
 
                 fuelPointBuilder.Property(fp => fp.FuelPrice)
-                    .HasColumnName(nameof(RouteFuelPoint.FuelPrice))
+                    .HasColumnName(nameof(RouteFuelStation.FuelPrice))
                     .IsRequired()
                     .HasColumnType("decimal(18,2)"); 
 

@@ -1,16 +1,17 @@
-﻿using MediatR;
-using FluentResults;
+﻿using FluentResults;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using Foruscorp.FuelRoutes.Domain.FuelRoutes;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 
 namespace Foruscorp.FuelRoutes.API.Controllers
 {
@@ -62,5 +63,19 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return NotFound(result.Errors); 
         }
+
+        [HttpPost("get-fuel-route")]
+        public async Task<ActionResult> GetFuelRouteQuery(GetFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(getFuelRouteQuery);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return NotFound(result.Errors);
+        }
+
+
+
     }
 }
