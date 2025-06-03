@@ -18,19 +18,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .HasColumnName("FuelRouteId")
                 .ValueGeneratedOnAdd();
 
-            //builder.Property(fr => fr.DriverId)
-            //    .IsRequired();
-
             builder.Property(fr => fr.TruckId)
                 .IsRequired();
-
-            builder.Property(fr => fr.Origin)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.Property(fr => fr.Destination)
-                .IsRequired()
-                .HasMaxLength(100);
 
             builder.Property(fr => fr.EncodeRoute)
                 .IsRequired(false);

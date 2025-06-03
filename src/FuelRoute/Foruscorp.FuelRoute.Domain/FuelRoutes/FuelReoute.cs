@@ -17,8 +17,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }
-        public string Origin { get; private set; }
-        public string Destination { get; private set; }
+
+        public LocationPoint OriginLocation { get; private set; } 
+        public LocationPoint DestinationLocation { get; private set; }
+
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
 
@@ -29,19 +31,15 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         private FuelRoute(
             Guid truckId,
-            //Guid driverId,
-            string origin,
-            string destination,
+            LocationPoint originLocation,
+            LocationPoint destinationLocation,
             List<RouteFuelStation> fuelPoints,
             List<MapPoint> mapPoints)
         {
-            ValidateInitialParameters(truckId, /*driverId,*/ origin, destination);
 
             Id = Guid.NewGuid();
             TruckId = truckId;
             //DriverId = driverId;
-            Origin = origin;
-            Destination = destination;
             CreatedAt = DateTime.UtcNow;
             ChangedAt = DateTime.UtcNow;
             IsAccepted = true;
@@ -59,16 +57,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public static FuelRoute CreateNew(
             Guid truckId,
             //Guid driverId,
-            string origin,
-            string destination,
+            LocationPoint originLocation,
+            LocationPoint destinationLocation,
             List<RouteFuelStation> fuelPoints,
             List<MapPoint> mapPoints)
         {
             return new FuelRoute(
                 truckId,
                 //driverId,
-                origin,
-                destination,
+                originLocation,
+                destinationLocation,
                 fuelPoints,
                 mapPoints);
         }
@@ -140,9 +138,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 throw new ArgumentException("Destination cannot be empty", nameof(destination));
             if (origin == destination)
                 throw new ArgumentException("Origin and destination cannot be the same");
-
-            Origin = origin;
-            Destination = destination;
+       
             UpdateChangedAt();
         }
 

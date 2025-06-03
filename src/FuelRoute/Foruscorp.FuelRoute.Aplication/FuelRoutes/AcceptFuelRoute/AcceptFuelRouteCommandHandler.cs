@@ -25,10 +25,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 .SelectMany(x => x.Sections)
                 .FirstOrDefault(section => section.Id == request.RouteSectionId);
 
+            var originPoint = LocationPoint.CreateNew("origin", 0.0, 0.0);
+            var destinationPoint = LocationPoint.CreateNew("destination", 0.0, 0.0);
+
             var fuelRoute = FuelRoute.CreateNew(
                 Guid.NewGuid(),
-                "origin",
-                "destinztion",
+                originPoint,
+                destinationPoint,
                 new List<RouteFuelStation>(),
                 new List<MapPoint>());
 

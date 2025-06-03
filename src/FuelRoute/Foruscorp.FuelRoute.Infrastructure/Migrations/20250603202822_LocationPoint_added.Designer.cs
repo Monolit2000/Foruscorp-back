@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelRoutes.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelRouteContext))]
-    partial class FuelRouteContextModelSnapshot : ModelSnapshot
+    [Migration("20250603202822_LocationPoint_added")]
+    partial class LocationPoint_added
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,6 +39,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<string>("Destination")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
                     b.Property<Guid?>("DestinationLocationId")
                         .HasColumnType("uuid");
 
@@ -44,6 +52,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
+
+                    b.Property<string>("Origin")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<Guid?>("OriginLocationId")
                         .HasColumnType("uuid");
