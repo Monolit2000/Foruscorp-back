@@ -9,6 +9,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
@@ -69,19 +70,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 new List<MapPoint>());
 
 
-
             var encodedRoud = points.Select(x => PolylineEncoder.EncodePolyline(x.mapPoints));
 
-            var routeSections = points.Select(x => new RouteSection
-            {
-                Id = x.routeId,
-                ShowShape = x.mapPoints
-            }).ToList();    
+            var routeSections = encodedRoud.Select(encodedRoute => new FuelRouteSection(fuelRoute.Id, encodedRoute));
 
-            fuelRoute.SetRouteSections(new );
-
-
-            //fuelRoute.AddEncodedRoute(PolylineEncoder.EncodePolyline());
+            fuelRoute.SetRouteSections(routeSections);
 
             return new FuelRouteDto
             {
