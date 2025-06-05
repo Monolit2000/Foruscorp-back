@@ -72,7 +72,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(p => new GeoPoint(p[0], p[1]))
                 .SelectMany(geoPoint => stations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                .DistinctBy(s => s.Id)
+                .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
                 .ToList();
 
             if (!stationsAlongRoute.Any())
@@ -83,7 +83,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                  .Select(p => new GeoPoint(p[0], p[1]))
                  .SelectMany(geoPoint => stations
                      .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                 .DistinctBy(s => s.Id)
+                 .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
                  .ToList();
 
             var fuelstationWithoutAlgorithm = stationsAlongFirstRout.Select(x => FuelStationToDtoNoAlgorithm(x));
