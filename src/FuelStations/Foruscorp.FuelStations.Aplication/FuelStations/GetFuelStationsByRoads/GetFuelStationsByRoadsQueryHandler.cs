@@ -72,7 +72,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(p => new GeoPoint(p[0], p[1]))
                 .SelectMany(geoPoint => stations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
+                .DistinctBy(s => s.Id)
+                //.DistinctBy(s => s.Address)
                 .ToList();
 
             if (!stationsAlongRoute.Any())
@@ -83,7 +84,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                  .Select(p => new GeoPoint(p[0], p[1]))
                  .SelectMany(geoPoint => stations
                      .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                 .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
+                    .DistinctBy(s => s.Id)
+                   //.DistinctBy(s => s.Address)
                  .ToList();
 
             var fuelstationWithoutAlgorithm = stationsAlongFirstRout.Select(x => FuelStationToDtoNoAlgorithm(x));
@@ -132,11 +134,30 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     nextDistanceKm: nextDistanceKm));
             }
 
-            var updatedFuelStations = ZipStations(fuelstationWithoutAlgorithm.ToList(), resultDto);
+            var updatedFuelStations = RemoveDuplicatesByCoordinates(ZipStations(fuelstationWithoutAlgorithm.ToList(), resultDto));
 
             return Result.Ok(updatedFuelStations);
         }
 
+        private List<FuelStationDto> RemoveDuplicatesByAddress(List<FuelStationDto> fuelStations)
+        {
+            return fuelStations
+                .GroupBy(station => station.Address) // Group by address
+                .Select(group =>
+                    group.OrderByDescending(station => station.IsAlgorithm) // Prioritize isAlgorithm: true
+                         .First()) // Take the first (true if exists, else false)
+                .ToList();
+        }
+
+        private List<FuelStationDto> RemoveDuplicatesByCoordinates(List<FuelStationDto> fuelStations)
+        {
+            return fuelStations
+                .GroupBy(station => (station.Latitude, station.Longitude)) // Group by coordinates
+                .Select(group =>
+                    group.OrderByDescending(station => station.IsAlgorithm) // Prioritize isAlgorithm: true
+                         .First()) // Take the first (true if exists, else false)
+                .ToList();
+        }
 
         private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
         {
