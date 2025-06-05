@@ -253,25 +253,27 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         //  Шаг 7: Основной метод, который планирует остановки «по заправкам»
         // --------------------------------------------------------
         private List<FuelStopPlan> PlanStopsByStations(
-        List<GeoPoint> route,
-        List<FuelStation> stationsAlongRoute,
-        double totalRouteDistanceKm,
-        double fuelConsumptionPerKm,
-        double currentFuelLiters,
-        double tankCapacity)
+            List<GeoPoint> route,
+            List<FuelStation> stationsAlongRoute,
+            double totalRouteDistanceKm,
+            double fuelConsumptionPerKm,
+            double currentFuelLiters,
+            double tankCapacity)
         {
             var result = new List<FuelStopPlan>();
 
-            // 1. Собираем информацию о станциях: StationInfo = (станция, ForwardDistanceKm, цена после скидки)
+            // ---------------------------------------
+            // Шаг 0. Собираем stationInfos (без виртуальной цели)
+            // ---------------------------------------
             var stationInfos = new List<StationInfo>();
             foreach (var st in stationsAlongRoute)
             {
                 double forwardDist = GetForwardDistanceAlongRoute(route, st.Coordinates);
                 if (forwardDist < double.MaxValue)
                 {
-                    // Выбираем самую низкую цену после скидки среди всех FuelPrices
+                    // Берём самую низкую цену после скидки у станции
                     var cheapestFuelPrice = st.FuelPrices
-                        .Where(fp => fp.PriceAfterDiscount >= 0)
+                        .Where(fp => fp.PriceAfterDiscount >= 0)         // отфильтровываем некорректные
                         .OrderBy(fp => fp.PriceAfterDiscount)
                         .FirstOrDefault();
 
@@ -286,125 +288,94 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 }
             }
 
-            // 2. Добавляем «конец маршрута» как виртуальную цель
-            stationInfos.Add(new StationInfo
+            // Добавляем виртуальную «цель» (конец маршрута), чтобы понимать, что до следующей реальной заправки не доехать
+            var endInfo = new StationInfo
             {
                 Station = null,
                 ForwardDistanceKm = totalRouteDistanceKm,
                 PricePerLiter = 0.0
-            });
+            };
+            stationInfos.Add(endInfo);
 
-            // 3. Сортируем по возрастанию ForwardDistanceKm
+            // Сортируем по возрастанию ForwardDistanceKm (необязательно, но удобно для поиска ближайших)
             stationInfos = stationInfos.OrderBy(si => si.ForwardDistanceKm).ToList();
 
-            // 4. Жадный алгоритм: выбираем, где дешевле, и в этих местах заправляем максимально
-            var availableStations = new SortedSet<StationInfo>(new StationPriceComparer());
-            var usedStationIds = new HashSet<Guid>();
+            // ---------------------------------------
+            // Шаг 1. Задаём начальные условия
+            // ---------------------------------------
+            double prevForwardDistance = 0.0;         // Мы стартуем от «0 км»
+            double remainingFuel = currentFuelLiters; // Топливо, с которым выехали
+            var usedStationIds = new HashSet<Guid>(); // Станции, где мы уже заправлялись
 
-            double prevForwardDistance = 0.0;      // “где мы сейчас” (в км вдоль маршрута)
-            double remainingFuel = currentFuelLiters;
-
-            for (int i = 0; i < stationInfos.Count; i++)
+            // ---------------------------------------
+            // Шаг 2. Основной цикл: выбираем по очереди самую дешёвую из достижимых станций
+            // ---------------------------------------
+            while (true)
             {
-                var currentInfo = stationInfos[i];
-                double distToNext = currentInfo.ForwardDistanceKm - prevForwardDistance;
-                double fuelNeeded = distToNext * fuelConsumptionPerKm;
-
-                // 1) Если хватает топлива, едем до currentInfo без дозаправки
-                if (fuelNeeded <= remainingFuel)
+                // (а) Если уже можем без дозаправки доехать до конца маршрута => выходим
+                double distanceLeftToEnd = totalRouteDistanceKm - prevForwardDistance;
+                double fuelNeededToFinish = distanceLeftToEnd * fuelConsumptionPerKm;
+                if (fuelNeededToFinish <= remainingFuel)
                 {
-                    remainingFuel -= fuelNeeded;
-                }
-                else
-                {
-                    // 2) Топлива не хватило, надо дозаправиться до текущей точки (currentInfo)
-                    double deficit = fuelNeeded - remainingFuel;
-
-                    // 2.1) Из уже «доступных» станций (availableStations) выбираем ту, у которой самая низкая цена
-                    StationInfo? cheapest = availableStations
-                        .FirstOrDefault(si =>
-                            si.Station != null
-                            && si.ForwardDistanceKm >= prevForwardDistance
-                            && !usedStationIds.Contains(si.Station.Id));
-
-                    if (cheapest != null && cheapest.Station != null)
-                    {
-                        // Заправляемся в этой «доступной» (дешевой) станции по максимуму
-                        double refillLiters = tankCapacity - remainingFuel;
-                        result.Add(new FuelStopPlan
-                        {
-                            Station = cheapest.Station,
-                            RefillLiters = refillLiters,
-                            StopAtKm = cheapest.ForwardDistanceKm
-                        });
-
-                        usedStationIds.Add(cheapest.Station.Id);
-                        availableStations.Remove(cheapest);
-
-                        remainingFuel += refillLiters;
-                    }
-                    else
-                    {
-                        // 2.2) Если в availableStations нет подходящей — ищем ближайшую впереди
-                        var nextAhead = stationInfos
-                            .Where(si =>
-                                si.Station != null
-                                && si.ForwardDistanceKm > prevForwardDistance
-                                && !usedStationIds.Contains(si.Station.Id))
-                            .OrderBy(si => si.ForwardDistanceKm)
-                            .FirstOrDefault();
-
-                        if (nextAhead != null && nextAhead.Station != null)
-                        {
-                            // Считаем, сколько топлива нужно до nextAhead
-                            double kmToNextAhead = nextAhead.ForwardDistanceKm - prevForwardDistance;
-                            double fuelNeededToNextAhead = kmToNextAhead * fuelConsumptionPerKm;
-
-                            // Заправляем столько, чтобы в любом случае добраться до nextAhead,
-                            // но при этом максимально заполняем бак
-                            double refillLiters = Math.Min(tankCapacity - remainingFuel, fuelNeededToNextAhead - remainingFuel);
-                            if (refillLiters < 0) refillLiters = 0;
-
-                            result.Add(new FuelStopPlan
-                            {
-                                Station = nextAhead.Station,
-                                RefillLiters = refillLiters,
-                                StopAtKm = nextAhead.ForwardDistanceKm
-                            });
-
-                            usedStationIds.Add(nextAhead.Station.Id);
-                            availableStations.Remove(nextAhead);
-
-                            remainingFuel += refillLiters;
-                        }
-                        else
-                        {
-                            // Если впереди нет станций, можно считать, что доберёмся до конца маршрута (виртуальной цели)
-                            // Либо предусмотреть логику ошибки, если топлива всё равно не хватает
-                        }
-                    }
-
-                    // После дозаправки eдем до currentInfo
-                    remainingFuel -= fuelNeeded;
+                    // Дожали до финиша на текущем топливе, больше остановок нет
+                    break;
                 }
 
-                // 3) Добавляем текущую станцию (если не виртуальная цель) в availableStations,
-                //    если она ещё не использована и находится дальше prevForwardDistance
-                if (currentInfo.Station != null
-                    && currentInfo.ForwardDistanceKm >= prevForwardDistance
-                    && !usedStationIds.Contains(currentInfo.Station.Id))
+                // (б) Считаем, насколько далеко можем доехать до следующей заправки без дозаправки
+                double maxReachableDistance = prevForwardDistance + (remainingFuel / fuelConsumptionPerKm);
+
+                // (в) Собираем все станции, которые:
+                //      • впереди нас (ForwardDistanceKm > prevForwardDistance)
+                //      • не дальше, чем maxReachableDistance
+                //      • и ещё не заправляемся (usedStationIds)
+                var reachableStations = stationInfos
+                    .Where(si =>
+                        si.Station != null &&
+                        si.ForwardDistanceKm > prevForwardDistance &&
+                        si.ForwardDistanceKm <= maxReachableDistance &&
+                        !usedStationIds.Contains(si.Station.Id))
+                    .ToList();
+
+                // (г) Если вовсе нет ни одной станции, до которой можно доехать на оставшемся топливе,
+                //     значит мы не дотянем ни до конца маршрута, ни до ближайшей заправки (обычный сценарий: "недостаточно топлива").
+                //     Можно просто прервать цикла — дальнейших остановок нет, но маршрут не завершится полностью.
+                if (!reachableStations.Any())
                 {
-                    availableStations.Add(currentInfo);
+                    break;
                 }
 
-                prevForwardDistance = currentInfo.ForwardDistanceKm;
+                // (д) Из reachableStations выбираем самую дешёвую (минимальная PricePerLiter)
+                var chosenInfo = reachableStations
+                    .OrderBy(si => si.PricePerLiter)
+                    .First();
+
+                // (е) Считаем, сколько топлива потратим, чтобы доехать до chosenInfo
+                double distanceToChosen = chosenInfo.ForwardDistanceKm - prevForwardDistance;
+                double fuelNeededToChosen = distanceToChosen * fuelConsumptionPerKm;
+                remainingFuel -= fuelNeededToChosen; // доехали до этой станции
+
+                // (ж) Заправляем полный бак на этой станции
+                double refillAmount = tankCapacity - remainingFuel;
+                result.Add(new FuelStopPlan
+                {
+                    Station = chosenInfo.Station!,
+                    StopAtKm = chosenInfo.ForwardDistanceKm,
+                    RefillLiters = refillAmount
+                });
+
+                // (з) Отмечаем станцию как «использованную» и обновляем параметры
+                usedStationIds.Add(chosenInfo.Station!.Id);
+                remainingFuel = tankCapacity;
+                prevForwardDistance = chosenInfo.ForwardDistanceKm;
+
+                // (и) Переходим к следующей итерации:
+                //     либо дозаправляемся снова, либо доезжаем до финиша, либо выбираем следующую станцию и т.д.
             }
 
             return result;
         }
 
-
-        // Вспомогательный метод: вычисляем «километровую позицию» вдоль сегмента AB для станции
+        // Вспомогательный метод: вычисляем «километраж» вдоль маршрута, где расположена станция
         private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
         {
             double cumulative = 0.0;
@@ -416,13 +387,34 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(stationCoords, a, b);
                 if (distToSegment <= SearchRadiusKm)
                 {
-                    var projectionKm = GeoCalculator.DistanceAlongSegment(a, b, stationCoords);
+                    // Считаем проекцию станции на этот отрезок
+                    double projectionKm = GeoCalculator.DistanceAlongSegment(a, b, stationCoords);
                     return cumulative + projectionKm;
                 }
                 cumulative += segmentLength;
             }
-            return double.MaxValue;
+            return double.MaxValue; // Станция «не попала» ни в один сегмент коридора
         }
+
+        //// Вспомогательный метод: вычисляем «километровую позицию» вдоль сегмента AB для станции
+        //private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
+        //{
+        //    double cumulative = 0.0;
+        //    for (int i = 0; i < route.Count - 1; i++)
+        //    {
+        //        var a = route[i];
+        //        var b = route[i + 1];
+        //        double segmentLength = GeoCalculator.CalculateHaversineDistance(a, b);
+        //        double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(stationCoords, a, b);
+        //        if (distToSegment <= SearchRadiusKm)
+        //        {
+        //            var projectionKm = GeoCalculator.DistanceAlongSegment(a, b, stationCoords);
+        //            return cumulative + projectionKm;
+        //        }
+        //        cumulative += segmentLength;
+        //    }
+        //    return double.MaxValue;
+        //}
 
 
 
