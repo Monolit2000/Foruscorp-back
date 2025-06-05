@@ -72,21 +72,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(p => new GeoPoint(p[0], p[1]))
                 .SelectMany(geoPoint => stations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                .DistinctBy(s => s.Id)
+                .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
                 .ToList();
+
+            if (!stationsAlongRoute.Any())
+                return Result.Ok(new List<FuelStationDto>());
 
             var stationsAlongFirstRout = request.Roads.FirstOrDefault().Points
                  ?.Where(p => p?.Count >= 2)
                  .Select(p => new GeoPoint(p[0], p[1]))
                  .SelectMany(geoPoint => stations
                      .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                 .DistinctBy(s => s.Id)
+                 .DistinctBy(s => (s.Id, s.Coordinates.Latitude, s.Coordinates.Longitude))
                  .ToList();
 
             var fuelstationWithoutAlgorithm = stationsAlongFirstRout.Select(x => FuelStationToDtoNoAlgorithm(x));
 
-            if (!stationsAlongRoute.Any())
-                return Result.Ok(new List<FuelStationDto>());
 
             // 6. Считаем общую длину маршрута (в км)
             var route = request.Roads.FirstOrDefault().Points.Select(p => new GeoPoint(p[0], p[1])).ToList();
@@ -131,10 +132,18 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     nextDistanceKm: nextDistanceKm));
             }
 
+            var updatedFuelStations = ZipStations(fuelstationWithoutAlgorithm.ToList(), resultDto);
+
+            return Result.Ok(updatedFuelStations);
+        }
+
+
+        private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
+        {
 
             var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
             {
-                var matchingStation = resultDto.FirstOrDefault(s => s.Id == station.Id);
+                var matchingStation = stopPlan.FirstOrDefault(s => s.Id == station.Id);
                 if (matchingStation != null)
                 {
                     // Создаем новый объект FuelStationDto с обновленными полями
@@ -172,14 +181,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 };
             }).ToList();
 
-
-
-            // 8. Преобразуем результат в DTO
-            //var resultDto = stopPlan
-            //    .Select((plan, idx) => FuelStationToDto(plan.Station, idx + 1, plan.RefillLiters))
-            //    .ToList();
-
-            return Result.Ok(updatedFuelStations);
+            return updatedFuelStations ?? new List<FuelStationDto>();
         }
 
         // --------------------------------------------------------
