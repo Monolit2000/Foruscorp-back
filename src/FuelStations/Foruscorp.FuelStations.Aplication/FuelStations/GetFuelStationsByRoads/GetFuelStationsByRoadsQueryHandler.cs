@@ -33,7 +33,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private const double TruckTankCapacityL = 200.0;
 
         // Начальный объём топлива: 60 галлонов
-        private const double InitialFuelLiters = 15.0;
+        private const double InitialFuelLiters = 20.0;
 
         private readonly IFuelStationContext fuelStationContext;
 
