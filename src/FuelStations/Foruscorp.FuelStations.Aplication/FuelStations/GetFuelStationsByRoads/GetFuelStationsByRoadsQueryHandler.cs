@@ -30,10 +30,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private const double TruckFuelConsumptionLPerKm = 0.10;
 
         // Ёмкость бака: 200 галлонов
-        private const double TruckTankCapacityL = 200.0;
+        private const double TruckTankCapacityL = 200.0 - 40.0;
 
         // Начальный объём топлива: 60 галлонов
-        private const double InitialFuelLiters = 20.0;
+        private const double InitialFuelLiters = 22.0;
 
         private readonly IFuelStationContext fuelStationContext;
 
@@ -328,11 +328,24 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 //      • впереди нас (ForwardDistanceKm > prevForwardDistance)
                 //      • не дальше, чем maxReachableDistance
                 //      • и ещё не заправляемся (usedStationIds)
+
+                double MinStopDistanceKm = 100.0;
+
                 var reachableStations = stationInfos
                     .Where(si =>
+
+
+                        (!stationInfos.Any() &&  
+                        si.Station != null &&
+                        si.ForwardDistanceKm > prevForwardDistance &&
+                        si.ForwardDistanceKm <= maxReachableDistance ) ||
+
                         si.Station != null &&
                         si.ForwardDistanceKm > prevForwardDistance &&
                         si.ForwardDistanceKm <= maxReachableDistance &&
+
+                        si.ForwardDistanceKm - prevForwardDistance >= MinStopDistanceKm &&
+
                         !usedStationIds.Contains(si.Station.Id))
                     .ToList();
 
@@ -355,7 +368,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 remainingFuel -= fuelNeededToChosen; // доехали до этой станции
 
                 // (ж) Заправляем полный бак на этой станции
-                double refillAmount = tankCapacity - remainingFuel;
+                double neededToFull = tankCapacity - remainingFuel;
+                //double refillAmount = Math.Max(neededToFull, 30.0);
+                double refillAmount = Math.Min(Math.Max(neededToFull, 30.0), tankCapacity - remainingFuel);
                 result.Add(new FuelStopPlan
                 {
                     Station = chosenInfo.Station!,
