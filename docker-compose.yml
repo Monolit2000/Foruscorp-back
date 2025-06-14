@@ -93,8 +93,8 @@ services:
       - ./appsettings.json:/etc/yarp.config
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx
     ports:
-      - "5011:5011" # HTTP
-      - "5000:5000" # HTTPS
+      - "5011:5011" 
+      - "5000:5000" 
     networks:
       - foruscorp-docker-network
 

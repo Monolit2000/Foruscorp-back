@@ -24,16 +24,13 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
 
 
-
-
-
         private const double TruckFuelConsumptionLPerKm = 0.10;
 
         // Ёмкость бака: 200 галлонов
         private const double TruckTankCapacityL = 200.0 - 40.0;
 
         // Начальный объём топлива: 60 галлонов
-        private const double InitialFuelLiters = 22.0;
+        private const double InitialFuelLiters = 20.0;
 
         private readonly IFuelStationContext fuelStationContext;
 
@@ -329,24 +326,24 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 //      • не дальше, чем maxReachableDistance
                 //      • и ещё не заправляемся (usedStationIds)
 
-                double MinStopDistanceKm = 100.0;
+                double MinStopDistanceKm = 1000.0;
 
                 var reachableStations = stationInfos
                     .Where(si =>
 
-
-                        (!stationInfos.Any() &&  
+                        (!result.Any() && 
                         si.Station != null &&
                         si.ForwardDistanceKm > prevForwardDistance &&
-                        si.ForwardDistanceKm <= maxReachableDistance ) ||
+                        si.ForwardDistanceKm <= maxReachableDistance &&
+                        !usedStationIds.Contains(si.Station.Id)) ||
 
-                        si.Station != null &&
+                        (si.Station != null &&
                         si.ForwardDistanceKm > prevForwardDistance &&
                         si.ForwardDistanceKm <= maxReachableDistance &&
 
                         si.ForwardDistanceKm - prevForwardDistance >= MinStopDistanceKm &&
 
-                        !usedStationIds.Contains(si.Station.Id))
+                        !usedStationIds.Contains(si.Station.Id)))
                     .ToList();
 
                 // (г) Если вовсе нет ни одной станции, до которой можно доехать на оставшемся топливе,
@@ -359,6 +356,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 // (д) Из reachableStations выбираем самую дешёвую (минимальная PricePerLiter)
                 var chosenInfo = reachableStations
+                    //.Where(si => !result.Any() || si.ForwardDistanceKm - prevForwardDistance >= MinStopDistanceKm)
                     .OrderBy(si => si.PricePerLiter)
                     .First();
 
@@ -411,127 +409,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             return double.MaxValue; // Станция «не попала» ни в один сегмент коридора
         }
 
-        //// Вспомогательный метод: вычисляем «километровую позицию» вдоль сегмента AB для станции
-        //private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
-        //{
-        //    double cumulative = 0.0;
-        //    for (int i = 0; i < route.Count - 1; i++)
-        //    {
-        //        var a = route[i];
-        //        var b = route[i + 1];
-        //        double segmentLength = GeoCalculator.CalculateHaversineDistance(a, b);
-        //        double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(stationCoords, a, b);
-        //        if (distToSegment <= SearchRadiusKm)
-        //        {
-        //            var projectionKm = GeoCalculator.DistanceAlongSegment(a, b, stationCoords);
-        //            return cumulative + projectionKm;
-        //        }
-        //        cumulative += segmentLength;
-        //    }
-        //    return double.MaxValue;
-        //}
-
-
-
-        //private double GetForwardDistanceAlongRoute(
-        //    List<GeoPoint> route,
-        //    GeoPoint stationCoords)
-        //{
-        //    double cumulative = 0.0;
-
-        //    for (int i = 0; i < route.Count - 1; i++)
-        //    {
-        //        var a = route[i];
-        //        var b = route[i + 1];
-
-        //        double segmentLength = GeoCalculator.CalculateHaversineDistance(a, b);
-        //        // Если станция «попадает» в этот сегмент (расстояние до отрезка <= SearchRadiusKm), возвращаем cumulative + позиция внутри сегмента.
-        //        double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(stationCoords, a, b);
-        //        if (distToSegment <= SearchRadiusKm)
-        //        {
-        //            // Чтобы узнать точную «километровую отметку» внутри этого сегмента, 
-        //            // можно найти проекцию stationCoords на отрезок a-b и вычислить расстояние от a до этой проекции.
-        //            var projectionKm = DistanceAlongSegment(a, b, stationCoords);
-        //            return cumulative + projectionKm;
-        //        }
-
-        //        cumulative += segmentLength;
-        //    }
-
-        //    return double.MaxValue; // не «попала» ни в один сегмент маршрута
-        //}
-
-        // --------------------------------------------------------
-        //  Помощь: найти, на каком километре этого сегмента (a→b) лежит станция
-        // --------------------------------------------------------
-        private double DistanceAlongSegment(GeoPoint a, GeoPoint b, GeoPoint p)
-        {
-            // Переводим точки в векторы (в градусах)
-            double lat1 = a.Latitude, lon1 = a.Longitude;
-            double lat2 = b.Latitude, lon2 = b.Longitude;
-            double lat3 = p.Latitude, lon3 = p.Longitude;
-
-            // В декартовых проекциях (эта приближённая формула сохраняет направление вдоль сегмента)
-            double dx = lat2 - lat1;
-            double dy = lon2 - lon1;
-
-            if (dx == 0 && dy == 0)
-                return 0.0;
-
-            // Параметр t проекции p на отрезок ab (в долях от 0 до 1)
-            double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
-            t = Math.Max(0.0, Math.Min(1.0, t));
-
-            // Координаты «точки на отрезке»
-            double projLat = lat1 + t * dx;
-            double projLon = lon1 + t * dy;
-
-            // И реально считаем расстояние от a до проекции
-            return GeoCalculator.CalculateHaversineDistance(a, new GeoPoint(projLat, projLon));
-        }
-
-        // --------------------------------------------------------
-        //  Fallback: Находим «ближайшую станцию» ещё дальше по маршруту (в пределах коридора)
-        // --------------------------------------------------------
-        private StationInfo? FindNextClosestStation(
-            List<GeoPoint> route,
-            int currentIndex,
-            List<FuelStation> stationsAlongRoute,
-            HashSet<Guid> usedStationIds)
-        {
-            // Проходим по всем будущим точкам маршрута и проверяем, есть ли непосещённая станция в коридоре.
-            // Берём самую «раннюю» (по пути) станцию.
-            for (int i = currentIndex + 1; i < route.Count; i++)
-            {
-                var waypoint = route[i];
-
-                var candidates = stationsAlongRoute
-                    .Where(s => !usedStationIds.Contains(s.Id) &&
-                        GeoCalculator.DistanceFromPointToSegmentKm(waypoint, waypoint, s.Coordinates) <= SearchRadiusKm)
-                    .Select(s =>
-                    {
-                        double fd = GetForwardDistanceAlongRoute(route, s.Coordinates);
-                        var price = s.FuelPrices.FirstOrDefault()?.Price ?? double.MaxValue;
-                        return new StationInfo
-                        {
-                            Station = s,
-                            ForwardDistanceKm = fd,
-                            PricePerLiter = price
-                        };
-                    })
-                    .OrderBy(si => si.PricePerLiter)
-                    .ToList();
-
-                if (candidates.Any())
-                    return candidates.First();
-            }
-
-            return null;
-        }
-
-        // --------------------------------------------------------
-        //  Конвертация в DTO
-        // --------------------------------------------------------
+ 
         private FuelStationDto FuelStationToDto(
            FuelStation station,
            int stopOrder,
