@@ -57,8 +57,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (routePoints.Count < 2)
                 return Result.Fail("Маршрут содержит менее двух точек.");
 
-            // 3. Вычисляем «коридорный» bounding-box по широте/долготе, чтобы узко отфильтровать станции
-            //    (400 км = приблизительно 4° широты, но мы считаем через деление на 111 км/°, чтобы преобразовать SearchRadiusKm в градусы)
+     
             double avgLatRadians = DegreesToRadians(routePoints.Average(pt => pt.Latitude));
             var minLat = routePoints.Min(pt => pt.Latitude) - (SearchRadiusKm / 111.0);
             var maxLat = routePoints.Max(pt => pt.Latitude) + (SearchRadiusKm / 111.0);
@@ -201,7 +200,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var matchingStation = stopPlan.FirstOrDefault(s => s.Id == station.Id);
                 if (matchingStation != null)
                 {
-                    // Создаем новый объект FuelStationDto с обновленными полями
                     return new FuelStationDto
                     {
                         Id = station.Id,
@@ -218,7 +216,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         NextDistanceKm = matchingStation.NextDistanceKm
                     };
                 }
-                // Возвращаем копию станции без изменений, если совпадений нет
                 return new FuelStationDto
                 {
                     Id = station.Id,
@@ -239,39 +236,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             return updatedFuelStations ?? new List<FuelStationDto>();
         }
 
-        // --------------------------------------------------------
-        //  Шаг 5: Отфильтровать станции вдоль маршрута, используя «коридорный» подход
-        // --------------------------------------------------------
-        private List<FuelStation> GetStationsAlongRoute(
-            List<GeoPoint> route,
-            List<FuelStation> allStations,
-            double corridorRadiusKm)
-        {
-            var result = new HashSet<FuelStation>();
-
-            for (int i = 0; i < route.Count - 1; i++)
-            {
-                var a = route[i];
-                var b = route[i + 1];
-
-                foreach (var station in allStations)
-                {
-                    double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(
-                        station.Coordinates, a, b);
-
-                    if (distToSegment <= corridorRadiusKm)
-                    {
-                        result.Add(station);
-                    }
-                }
-            }
-
-            return result.ToList();
-        }
-
-        // --------------------------------------------------------
-        //  Шаг 7: Основной метод, который планирует остановки «по заправкам»
-        // --------------------------------------------------------
 
         private List<FuelStopPlan> PlanStopsByStations(
             List<GeoPoint> route,
@@ -350,24 +314,19 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 while (remainingFuel < neededFuel)
                 {
-
-                   
-
                     double maxDistanceWithoutRefuel = remainingFuel / fuelConsumptionPerKm;
 
                     double maxReachKm = prevKm + (remainingFuel / fuelConsumptionPerKm);
 
-                    // кандидаты: впереди нас, до maxReachKm, не использованы, 
-                    // и (если нужно) не ближе MinStopDistanceKm к prevKm
                     var candidates = stationInfos
                         .Where(si =>
                          si.Station != null &&
                             !usedStationIds.Contains(si.Station.Id) &&
                             si.ForwardDistanceKm > prevKm &&
                             (
-                                 //useMinDistance ||                                      // не надо соблюдать дистанцию
-                                 maxDistanceWithoutRefuel < MinStopDistanceKm ||      // топлива недостаточно для MinStopDistanceKm
-                                 si.ForwardDistanceKm - prevKm >= MinStopDistanceKm // или станция дальше MinStopDistanceKm
+                                 //useMinDistance ||                                     
+                                 maxDistanceWithoutRefuel < MinStopDistanceKm ||      
+                                 si.ForwardDistanceKm - prevKm >= MinStopDistanceKm 
                             )&&
                             si.ForwardDistanceKm <= maxReachKm 
                         )
