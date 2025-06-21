@@ -93,7 +93,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             //{
             //    mp.ToTable("MapPoints");
 
-            //    mp.HasKey(p => p.Id);
+            //    mp.HasKey(p => p.RoadSectionId);
 
             //    mp.Property(p => p.RouteSectionId)
             //        .IsRequired();

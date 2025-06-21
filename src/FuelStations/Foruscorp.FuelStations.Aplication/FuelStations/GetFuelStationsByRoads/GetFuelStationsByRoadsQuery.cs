@@ -11,7 +11,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
     public class RoadSectionDto
     {
-        public string Id { get; set; }
+        public string RoadSectionId { get; set; }
         public List<List<double>> Points { get; set; } = [];
     }   
 }

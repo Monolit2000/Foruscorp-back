@@ -97,7 +97,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var roads = points
                 .Select(x => new RoadSectionDto
                 {
-                    Id = x.RouteId,
+                    RoadSectionId = x.RouteId,
                     Points = x.MapPoints
                 })
                 .ToList();

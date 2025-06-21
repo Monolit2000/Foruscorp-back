@@ -12,7 +12,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
 
             builder.HasKey(mp => mp.Id);
 
-            //builder.Property(mp => mp.Id)
+            //builder.Property(mp => mp.RoadSectionId)
             //    .ValueGeneratedOnAdd();
 
             builder.Property(mp => mp.RouteId)
