@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
-    public class RouteFuelStation
+    public class FuelStopStation
     {
         public Guid FuelRouteId { get; private set; }
 
@@ -15,10 +15,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public decimal FuelPrice { get; private set; }
         public DateTime ScheduledTime { get; private set; }
 
+        public string SectionId { get; private set; } 
 
-        private RouteFuelStation() { } // For EF Core 
+        private FuelStopStation() { } // For EF Core 
 
-        private RouteFuelStation(
+        private FuelStopStation(
             GeoPoint location, 
             Guid fuelRouteId, 
             decimal fuelPrice,
@@ -31,7 +32,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             ScheduledTime = scheduledTime;
         }
 
-        public static RouteFuelStation CreateNew(
+        public static FuelStopStation CreateNew(
             GeoPoint location,
             Guid fuelRouteId,
             decimal fuelPrice,
@@ -42,7 +43,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             if (fuelPrice <= 0)
                 throw new ArgumentException("Fuel price must be positive", nameof(fuelPrice));
 
-            return new RouteFuelStation(
+            return new FuelStopStation(
                 location,
                 fuelRouteId,
                 fuelPrice, 

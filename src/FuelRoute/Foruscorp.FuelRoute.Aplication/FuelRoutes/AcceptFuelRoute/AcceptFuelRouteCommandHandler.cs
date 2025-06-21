@@ -32,7 +32,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 Guid.NewGuid(),
                 originPoint,
                 destinationPoint,
-                new List<RouteFuelStation>(),
+                new List<FuelStopStation>(),
                 new List<MapPoint>());
 
             var mupPoints = section.ShowShape

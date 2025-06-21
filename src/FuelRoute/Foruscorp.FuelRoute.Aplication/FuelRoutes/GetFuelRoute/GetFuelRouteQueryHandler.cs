@@ -23,7 +23,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
             var routeDto = new RouteDto
             {
-                RouteId = "1",
+                RouteSectionId = "1",
                 MapPoints = decodedRoute
             };
 

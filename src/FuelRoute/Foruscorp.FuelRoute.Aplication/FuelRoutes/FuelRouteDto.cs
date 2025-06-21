@@ -19,7 +19,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 
     public class RouteDto
     {
-        public string RouteId { get; set; } 
+        public string RouteSectionId { get; set; } 
 
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
     }
