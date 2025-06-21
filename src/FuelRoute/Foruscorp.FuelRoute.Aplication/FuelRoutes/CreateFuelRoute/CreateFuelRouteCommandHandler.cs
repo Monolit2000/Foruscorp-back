@@ -57,7 +57,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .ToList();
 
 
-            var fuelStopStationsList = await GetFuelStationsAsync(points);
 
 
             //var originPoint = LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude);
@@ -75,7 +74,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .Select(x => PolylineEncoder.EncodePolyline(x.MapPoints))
                 .Select(encodedRoute => new FuelRouteSection(fuelRoute.Id, encodedRoute));
 
+            var fuelStopStationsList = await GetFuelStationsAsync(points);
+
+
+
             fuelRoute.SetRouteSections(routeSections);
+
+            fuelRouteContext.FuelRoutes.Add(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
@@ -90,7 +95,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
         private async Task<List<FuelStationDto>> GetFuelStationsAsync(IEnumerable<RoutePoints> points)
         {
             var roads = points
-                .Select(x => new Road
+                .Select(x => new RoadSectionDto
                 {
                     Id = x.RouteId,
                     Points = x.MapPoints
