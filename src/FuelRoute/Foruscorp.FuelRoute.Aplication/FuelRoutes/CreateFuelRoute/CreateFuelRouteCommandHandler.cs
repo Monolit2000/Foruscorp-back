@@ -76,8 +76,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var fuelStopStationsList = await GetFuelStationsAsync(points);
 
-
-
             fuelRoute.SetRouteSections(routeSections);
 
             fuelRouteContext.FuelRoutes.Add(fuelRoute); 
