@@ -98,34 +98,80 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
 
 
-            var resultDto = new List<FuelStationDto>();
-            for (int i = 0; i < allStopPlans.Count; i++)
-            {
-                var current = allStopPlans[i];
-                double nextDistanceKm;
+            var resultDto = MapStopPlansToDtos(allStopPlans);
+            //for (int i = 0; i < allStopPlans.Count; i++)
+            //{
+            //    var current = allStopPlans[i];
+            //    double nextDistanceKm;
 
-                if (i < allStopPlans.Count - 1)
-                {
-                    var next = allStopPlans[i + 1];
-                    nextDistanceKm = next.StopAtKm - current.StopAtKm;
-                }
-                else
-                {
-                    nextDistanceKm = 0; // или до конца маршрута?
-                }
+            //    if (i < allStopPlans.Count - 1)
+            //    {
+            //        var next = allStopPlans[i + 1];
+            //        nextDistanceKm = next.StopAtKm - current.StopAtKm;
+            //    }
+            //    else
+            //    {
+            //        nextDistanceKm = 0; // или до конца маршрута?
+            //    }
 
-                resultDto.Add(FuelStationToDto(
-                    current.Station,
-                    stopOrder: i + 1,
-                    refillLiters: current.RefillLiters,
-                    nextDistanceKm: nextDistanceKm));
-            }
+            //    resultDto.Add(FuelStationToDto(
+            //        current.Station,
+            //        stopOrder: i + 1,
+            //        refillLiters: current.RefillLiters,
+            //        nextDistanceKm: nextDistanceKm,
+            //        current.RoadSectionId));
+            //}
 
-            var updatedFuelStations = RemoveDuplicatesByCoordinates(ZipStations(allStationsWithoutAlgo, resultDto));
-            return Result.Ok(updatedFuelStations);
+            var zipStations = ZipStations(allStationsWithoutAlgo, resultDto);
+
+            var sdf = zipStations
+                .GroupBy(s => s.RoadSectionId)
+                .Select(g => g.Where(s => s.IsAlgorithm).ToList())
+                .Where(g => g.Any())
+                .ToList();
+
+            var updatedFuelStations = RemoveDuplicatesByCoordinates(zipStations);
+            return Result.Ok(zipStations);
         }
 
+        private List<FuelStationDto> MapStopPlansToDtos(List<FuelStopPlan> allStopPlans)
+        {
+            var result = new List<FuelStationDto>();
 
+            var groupedBySection = allStopPlans
+                .GroupBy(x => x.RoadSectionId)
+                .ToList();
+
+            foreach (var group in groupedBySection)
+            {
+                var sectionStops = group.OrderBy(x => x.StopAtKm).ToList();
+
+                for (int i = 0; i < sectionStops.Count; i++)
+                {
+                    var current = sectionStops[i];
+                    double nextDistanceKm;
+
+                    if (i < sectionStops.Count - 1)
+                    {
+                        var next = sectionStops[i + 1];
+                        nextDistanceKm = next.StopAtKm - current.StopAtKm;
+                    }
+                    else
+                    {
+                        nextDistanceKm = 0;
+                    }
+
+                    result.Add(FuelStationToDto(
+                        current.Station,
+                        stopOrder: i + 1,
+                        refillLiters: current.RefillLiters,
+                        nextDistanceKm: nextDistanceKm,
+                        roadSectionId: current.RoadSectionId));
+                }
+            }
+
+            return result;
+        }
 
 
         private (List<FuelStopPlan> StopPlan, List<FuelStationDto> StationsWithoutAlgorithm) PlanRouteStopsForRoad(
@@ -151,7 +197,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 return (new(), new());
 
             var fuelstationWithoutAlgorithm = stationsAlongRoute
-                .Select(x => FuelStationToDtoNoAlgorithm(x))
+                .Select(x => FuelStationToDtoNoAlgorithm(x, road.RoadSectionId))
                 .ToList();
 
             double totalRouteDistanceKm = 0;
@@ -215,7 +261,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         IsAlgorithm = matchingStation.IsAlgorithm,
                         Refill = matchingStation.Refill,
                         StopOrder = matchingStation.StopOrder,
-                        NextDistanceKm = matchingStation.NextDistanceKm
+                        NextDistanceKm = matchingStation.NextDistanceKm,
+                        RoadSectionId = matchingStation.RoadSectionId
                     };
                 }
                 return new FuelStationDto
@@ -231,7 +278,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     IsAlgorithm = station.IsAlgorithm,
                     Refill = station.Refill,
                     StopOrder = station.StopOrder,
-                    NextDistanceKm = station.NextDistanceKm
+                    NextDistanceKm = station.NextDistanceKm,
+                    RoadSectionId = station.RoadSectionId
                 };
             }).ToList();
 
@@ -446,7 +494,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
            FuelStation station,
            int stopOrder,
            double refillLiters,
-           double nextDistanceKm)
+           double nextDistanceKm,
+           string roadSectionId)
         {
             var priceInfo = station?.FuelPrices.FirstOrDefault();
             string pricePerLiter = priceInfo?.Price.ToString("F2") ?? "0.00";
@@ -465,13 +514,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 Refill = refillLiters.ToString("F2"),
                 StopOrder = stopOrder,
-                NextDistanceKm = nextDistanceKm.ToString("F2")
+                NextDistanceKm = nextDistanceKm.ToString("F2"),
+                RoadSectionId = roadSectionId
             };
         }
 
 
         private FuelStationDto FuelStationToDtoNoAlgorithm(
-         FuelStation station)
+         FuelStation station,
+         string roadSectionId)
         {
             var priceInfo = station?.FuelPrices.FirstOrDefault();
             string pricePerLiter = priceInfo?.Price.ToString("F2") ?? "0.00";
@@ -486,7 +537,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 Discount = priceInfo?.DiscountedPrice?.ToString("F2"),
                 PriceAfterDiscount = priceInfo?.PriceAfterDiscount.ToString("F2"),
 
-                IsAlgorithm = false
+                IsAlgorithm = false,
+                RoadSectionId = roadSectionId
             };
         }
 
@@ -552,5 +604,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public int StopOrder { get; set; }
 
         public string NextDistanceKm { get; set; } = null!;
+
+        public string RoadSectionId { get; set; }
     }
 }
