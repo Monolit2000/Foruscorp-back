@@ -16,7 +16,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
         public async Task<Result<List<FuelStationDto>>> Handle(GetFuelStationsCommand request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                .Include(x => x.FuelStopStations)
+                .Include(x => x.FuelRouteStations)
                 .Include(x => x.RouteSections)
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
@@ -56,42 +56,44 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 
             var fuelStations = fuelStationsResult.Value.Select(x => MapToFuelStation(x, fuelRoad.Id));
 
-            try
-            {
-                fuelRoad.AddFuelPoints(fuelStations);
-                await fuelRouteContext.SaveChangesAsync(cancellationToken);
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                return Result.Fail("Concurrency conflict: The fuel route was modified by another user. Please try again.");
-            }
+
+            var oldStations = await fuelRouteContext.FuelRouteStation
+                 .Where(x => x.FuelRouteId == fuelRoad.Id)
+                 .ToListAsync(cancellationToken);
+
+            fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
+
+
+            await fuelRouteContext.FuelRouteStation.AddRangeAsync(fuelStations);
+            await fuelRouteContext.SaveChangesAsync(cancellationToken);
+
 
             return fuelStationsResult.Value;
         }
 
 
-        public static FuelStation MapToFuelStation(FuelStationDto dto, Guid fuelRouteId)
+        public static FuelRouteStation MapToFuelStation(FuelStationDto dto, Guid fuelRouteId)
         {
-            return new FuelStation
+            return new FuelRouteStation
             {
                 FuelRouteId = fuelRouteId,
-                FuelPointId = dto.Id,
+                //FuelPointId = dto.Id,
 
-                Price = decimal.TryParse(dto.Price, out var price) ? price : 0m,
-                Discount = decimal.TryParse(dto.Discount, out var discount) ? discount : 0m,
-                PriceAfterDiscount = decimal.TryParse(dto.PriceAfterDiscount, out var afterDiscount) ? afterDiscount : 0m,
+                //Price = decimal.TryParse(dto.Price, out var price) ? price : 0m,
+                //Discount = decimal.TryParse(dto.Discount, out var discount) ? discount : 0m,
+                //PriceAfterDiscount = decimal.TryParse(dto.PriceAfterDiscount, out var afterDiscount) ? afterDiscount : 0m,
 
-                Latitude = dto.Latitude,
-                Longitude = dto.Longitude,
+                //Latitude = dto.Latitude,
+                //Longitude = dto.Longitude,
 
-                Name = dto.Name,
-                Address = dto.Address,
+                //Name = dto.Name,
+                //Address = dto.Address,
 
                 IsAlgorithm = dto.IsAlgorithm,
                 Refill = dto.Refill,
                 StopOrder = dto.StopOrder,
-                NextDistanceKm = dto.NextDistanceKm,
-                RoadSectionId = dto.RoadSectionId
+                //NextDistanceKm = dto.NextDistanceKm,
+                //RoadSectionId = dto.RoadSectionId
             };
         }
     }

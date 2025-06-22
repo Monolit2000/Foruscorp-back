@@ -12,12 +12,14 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid RouteId { get; private set; }
         public string EncodeRoute { get; private set; } // Base64 encoded route
 
+        public List<FuelRouteStation> FuelRouteStations = [];
+
 
         public FuelRouteSection() { } 
 
-        public FuelRouteSection(Guid routeId, Guid sectionId, string encodeRoute)
+        public FuelRouteSection(Guid routeId, string encodeRoute)
         {
-            Id = sectionId;
+            Id = Guid.NewGuid();
             RouteId = routeId; 
             EncodeRoute = encodeRoute;  
         }

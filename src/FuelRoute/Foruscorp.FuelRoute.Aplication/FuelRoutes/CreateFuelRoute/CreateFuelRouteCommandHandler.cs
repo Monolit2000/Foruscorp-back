@@ -66,7 +66,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 Guid.NewGuid(), // TODO: replace with truckId
                 LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude),
                 LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude),
-                new List<FuelStation>(),
+                new List<FuelRouteStation>(),
                 new List<MapPoint>());
 
 
@@ -76,7 +76,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                  RouteSectionId = x.RouteSectionId,
                  EncodedRoute = PolylineEncoder.EncodePolyline(x.MapPoints)
              })
-             .Select(x => new FuelRouteSection(fuelRoute.Id, Guid.Parse(x.RouteSectionId), x.EncodedRoute));
+             .Select(x => new FuelRouteSection(fuelRoute.Id, x.EncodedRoute));
 
 
 

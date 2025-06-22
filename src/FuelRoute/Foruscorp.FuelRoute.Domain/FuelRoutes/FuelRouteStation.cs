@@ -6,21 +6,21 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
-    public class FuelStation
+    public class FuelRouteStation
     {
         public Guid FuelRouteId { get; set; }
 
         public Guid FuelPointId { get; set; }
 
-        //public Guid FuelStationId { get; set; }
+        public Guid FuelStationId { get; set; }
 
         public DateTime ScheduledTime { get; set; }
 
         public decimal Price { get; set; } 
         public decimal Discount { get; set; }
         public decimal PriceAfterDiscount { get; set; }
-        public string Latitude { get; set; } = null!;
-        public string Longitude { get; set; } = null!;
+        public string Latitude { get; set; } 
+        public string Longitude { get; set; } 
 
         public string Name { get; set; } 
 
@@ -28,21 +28,21 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public bool IsAlgorithm { get; set; }
 
-        public string Refill { get; set; } = null!;
+        public string Refill { get; set; } 
 
         public int StopOrder { get; set; }
 
-        public string NextDistanceKm { get; set; } = null!;
+        public string NextDistanceKm { get; set; } 
 
-        public string RoadSectionId { get; set; }
+        public Guid RoadSectionId { get; set; }
 
-        public FuelStation() 
+        public FuelRouteStation() 
         {
-            //FuelStationId = Guid.NewGuid();
+            FuelStationId = Guid.NewGuid();
 
         } // For EF Core 
 
-        //private FuelStation(
+        //private FuelRouteStations(
         //    GeoPoint location, 
         //    Guid fuelRouteId, 
         //    decimal fuelPrice,
@@ -54,7 +54,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         //    ScheduledTime = scheduledTime;
         //}
 
-        //public static FuelStation CreateNew(
+        //public static FuelRouteStations CreateNew(
         //    GeoPoint location,
         //    Guid fuelRouteId,
         //    decimal fuelPrice,
@@ -65,7 +65,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         //    if (fuelPrice <= 0)
         //        throw new ArgumentException("Fuel price must be positive", nameof(fuelPrice));
 
-        //    return new FuelStation(
+        //    return new FuelRouteStations(
         //        location,
         //        fuelRouteId,
         //        fuelPrice, 

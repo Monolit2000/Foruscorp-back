@@ -45,6 +45,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<Guid?>("OriginLocationId")
                         .HasColumnType("uuid");
 
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("bytea");
+
                     b.Property<Guid>("TruckId")
                         .HasColumnType("uuid");
 
@@ -57,6 +62,86 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.HasIndex("TruckId");
 
                     b.ToTable("FuelRoutes", "FuelRoutes");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("EncodeRoute")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RouteId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("RouteSections", "FuelRoutes");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteStation", b =>
+                {
+                    b.Property<Guid>("FuelStationId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Address")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Discount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("FuelPointId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("FuelRouteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsAlgorithm")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Latitude")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Longitude")
+                        .HasColumnType("text");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("text");
+
+                    b.Property<string>("NextDistanceKm")
+                        .HasColumnType("text");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("PriceAfterDiscount")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Refill")
+                        .HasColumnType("text");
+
+                    b.Property<Guid>("RoadSectionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("ScheduledTime")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("StopOrder")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FuelStationId");
+
+                    b.HasIndex("FuelRouteId");
+
+                    b.HasIndex("RoadSectionId");
+
+                    b.ToTable("RouteFuelPoints", "FuelRoutes");
                 });
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", b =>
@@ -112,105 +197,33 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("OriginLocationId");
 
-                    b.OwnsMany("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelStation", "FuelStopStations", b1 =>
-                        {
-                            b1.Property<Guid>("FuelPointId")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid")
-                                .HasColumnName("FuelPointId");
-
-                            b1.Property<string>("Address")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<decimal>("Discount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Discount");
-
-                            b1.Property<Guid>("FuelRouteId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<bool>("IsAlgorithm")
-                                .HasColumnType("boolean");
-
-                            b1.Property<string>("Latitude")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Longitude")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("NextDistanceKm")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<decimal>("Price")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Price");
-
-                            b1.Property<decimal>("PriceAfterDiscount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("PriceAfterDiscount");
-
-                            b1.Property<string>("Refill")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<string>("RoadSectionId")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<DateTime>("ScheduledTime")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.Property<int>("StopOrder")
-                                .HasColumnType("integer");
-
-                            b1.HasKey("FuelPointId");
-
-                            b1.HasIndex("FuelRouteId");
-
-                            b1.ToTable("RouteFuelPoints", "FuelRoutes");
-
-                            b1.WithOwner()
-                                .HasForeignKey("FuelRouteId");
-                        });
-
-                    b.OwnsMany("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", "RouteSections", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("EncodeRoute")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<Guid>("RouteId")
-                                .HasColumnType("uuid");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("RouteId");
-
-                            b1.ToTable("RouteSections", "FuelRoutes");
-
-                            b1.WithOwner()
-                                .HasForeignKey("RouteId");
-                        });
-
                     b.Navigation("DestinationLocation");
 
-                    b.Navigation("FuelStopStations");
-
                     b.Navigation("OriginLocation");
+                });
 
-                    b.Navigation("RouteSections");
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", b =>
+                {
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", null)
+                        .WithMany("RouteSections")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteStation", b =>
+                {
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", null)
+                        .WithMany("FuelRouteStations")
+                        .HasForeignKey("FuelRouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", null)
+                        .WithMany("FuelRouteStations")
+                        .HasForeignKey("RoadSectionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", b =>
@@ -256,7 +269,16 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", b =>
                 {
+                    b.Navigation("FuelRouteStations");
+
                     b.Navigation("MapPoints");
+
+                    b.Navigation("RouteSections");
+                });
+
+            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", b =>
+                {
+                    b.Navigation("FuelRouteStations");
                 });
 #pragma warning restore 612, 618
         }

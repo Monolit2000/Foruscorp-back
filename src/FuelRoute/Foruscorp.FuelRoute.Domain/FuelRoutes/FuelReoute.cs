@@ -1,15 +1,16 @@
-﻿using System;
+﻿using Foruscorp.BuildingBlocks.Domain;
+using Microsoft.EntityFrameworkCore.Query.Internal;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
-using Foruscorp.BuildingBlocks.Domain;
-using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
     public class FuelRoute : Entity, IAggregateRoot
     {
-        public List<FuelStation> FuelStopStations = [];
+        public List<FuelRouteStation> FuelRouteStations = [];
 
         public readonly List<MapPoint> MapPoints = [];
 
@@ -24,7 +25,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
 
-        public bool IsAccepted { get; private set; }    
+        public bool IsAccepted { get; private set; }
+        public byte[] RowVersion { get; set; }
 
         private FuelRoute() { } //For EF core 
 
@@ -32,7 +34,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             Guid truckId,
             LocationPoint originLocation,
             LocationPoint destinationLocation,
-            List<FuelStation> fuelPoints,
+            List<FuelRouteStation> fuelPoints,
             List<MapPoint> mapPoints)
         {
 
@@ -58,7 +60,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             //Guid driverId,
             LocationPoint originLocation,
             LocationPoint destinationLocation,
-            List<FuelStation> fuelPoints,
+            List<FuelRouteStation> fuelPoints,
             List<MapPoint> mapPoints)
         {
             return new FuelRoute(
@@ -83,39 +85,45 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             UpdateChangedAt();
         }   
 
-        public void AddFuelPoint(FuelStation fuelPoint)
+        public void AddFuelPoint(FuelRouteStation fuelPoint)
         {
             if (fuelPoint == null)
                 throw new ArgumentNullException(nameof(fuelPoint));
 
             ValidateFuelPoint(fuelPoint);
-            FuelStopStations.Add(fuelPoint);
+            FuelRouteStations.Add(fuelPoint);
             UpdateChangedAt();
         }
 
-        //public void AddFuelPoints(IEnumerable<FuelStation> fuelPoints)
+        //public void AddFuelPoints(IEnumerable<FuelRouteStations> fuelPoints)
         //{
         //    if (fuelPoints == null)
         //        throw new ArgumentNullException(nameof(fuelPoints));
 
         //    foreach (var point in fuelPoints)
         //    {
-        //        if (FuelStopStations.Any(existing => existing.FuelPointId == point.FuelPointId))
+        //        if (FuelRouteStations.Any(existing => existing.FuelPointId == point.FuelPointId))
         //            continue; // пропускаємо дублікати
 
         //        ValidateFuelPoint(point);
-        //        FuelStopStations.Add(point);
+        //        FuelRouteStations.Add(point);
         //    }
 
         //    UpdateChangedAt();
         //}
 
-        public void AddFuelPoints(IEnumerable<FuelStation> fuelPoints)
+        public void AddFuelPoints(IEnumerable<FuelRouteStation> fuelPoints)
         {
-            if (fuelPoints == null)
-                throw new ArgumentNullException(nameof(fuelPoints));
+            if (fuelPoints == null) throw new ArgumentNullException(nameof(fuelPoints));
 
-                FuelStopStations.AddRange(fuelPoints);
+            foreach (var point in fuelPoints)
+            {
+                if (FuelRouteStations.Any(x => x.FuelPointId == point.FuelPointId))
+                    continue;
+
+                FuelRouteStations.Add(point);
+            }
+
             UpdateChangedAt();
         }
 
@@ -132,11 +140,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public void RemoveFuelPoint(Guid fuelPointId)
         {
-            var point = FuelStopStations.FirstOrDefault(fp => fp.FuelPointId == fuelPointId);
+            var point = FuelRouteStations.FirstOrDefault(fp => fp.FuelPointId == fuelPointId);
             if (point == null)
                 throw new InvalidOperationException($"Fuel point with ID {fuelPointId} not found");
 
-            FuelStopStations.Remove(point);
+            FuelRouteStations.Remove(point);
             UpdateChangedAt();
         }
 
@@ -185,7 +193,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 throw new ArgumentException("Origin and destination cannot be the same");
         }
 
-        private void ValidateFuelPoint(FuelStation fuelPoint)
+        private void ValidateFuelPoint(FuelRouteStation fuelPoint)
         {
             //if (_fuelPoints.Any(fp => fp.Id == fuelPoint.Id))
             //    throw new InvalidOperationException("Duplicate fuel point ID");
