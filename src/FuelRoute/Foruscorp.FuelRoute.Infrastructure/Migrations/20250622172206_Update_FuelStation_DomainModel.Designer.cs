@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelRoutes.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelRouteContext))]
-    partial class FuelRouteContextModelSnapshot : ModelSnapshot
+    [Migration("20250622172206_Update_FuelStation_DomainModel")]
+    partial class Update_FuelStation_DomainModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -38,6 +41,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                     b.Property<Guid?>("DestinationLocationId")
                         .HasColumnType("uuid");
+
+                    b.Property<string>("EncodeRoute")
+                        .HasColumnType("text");
 
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
@@ -112,20 +118,16 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         .WithMany()
                         .HasForeignKey("OriginLocationId");
 
-                    b.OwnsMany("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelStation", "FuelStopStations", b1 =>
+                    b.OwnsMany("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelStopStation", "FuelStopStations", b1 =>
                         {
                             b1.Property<Guid>("FuelPointId")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid")
                                 .HasColumnName("FuelPointId");
 
-                            b1.Property<string>("Address")
-                                .IsRequired()
-                                .HasColumnType("text");
-
-                            b1.Property<decimal>("Discount")
+                            b1.Property<decimal>("FuelPrice")
                                 .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Discount");
+                                .HasColumnName("FuelPrice");
 
                             b1.Property<Guid>("FuelRouteId")
                                 .HasColumnType("uuid");
@@ -141,21 +143,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                                 .IsRequired()
                                 .HasColumnType("text");
 
-                            b1.Property<string>("Name")
-                                .IsRequired()
-                                .HasColumnType("text");
-
                             b1.Property<string>("NextDistanceKm")
                                 .IsRequired()
                                 .HasColumnType("text");
-
-                            b1.Property<decimal>("Price")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("Price");
-
-                            b1.Property<decimal>("PriceAfterDiscount")
-                                .HasColumnType("decimal(18,2)")
-                                .HasColumnName("PriceAfterDiscount");
 
                             b1.Property<string>("Refill")
                                 .IsRequired()

@@ -19,12 +19,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             if (fuelRoute == null)
                 return Result.Fail("Route not found");
 
-            var decodedRoute = PolylineEncoder.DecodePolyline(fuelRoute.EncodeRoute);
+            //var decodedRoute = PolylineEncoder.DecodePolyline(fuelRoute.EncodeRoute);
 
             var routeDto = new RouteDto
             {
                 RouteSectionId = "1",
-                MapPoints = decodedRoute
+                //MapPoints = decodedRoute
             };
 
             //return new FuelRouteDto

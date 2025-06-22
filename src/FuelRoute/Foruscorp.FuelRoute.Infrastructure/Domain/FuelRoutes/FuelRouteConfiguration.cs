@@ -21,8 +21,6 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.TruckId)
                 .IsRequired();
 
-            builder.Property(fr => fr.EncodeRoute)
-                .IsRequired(false);
 
             builder.Property(fr => fr.CreatedAt)
                 .IsRequired();
@@ -47,42 +45,61 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             {
                 fuelPointBuilder.ToTable("RouteFuelPoints");
 
-                fuelPointBuilder.WithOwner().HasForeignKey("FuelRouteId");
+                fuelPointBuilder.WithOwner().HasForeignKey(x => x.FuelRouteId);
 
                 fuelPointBuilder.HasKey(fp => fp.FuelPointId);
 
                 fuelPointBuilder.Property(fp => fp.FuelPointId)
-                    .HasColumnName("FuelPointId")
-                    .ValueGeneratedOnAdd();
+                    .HasColumnName("FuelPointId");
+                    //.ValueGeneratedOnAdd();
 
                 fuelPointBuilder.Property(fp => fp.FuelRouteId)
                     .IsRequired();
 
-                fuelPointBuilder.Property(fp => fp.SectionId)
-                    .IsRequired(false);
-
-                fuelPointBuilder.OwnsOne(fp => fp.Location, geoPointBuilder =>
-                {
-                    geoPointBuilder.Property(gp => gp.Latitude)
-                        .HasColumnName(nameof(GeoPoint.Latitude))
-                        .IsRequired(); 
-
-                    geoPointBuilder.Property(gp => gp.Longitude)
-                        .HasColumnName(nameof(GeoPoint))
-                        .IsRequired();
-                });
-
-
-                fuelPointBuilder.Property(fp => fp.FuelPrice)
-                    .HasColumnName(nameof(FuelStopStation.FuelPrice))
+                fuelPointBuilder.Property(fp => fp.Price)
+                    .HasColumnName(nameof(FuelStation.Price))
                     .IsRequired()
-                    .HasColumnType("decimal(18,2)"); 
+                    .HasColumnType("decimal(18,2)");
+
+                fuelPointBuilder.Property(fp => fp.Discount)
+                    .HasColumnName(nameof(FuelStation.Discount))
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)");
+
+                fuelPointBuilder.Property(fp => fp.PriceAfterDiscount)
+                    .HasColumnName(nameof(FuelStation.PriceAfterDiscount))
+                    .IsRequired()
+                    .HasColumnType("decimal(18,2)");
 
                 fuelPointBuilder.Property(fp => fp.ScheduledTime)
                     .IsRequired();
 
-                fuelPointBuilder.WithOwner()
-                    .HasForeignKey(fp => fp.FuelRouteId);
+                fuelPointBuilder.Property(fp => fp.Latitude)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.Longitude)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.Name)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.Address)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.IsAlgorithm)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.Refill)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.StopOrder)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.NextDistanceKm)
+                    .IsRequired();
+
+                fuelPointBuilder.Property(fp => fp.RoadSectionId)
+                    .IsRequired();
             });
 
             builder.HasMany(fr => fr.MapPoints)

@@ -4,8 +4,10 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -73,6 +75,19 @@ namespace Foruscorp.FuelRoutes.API.Controllers
                 return Ok(result.Value);
 
             return NotFound(result.Errors);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FuelStationDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("get-fuel-stations")]
+        public async Task<IActionResult> GetFuelStation(GetFuelStationsCommand getFuelStationsCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(getFuelStationsCommand);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
         }
 
 

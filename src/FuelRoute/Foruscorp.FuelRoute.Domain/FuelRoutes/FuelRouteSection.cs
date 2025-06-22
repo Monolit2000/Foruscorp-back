@@ -15,9 +15,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public FuelRouteSection() { } 
 
-        public FuelRouteSection(Guid routeId, string encodeRoute)
+        public FuelRouteSection(Guid routeId, Guid sectionId, string encodeRoute)
         {
-            Id = Guid.NewGuid();
+            Id = sectionId;
             RouteId = routeId; 
             EncodeRoute = encodeRoute;  
         }

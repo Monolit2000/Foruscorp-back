@@ -32,14 +32,14 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 Guid.NewGuid(),
                 originPoint,
                 destinationPoint,
-                new List<FuelStopStation>(),
+                new List<FuelStation>(),
                 new List<MapPoint>());
 
             var mupPoints = section.ShowShape
                 .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
 
             var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
-            fuelRoute.AddEncodedRoute(encodedRoute);
+            //fuelRoute.AddEncodedRoute(encodedRoute);
 
             await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
             await fuelRouteContext.SaveChangesAsync(cancellationToken);

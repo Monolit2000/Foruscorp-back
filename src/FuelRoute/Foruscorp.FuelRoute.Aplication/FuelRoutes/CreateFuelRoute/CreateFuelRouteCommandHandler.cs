@@ -20,7 +20,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
         IMemoryCache memoryCache,
         ISender sender) : IRequestHandler<CreateFuelRouteCommand, Result<FuelRouteDto>>
     {
-        private record RoutePoints(string RouteId, List<List<double>> MapPoints);
+        private record RoutePoints(string RouteSectionId, List<List<double>> MapPoints);
 
         public record RouteInfo(string RouteSectionId ,double Tolls, double Gallons, double Miles, int DriveTime);
 
@@ -66,15 +66,22 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 Guid.NewGuid(), // TODO: replace with truckId
                 LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude),
                 LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude),
-                new List<FuelStopStation>(),
+                new List<FuelStation>(),
                 new List<MapPoint>());
 
 
             var routeSections = points
-                .Select(x => PolylineEncoder.EncodePolyline(x.MapPoints))
-                .Select(encodedRoute => new FuelRouteSection(fuelRoute.Id, encodedRoute));
+             .Select(x => new
+             {
+                 RouteSectionId = x.RouteSectionId,
+                 EncodedRoute = PolylineEncoder.EncodePolyline(x.MapPoints)
+             })
+             .Select(x => new FuelRouteSection(fuelRoute.Id, Guid.Parse(x.RouteSectionId), x.EncodedRoute));
 
-            var fuelStopStationsList = await GetFuelStationsAsync(points);
+
+
+
+            //var fuelStopStationsList = await GetFuelStationsAsync(points);
 
             fuelRoute.SetRouteSections(routeSections);
 
@@ -86,7 +93,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             {
                 ResponseId = result.Id,
                 RouteDtos = sections.ToList(),
-                FuelStationDtos = fuelStopStationsList
+                //FuelStationDtos = fuelStopStationsList
             };
         }
 
@@ -95,7 +102,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var roads = points
                 .Select(x => new RoadSectionDto
                 {
-                    RoadSectionId = x.RouteId,
+                    RoadSectionId = x.RouteSectionId,
                     Points = x.MapPoints
                 })
                 .ToList();

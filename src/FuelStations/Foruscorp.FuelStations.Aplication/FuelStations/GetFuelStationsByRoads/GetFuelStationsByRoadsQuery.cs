@@ -1,11 +1,14 @@
-﻿using MediatR;
-using FluentResults;
+﻿using FluentResults;
+using MediatR;
+using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
     public class GetFuelStationsByRoadsQuery : IRequest<Result<List<FuelStationDto>>>
     {
         public List<RoadSectionDto> Roads { get; set; } = new List<RoadSectionDto>();
+
+        public List<RequiredStationDto> RequiredFuelStations { get; set; } = new List<RequiredStationDto>();
     }
 
 
