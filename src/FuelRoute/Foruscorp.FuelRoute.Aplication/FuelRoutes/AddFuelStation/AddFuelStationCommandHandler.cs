@@ -39,16 +39,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation
             if(!request.RequiredFuelStations.Any())
                 return Result.Fail("Required fuel stations list cannot be empty.");
 
-            // Преобразуем список из request в словарь для быстрого доступа по StationId
             var requestStationsDict = request.RequiredFuelStations
                 .ToDictionary(x => x.StationId, x => x);
 
-            // Объединяем: если в request есть такая станция — берем её, иначе берем из fuelRoad
             var mergedStations = fuelRoadStations
                 .Select(s => requestStationsDict.TryGetValue(s.StationId, out var reqStation) ? reqStation : s)
                 .ToList();
 
-            // Добавляем станции из request, которые отсутствуют в fuelRoad
             var extraRequestStations = request.RequiredFuelStations
                 .Where(x => !fuelRoadStations.Any(y => y.StationId == x.StationId));
 

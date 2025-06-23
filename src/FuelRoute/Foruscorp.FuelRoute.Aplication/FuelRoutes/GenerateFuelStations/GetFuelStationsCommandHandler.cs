@@ -1,11 +1,13 @@
-﻿using MediatR;
-using FluentResults;
-using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
-using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
-using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
+using MassTransit;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
+using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 {
@@ -48,7 +50,55 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
                 roadSectionDtos.Add(roadSectionDto);
             }
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = request.RequiredFuelStations}, cancellationToken);
+
+
+
+            var requiredStationDtos = new List<RequiredStationDto>(request.RequiredFuelStations);
+
+          
+
+            var fuelRoadStations = fuelRoad.FuelRouteStations
+             .Where(x => x.IsAlgorithm)
+             .Select(s => new RequiredStationDto
+             {
+                 StationId = s.FuelStationId,
+                 RefillLiters = double.TryParse(s.Refill, out var refill) ? refill : 0.0
+             })
+             .ToList();
+
+
+            if (fuelRoadStations.Any() && request.RequiredFuelStations.Any())
+            {
+
+                if (!request.RequiredFuelStations.Any())
+                    return Result.Fail("Required fuel stations list cannot be empty.");
+
+                // Преобразуем список из request в словарь для быстрого доступа по StationId
+                var requestStationsDict = request.RequiredFuelStations
+                    .ToDictionary(x => x.StationId, x => x);
+
+                // Объединяем: если в request есть такая станция — берем её, иначе берем из fuelRoad
+                var mergedStations = fuelRoadStations
+                    .Select(s => requestStationsDict.TryGetValue(s.StationId, out var reqStation) ? reqStation : s)
+                    .ToList();
+
+                // Добавляем станции из request, которые отсутствуют в fuelRoad
+                var extraRequestStations = request.RequiredFuelStations
+                    .Where(x => !fuelRoadStations.Any(y => y.StationId == x.StationId));
+
+                mergedStations.AddRange(extraRequestStations);
+
+
+                requiredStationDtos = mergedStations;
+
+            }
+
+
+
+
+
+
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos }, cancellationToken);
 
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");

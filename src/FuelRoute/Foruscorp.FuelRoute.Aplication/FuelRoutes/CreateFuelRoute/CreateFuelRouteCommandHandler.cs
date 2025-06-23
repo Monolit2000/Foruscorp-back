@@ -22,7 +22,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
     {
         private record RoutePoints(string RouteSectionId, List<List<double>> MapPoints);
 
-        public record RouteInfo(string RouteSectionId ,double Tolls, double Gallons, double Miles, int DriveTime);
+        public record RouteInfo(double Tolls, double Gallons, double Miles, int DriveTime);
 
         public async Task<Result<FuelRouteDto>> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
@@ -47,7 +47,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                     RouteSectionId = s.Id,
                     MapPoints = s.ShowShape,
                     RouteInfo = ExtractRouteSectionInfo(s)
-                });
+                }).ToList();
 
             var points = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
@@ -81,9 +81,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                  RouteSectionId = x.RouteSectionId,
                  EncodedRoute = PolylineEncoder.EncodePolyline(x.MapPoints)
              })
-             .Select(x => new FuelRouteSection(fuelRoute.Id, x.EncodedRoute));
+             .Select(x => new FuelRouteSection(fuelRoute.Id, x.RouteSectionId, x.EncodedRoute)).ToList();
 
 
+            foreach (var section in sections)
+            {
+                var matchingRouteSection = routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId);
+                if (matchingRouteSection != null)
+                {
+                    section.RouteSectionId = matchingRouteSection.Id.ToString();
+                }
+            }
 
 
             //var fuelStopStationsList = await GetFuelStationsAsync(points);
@@ -97,7 +105,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             return new FuelRouteDto
             {
                 RouteId = fuelRoute.Id.ToString(),
-                RouteDtos = sections.ToList(),
+                RouteDtos = sections,
                 //FuelStationDtos = fuelStopStationsList
             };
         }
@@ -137,7 +145,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
                     double tolls = section.Tolls?.Count ?? 0;
 
-                    routeInfos.Add(new RouteInfo(section.Id, tolls, 0.0, miles, driveTime));
+                    routeInfos.Add(new RouteInfo(tolls, 0.0, miles, driveTime));
                 }
             }
 
@@ -158,7 +166,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
                 double tolls = section.Tolls?.Count ?? 0;
 
-                routeInfos.Add(new RouteInfo(section.Id, tolls, 0.0, miles, driveTime));
+                routeInfos.Add(new RouteInfo(tolls, 0.0, miles, driveTime));
             }
 
             return routeInfos;
@@ -174,7 +182,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             double tolls = section.Tolls?.Count ?? 0;
 
-            var routeInfo = new RouteInfo(section.Id, tolls, 0.0, miles, driveTime);
+            var routeInfo = new RouteInfo(tolls, 0.0, miles, driveTime);
 
             return routeInfo;
         }
