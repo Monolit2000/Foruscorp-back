@@ -13,7 +13,7 @@
 //        {
 //            return new FuelStationDto
 //            {
-//                Id = fuelStationResponce.Id,
+//                RoadSectionId = fuelStationResponce.RoadSectionId,
 //                Latitude = fuelStationResponce.Latitude,
 //                Longitude = fuelStationResponce.Longitude,
 //                Name = fuelStationResponce.Name,

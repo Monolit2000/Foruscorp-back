@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Foruscorp.FuelRoutes.Infrastructure.Percistence
 {
@@ -14,6 +15,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Percistence
         public DbSet<FuelRoute> FuelRoutes { get; set; }
 
         public DbSet<MapPoint> MapPoints { get; set; }
+
+        public DbSet<FuelRouteStation> FuelRouteStation { get; set; }
+
+        public DbSet<FuelRouteSection> RouteSections { get; set; }
 
         public FuelRouteContext(DbContextOptions<FuelRouteContext> options) : base(options)
         {

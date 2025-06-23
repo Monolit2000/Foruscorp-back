@@ -1,5 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Runtime.CompilerServices;
 
@@ -17,22 +18,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .HasColumnName("FuelRouteId")
                 .ValueGeneratedOnAdd();
 
-            //builder.Property(fr => fr.DriverId)
-            //    .IsRequired();
-
             builder.Property(fr => fr.TruckId)
                 .IsRequired();
 
-            builder.Property(fr => fr.Origin)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.Property(fr => fr.Destination)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.Property(fr => fr.EncodeRoute)
-                .IsRequired(false);
 
             builder.Property(fr => fr.CreatedAt)
                 .IsRequired();
@@ -40,44 +28,89 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.ChangedAt)
                 .IsRequired();
 
-            builder.OwnsMany(fr => fr.FuelPoints, fuelPointBuilder =>
-            {
-                fuelPointBuilder.ToTable("RouteFuelPoints");
 
-                fuelPointBuilder.WithOwner().HasForeignKey("FuelRouteId");
-
-                fuelPointBuilder.HasKey(fp => fp.FuelPointId);
-
-                fuelPointBuilder.Property(fp => fp.FuelPointId)
-                    .HasColumnName("FuelPointId")
-                    .ValueGeneratedOnAdd();
-
-                fuelPointBuilder.Property(fp => fp.FuelRouteId)
-                    .IsRequired();
-
-                fuelPointBuilder.OwnsOne(fp => fp.Location, geoPointBuilder =>
-                {
-                    geoPointBuilder.Property(gp => gp.Latitude)
-                        .HasColumnName(nameof(GeoPoint.Latitude))
-                        .IsRequired(); 
-
-                    geoPointBuilder.Property(gp => gp.Longitude)
-                        .HasColumnName(nameof(GeoPoint))
-                        .IsRequired();
-                });
+            builder.Property(fr => fr.RowVersion)
+                .IsRowVersion()
+                .IsConcurrencyToken();
 
 
-                fuelPointBuilder.Property(fp => fp.FuelPrice)
-                    .HasColumnName(nameof(RouteFuelPoint.FuelPrice))
-                    .IsRequired()
-                    .HasColumnType("decimal(18,2)"); 
+            //builder.OwnsMany(fr => fr.RouteSections, routeSectionBuilder =>
+            //{
+            //    routeSectionBuilder.HasKey(fp => fp.Id);
 
-                fuelPointBuilder.Property(fp => fp.ScheduledTime)
-                    .IsRequired();
+            //    routeSectionBuilder.ToTable("RouteSections");
 
-                fuelPointBuilder.WithOwner()
-                    .HasForeignKey(fp => fp.FuelRouteId);
-            });
+            //    routeSectionBuilder.WithOwner().HasForeignKey(rs => rs.RouteId);
+
+            //    routeSectionBuilder.Property(rs => rs.EncodeRoute).IsRequired(true);    
+
+                
+            //});
+
+
+            //builder.OwnsMany(fr => fr.FuelRouteStations, fuelPointBuilder =>
+            //{
+            //    fuelPointBuilder.ToTable("RouteFuelPoints");
+
+            //    fuelPointBuilder.WithOwner().HasForeignKey(x => x.FuelRouteId);
+
+            //    //fuelPointBuilder.HasKey(fp => fp.FuelPointId);
+            //    fuelPointBuilder.HasKey(fp => fp.FuelStationId);
+
+
+
+            //    fuelPointBuilder.Property(fp => fp.FuelPointId)
+            //        .HasColumnName("FuelPointId");
+            //        //.ValueGeneratedOnAdd();
+
+            //    fuelPointBuilder.Property(fp => fp.FuelRouteId)
+            //        .IsRequired();
+
+            //    fuelPointBuilder.Property(fp => fp.Price)
+            //        .HasColumnName(nameof(FuelRouteStations.Price))
+            //        .IsRequired()
+            //        .HasColumnType("decimal(18,2)");
+
+            //    fuelPointBuilder.Property(fp => fp.Discount)
+            //        .HasColumnName(nameof(FuelRouteStations.Discount))
+            //        .IsRequired()
+            //        .HasColumnType("decimal(18,2)");
+
+            //    fuelPointBuilder.Property(fp => fp.PriceAfterDiscount)
+            //        .HasColumnName(nameof(FuelRouteStations.PriceAfterDiscount))
+            //        .IsRequired()
+            //        .HasColumnType("decimal(18,2)");
+
+            //    fuelPointBuilder.Property(fp => fp.ScheduledTime)
+            //        .IsRequired();
+
+            //    fuelPointBuilder.Property(fp => fp.Latitude)
+            //        .IsRequired();
+
+            //    fuelPointBuilder.Property(fp => fp.Longitude)
+            //        .IsRequired(false);
+
+            //    fuelPointBuilder.Property(fp => fp.Name)
+            //        .IsRequired(false);
+
+            //    fuelPointBuilder.Property(fp => fp.Address)
+            //        .IsRequired(false);
+
+            //    fuelPointBuilder.Property(fp => fp.IsAlgorithm)
+            //        .IsRequired();
+
+            //    fuelPointBuilder.Property(fp => fp.Refill)
+            //        .IsRequired(false);
+
+            //    fuelPointBuilder.Property(fp => fp.StopOrder)
+            //        .IsRequired();
+
+            //    fuelPointBuilder.Property(fp => fp.NextDistanceKm)
+            //        .IsRequired(false);
+
+            //    fuelPointBuilder.Property(fp => fp.RoadSectionId)
+            //        .IsRequired(false);
+            //});
 
             builder.HasMany(fr => fr.MapPoints)
                 .WithOne()
@@ -87,9 +120,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             //{
             //    mp.ToTable("MapPoints");
 
-            //    mp.HasKey(p => p.Id);
+            //    mp.HasKey(p => p.RoadSectionId);
 
-            //    mp.Property(p => p.RouteId)
+            //    mp.Property(p => p.RouteSectionId)
             //        .IsRequired();
 
             //    mp.OwnsOne(p => p.GeoPoint, gp =>

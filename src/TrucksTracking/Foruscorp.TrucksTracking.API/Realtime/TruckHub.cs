@@ -20,6 +20,10 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         string TruckId, 
         double fuelPercentage);
 
+    public sealed record TruckStausUpdate(
+        string TruckId,
+        string Status);
+
     public sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {
         public async Task JoinTruckGroup(string truckId)

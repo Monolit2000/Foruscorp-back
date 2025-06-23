@@ -12,13 +12,13 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
 
             builder.HasKey(mp => mp.Id);
 
-            //builder.Property(mp => mp.Id)
+            //builder.Property(mp => mp.RoadSectionId)
             //    .ValueGeneratedOnAdd();
 
             builder.Property(mp => mp.RouteId)
                 .IsRequired();
 
-            //builder.HasIndex(mp => mp.RouteId); // для прискорення JOIN-ів по маршруту
+            //builder.HasIndex(mp => mp.RouteSectionId); // для прискорення JOIN-ів по маршруту
 
             builder.OwnsOne(mp => mp.GeoPoint, gp =>
             {
@@ -34,7 +34,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             // Якщо є навігаційна властивість до FuelRoute:
             // builder.HasOne<FuelRoute>()
             //        .WithMany(fr => fr.MapPoints)
-            //        .HasForeignKey(mp => mp.RouteId);
+            //        .HasForeignKey(mp => mp.RouteSectionId);
         }
     }
 }
