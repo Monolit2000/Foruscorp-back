@@ -2,6 +2,7 @@
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations;
@@ -83,6 +84,19 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         public async Task<IActionResult> GetFuelStation(GetFuelStationsCommand getFuelStationsCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(getFuelStationsCommand);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<FuelStationDto>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("add-fuel-station")]
+        public async Task<IActionResult> AddFuelStation(AddFuelStationCommand addFuelStationCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(addFuelStationCommand);
 
             if (result.IsSuccess)
                 return Ok(result.Value);

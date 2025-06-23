@@ -24,7 +24,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
                 return Result.Fail($"Fuel route with id:{request.RouteId} not found.");    
 
 
-
             var routeSections = fuelRoad.RouteSections
                 .Where(x => request.RouteSectionIds.Count > 0 && request.RouteSectionIds.Contains(x.Id.ToString()))
                 .ToList();
@@ -77,23 +76,23 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
             return new FuelRouteStation
             {
                 FuelRouteId = fuelRouteId,
-                //FuelPointId = dto.Id,
+                FuelPointId = dto.Id,
 
-                //Price = decimal.TryParse(dto.Price, out var price) ? price : 0m,
-                //Discount = decimal.TryParse(dto.Discount, out var discount) ? discount : 0m,
-                //PriceAfterDiscount = decimal.TryParse(dto.PriceAfterDiscount, out var afterDiscount) ? afterDiscount : 0m,
+                Price = decimal.TryParse(dto.Price, out var price) ? price : 0m,
+                Discount = decimal.TryParse(dto.Discount, out var discount) ? discount : 0m,
+                PriceAfterDiscount = decimal.TryParse(dto.PriceAfterDiscount, out var afterDiscount) ? afterDiscount : 0m,
 
-                //Latitude = dto.Latitude,
-                //Longitude = dto.Longitude,
+                Latitude = dto.Latitude,
+                Longitude = dto.Longitude,
 
-                //Name = dto.Name,
-                //Address = dto.Address,
+                Name = dto.Name,
+                Address = dto.Address,
 
                 IsAlgorithm = dto.IsAlgorithm,
                 Refill = dto.Refill,
                 StopOrder = dto.StopOrder,
-                //NextDistanceKm = dto.NextDistanceKm,
-                //RoadSectionId = dto.RoadSectionId
+                NextDistanceKm = dto.NextDistanceKm,
+                RoadSectionId = Guid.Parse(dto.RoadSectionId)
             };
         }
     }
