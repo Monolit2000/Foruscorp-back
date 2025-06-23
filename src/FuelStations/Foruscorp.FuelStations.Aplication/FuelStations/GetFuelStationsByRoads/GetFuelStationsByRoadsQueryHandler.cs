@@ -81,11 +81,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var allStopPlans = new List<FuelStopPlan>();
             var allStationsWithoutAlgo = new List<FuelStationDto>();
 
-            var requiredStationDtos = new List<RequiredStationDto>(); // заполни по нужде
+            //var requiredStationDtos = new List<RequiredStationDto>(); // заполни по нужде
 
             foreach (var road in request.Roads)
             {
-                var (stopPlan, stationsWithoutAlgo) = PlanRouteStopsForRoad(road, stations, requiredStationDtos);
+                var (stopPlan, stationsWithoutAlgo) = PlanRouteStopsForRoad(road, stations, request.RequiredFuelStations);
 
                 allStopPlans.AddRange(stopPlan);
                 allStationsWithoutAlgo.AddRange(stationsWithoutAlgo);
@@ -386,7 +386,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var requiredInfos = requiredStops
                 .Select(r =>
                 {
-                    var si = stationInfos.FirstOrDefault(x => x.Station.Id == r.StationId);
+                    var si = stationInfos.FirstOrDefault(x => x.Station != null && x.Station.Id == r.StationId);
                     if (si == null) return null;
                     return new
                     {

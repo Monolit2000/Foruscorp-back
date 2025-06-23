@@ -91,7 +91,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             return new FuelRouteDto
             {
-                ResponseId = result.Id,
+                RouteId = fuelRoute.Id.ToString(),
                 RouteDtos = sections.ToList(),
                 //FuelStationDtos = fuelStopStationsList
             };

@@ -29,7 +29,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
             //return new FuelRouteDto
             //{
-            //    ResponseId = result.RoadSectionId,
+            //    RouteId = result.RoadSectionId,
             //    RouteDtos = new List<RouteDto>(){routeDto},
             //    FuelStationDtos = fuelStations
             //};

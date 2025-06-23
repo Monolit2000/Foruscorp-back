@@ -10,7 +10,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 {
     public class FuelRouteDto
     {
-        public string ResponseId { get; set; } 
+        public string RouteId { get; set; } 
 
         public List<RouteDto> RouteDtos { get; set; } = new List<RouteDto>();  
         
