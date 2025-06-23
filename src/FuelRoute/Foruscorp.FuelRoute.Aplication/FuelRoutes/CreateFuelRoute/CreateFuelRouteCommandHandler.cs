@@ -45,7 +45,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .Select(s => new RouteDto
                 {
                     RouteSectionId = s.Id,
-                    MapPoints = s.ShowShape
+                    MapPoints = s.ShowShape,
+                    RouteInfo = ExtractRouteSectionInfo(s)
                 });
 
             var points = result.Routes.WaypointsAndShapes
@@ -56,6 +57,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                     GeoUtils.FilterPointsByDistance(s.ShowShape, 15.0)))
                 .ToList();
 
+
+            //var sectionsInfo = ExtractRouteInfo(result.Routes.WaypointsAndShapes
+            //   .Where(ws => ws != null && ws.Sections != null)
+            //   .SelectMany(x => x.Sections));
 
 
 

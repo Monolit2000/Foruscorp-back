@@ -69,11 +69,11 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckLocationUpdate(locationUpdate);
                 await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckFuelUpdate(fuelUpdate);
 
-                logger.LogInformation("Updated {@Tracker} location",
-                    truck);
+                //logger.LogInformation("Updated {@Tracker} location",
+                //    truck);
 
-                logger.LogInformation("Updated {@FuelUpdate} location",
-                    fuelUpdate);
+                //logger.LogInformation("Updated {@FuelUpdate} location",
+                //    fuelUpdate);
             }
         }
 

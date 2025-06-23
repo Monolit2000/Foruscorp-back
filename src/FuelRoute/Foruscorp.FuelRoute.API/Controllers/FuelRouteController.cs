@@ -37,7 +37,6 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return Ok(result.Value);
         }
 
-
         [HttpPost("accept-fuel-route")]
         public async Task<ActionResult> AcceptFuelRouteCommand(AcceptFuelRouteCommand acceptFuelRouteCommand, CancellationToken cancellationToken)
         {

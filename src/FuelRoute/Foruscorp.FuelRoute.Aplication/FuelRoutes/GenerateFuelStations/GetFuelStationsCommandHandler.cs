@@ -55,10 +55,14 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 
             var fuelStations = fuelStationsResult.Value.Select(x => MapToFuelStation(x, fuelRoad.Id));
 
+            var sectionIds = roadSectionDtos
+                .Select(dto => Guid.Parse(dto.RoadSectionId))
+                .ToHashSet();
+
 
             var oldStations = await fuelRouteContext.FuelRouteStation
-                 .Where(x => x.FuelRouteId == fuelRoad.Id)
-                 .ToListAsync(cancellationToken);
+                .Where(x => x.FuelRouteId == fuelRoad.Id && sectionIds.Contains(x.RoadSectionId))
+                .ToListAsync(cancellationToken);
 
             fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
 

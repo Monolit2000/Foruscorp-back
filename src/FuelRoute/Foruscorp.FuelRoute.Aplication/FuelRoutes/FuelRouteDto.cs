@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute.CreateFuelRouteCommandHandler;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 {
@@ -22,6 +23,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
         public string RouteSectionId { get; set; } 
 
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
+
+        public RouteInfo RouteInfo { get; set; } 
     }
 
 }
