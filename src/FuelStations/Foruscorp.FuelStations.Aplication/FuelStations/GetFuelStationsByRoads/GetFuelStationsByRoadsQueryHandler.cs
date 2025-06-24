@@ -191,16 +191,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
 
-        private List<FuelStationDto> RemoveDuplicatesByAddress(List<FuelStationDto> fuelStations)
-        {
-            return fuelStations
-                .GroupBy(station => station.Address) // Group by address
-                .Select(group =>
-                    group.OrderByDescending(station => station.IsAlgorithm) // Prioritize isAlgorithm: true
-                         .First()) // Take the first (true if exists, else false)
-                .ToList();
-        }
-
         private List<FuelStationDto> RemoveDuplicatesByCoordinates(List<FuelStationDto> fuelStations)
         {
             return fuelStations
@@ -214,7 +204,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
         private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
         {
-
             var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
             {
                 var matchingStation = stopPlan.FirstOrDefault(s => s.Id == station.Id && s.RoadSectionId == station.RoadSectionId);
@@ -260,52 +249,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             return updatedFuelStations ?? new List<FuelStationDto>();
         }
 
-
-        //private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
-        //{
-        //    // Если дубликаты допустимы — берём только первый match по Id
-        //    var stopPlanDict = stopPlan
-        //        .GroupBy(s => s.Id)
-        //        .ToDictionary(g => g.Key, g => g.First());
-
-        //    var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
-        //    {
-        //        var updatedStation = CloneStation(station);
-
-        //        if (stopPlanDict.TryGetValue(station.Id, out var match))
-        //        {
-        //            updatedStation.IsAlgorithm = match.IsAlgorithm;
-        //            updatedStation.Refill = match.Refill;
-        //            updatedStation.StopOrder = match.StopOrder;
-        //            updatedStation.NextDistanceKm = match.NextDistanceKm;
-        //            updatedStation.RoadSectionId = match.RoadSectionId;
-        //        }
-
-        //        return updatedStation;
-        //    }).ToList();
-
-        //    return updatedFuelStations;
-        //}
-
-        //private FuelStationDto CloneStation(FuelStationDto station)
-        //{
-        //    return new FuelStationDto
-        //    {
-        //        Id = station.Id,
-        //        Name = station.Name,
-        //        Address = station.Address,
-        //        Latitude = station.Latitude,
-        //        Longitude = station.Longitude,
-        //        Price = station.Price,
-        //        Discount = station.Discount,
-        //        PriceAfterDiscount = station.PriceAfterDiscount,
-        //        IsAlgorithm = station.IsAlgorithm,
-        //        Refill = station.Refill,
-        //        StopOrder = station.StopOrder,
-        //        NextDistanceKm = station.NextDistanceKm,
-        //        RoadSectionId = station.RoadSectionId
-        //    };
-        //}
 
 
         private List<FuelStopPlan> PlanStopsByStations(

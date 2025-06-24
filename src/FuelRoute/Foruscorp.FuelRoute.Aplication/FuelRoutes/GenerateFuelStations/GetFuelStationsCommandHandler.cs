@@ -54,42 +54,42 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 
             var requiredStationDtos = new List<RequiredStationDto>(request.RequiredFuelStations);
 
-          
-
-            var fuelRoadStations = fuelRoad.FuelRouteStations
-             .Where(x => x.IsAlgorithm)
-             .Select(s => new RequiredStationDto
-             {
-                 StationId = s.FuelStationId,
-                 RefillLiters = double.TryParse(s.Refill, out var refill) ? refill : 0.0
-             })
-             .ToList();
 
 
-            if (fuelRoadStations.Any() && request.RequiredFuelStations.Any())
-            {
-
-                if (!request.RequiredFuelStations.Any())
-                    return Result.Fail("Required fuel stations list cannot be empty.");
-
-          
-                var requestStationsDict = request.RequiredFuelStations
-                    .ToDictionary(x => x.StationId, x => x);
-
-         
-                var mergedStations = fuelRoadStations
-                    .Select(s => requestStationsDict.TryGetValue(s.StationId, out var reqStation) ? reqStation : s)
-                    .ToList();
-
-          
-                var extraRequestStations = request.RequiredFuelStations
-                    .Where(x => !fuelRoadStations.Any(y => y.StationId == x.StationId));
-
-                mergedStations.AddRange(extraRequestStations);
+            //var fuelRoadStations = fuelRoad.FuelRouteStations
+            // .Where(x => x.IsAlgorithm)
+            // .Select(s => new RequiredStationDto
+            // {
+            //     StationId = s.FuelStationId,
+            //     RefillLiters = double.TryParse(s.Refill, out var refill) ? refill : 0.0
+            // })
+            // .ToList();
 
 
-                requiredStationDtos = mergedStations;
-            }
+            //if (fuelRoadStations.Any() && request.RequiredFuelStations.Any())
+            //{
+
+            //    if (!request.RequiredFuelStations.Any())
+            //        return Result.Fail("Required fuel stations list cannot be empty.");
+
+
+            //    var requestStationsDict = request.RequiredFuelStations
+            //        .ToDictionary(x => x.StationId, x => x);
+
+
+            //    var mergedStations = fuelRoadStations
+            //        .Select(s => requestStationsDict.TryGetValue(s.StationId, out var reqStation) ? reqStation : s)
+            //        .ToList();
+
+
+            //    var extraRequestStations = request.RequiredFuelStations
+            //        .Where(x => !fuelRoadStations.Any(y => y.StationId == x.StationId));
+
+            //    mergedStations.AddRange(extraRequestStations);
+
+
+            //    requiredStationDtos = mergedStations;
+            //}
 
 
             var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos }, cancellationToken);
