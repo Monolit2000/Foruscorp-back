@@ -1,17 +1,20 @@
-﻿using MediatR;
-using FluentResults;
+﻿using FluentResults;
+using MediatR;
+using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
     public class GetFuelStationsByRoadsQuery : IRequest<Result<List<FuelStationDto>>>
     {
-        public List<Road> Roads { get; set; } = new List<Road>();
+        public List<RoadSectionDto> Roads { get; set; } = new List<RoadSectionDto>();
+
+        public List<RequiredStationDto> RequiredFuelStations { get; set; } = new List<RequiredStationDto>();
     }
 
 
-    public class Road
+    public class RoadSectionDto
     {
-        public string Id { get; set; }
+        public string RoadSectionId { get; set; }
         public List<List<double>> Points { get; set; } = [];
     }   
 }

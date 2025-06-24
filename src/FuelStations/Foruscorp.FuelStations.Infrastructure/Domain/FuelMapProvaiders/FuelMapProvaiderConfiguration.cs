@@ -12,7 +12,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelMapProvaiders
 
             builder.HasKey(fmp => fmp.Id);
 
-            //builder.Property(fmp => fmp.Id)
+            //builder.Property(fmp => fmp.RoadSectionId)
             //    .HasColumnName("FuelMapProvaiderId")
             //    .ValueGeneratedOnAdd();
 

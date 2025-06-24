@@ -5,26 +5,27 @@
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class addEncodedRouteField : Migration
+    public partial class Add_CurrentFuel : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AddColumn<string>(
-                name: "EncodeRoute",
+            migrationBuilder.AddColumn<double>(
+                name: "CurrentFuel",
                 schema: "FuelRoutes",
-                table: "FuelRoutes",
-                type: "text",
-                nullable: true);
+                table: "RouteFuelPoints",
+                type: "double precision",
+                nullable: false,
+                defaultValue: 0.0);
         }
 
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "EncodeRoute",
+                name: "CurrentFuel",
                 schema: "FuelRoutes",
-                table: "FuelRoutes");
+                table: "RouteFuelPoints");
         }
     }
 }

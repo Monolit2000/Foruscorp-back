@@ -1,22 +1,29 @@
-﻿using MediatR;
-using Microsoft.Extensions.Caching.Memory;
-using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+﻿using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
-using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
-using Foruscorp.FuelStations.Aplication.FuelStations;
-using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Configuration.GeoTools;
+using Foruscorp.FuelRoutes.Aplication.Contruct;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
+using MediatR;
+using Microsoft.Extensions.Caching.Memory;
+using System.Linq;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
     public class CreateFuelRouteCommandHandler(
+        IFuelRouteContext fuelRouteContext,
+        ITruckerPathApi truckerPathApi,
         IMemoryCache memoryCache,
-        ITruckerPathApi truckerPathApi, 
         ISender sender) : IRequestHandler<CreateFuelRouteCommand, Result<FuelRouteDto>>
     {
+        private record RoutePoints(string RouteSectionId, List<List<double>> MapPoints);
+
+        public record RouteInfo(double Tolls, double Gallons, double Miles, int DriveTime);
+
         public async Task<Result<FuelRouteDto>> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
@@ -28,7 +35,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var result = await truckerPathApi.PlanRouteAsync(origin, destinations, request.ViaPoints, cancellationToken: cancellationToken);
 
             if (result == null)
-               return Result.Fail("ivalid route");
+                return Result.Fail("ivalid route");
 
             memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
@@ -36,42 +43,149 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
                 .Select(s => new RouteDto
-                { 
-                    RouteId = s.Id,
-                    MapPoints = s.ShowShape
-                });
-
+                {
+                    RouteSectionId = s.Id,
+                    MapPoints = s.ShowShape,
+                    RouteInfo = ExtractRouteSectionInfo(s)
+                }).ToList();
 
             var points = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
-                .Select(s => new
+                .Select(s => new RoutePoints(
+                    s.Id,
+                    GeoUtils.FilterPointsByDistance(s.ShowShape, 15.0)))
+                .ToList();
+
+
+            //var sectionsInfo = ExtractRouteInfo(result.Routes.WaypointsAndShapes
+            //   .Where(ws => ws != null && ws.Sections != null)
+            //   .SelectMany(x => x.Sections));
+
+
+
+            //var originPoint = LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude);
+            //var destinationPoint = LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude);
+
+            var fuelRoute = FuelRoute.CreateNew(
+                Guid.NewGuid(), // TODO: replace with truckId
+                LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude),
+                LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude),
+                new List<FuelRouteStation>(),
+                new List<MapPoint>());
+
+
+            var routeSections = points
+             .Select(x => new
+             {
+                 RouteSectionId = x.RouteSectionId,
+                 EncodedRoute = PolylineEncoder.EncodePolyline(x.MapPoints)
+             })
+             .Select(x => new FuelRouteSection(fuelRoute.Id, x.RouteSectionId, x.EncodedRoute)).ToList();
+
+
+            foreach (var section in sections)
+            {
+                var matchingRouteSection = routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId);
+                if (matchingRouteSection != null)
                 {
-                    routeId = s.Id,
-                    mapPoints = GeoUtils.FilterPointsByDistance(s.ShowShape, 15.0) 
-                });
-
-            var resg = points.First();
+                    section.RouteSectionId = matchingRouteSection.Id.ToString();
+                }
+            }
 
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery{ Roads = points.Select(x => new Road{ Id = x.routeId, Points = x.mapPoints}).ToList()});
+            //var fuelStopStationsList = await GetFuelStationsAsync(points);
 
-            var fuelStations = new List<FuelStationDto>();    
-            if (fuelStationsResult.IsSuccess)
-                fuelStations = fuelStationsResult.Value;    
+            fuelRoute.SetRouteSections(routeSections);
 
+            fuelRouteContext.FuelRoutes.Add(fuelRoute); 
+
+            await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
             return new FuelRouteDto
             {
-                ResponseId = result.Id,
-                RouteDtos = sections.ToList(),
-                FuelStationDtos = fuelStations
-            };   
+                RouteId = fuelRoute.Id.ToString(),
+                RouteDtos = sections,
+                //FuelStationDtos = fuelStopStationsList
+            };
+        }
+
+        private async Task<List<FuelStationDto>> GetFuelStationsAsync(IEnumerable<RoutePoints> points)
+        {
+            var roads = points
+                .Select(x => new RoadSectionDto
+                {
+                    RoadSectionId = x.RouteSectionId,
+                    Points = x.MapPoints
+                })
+                .ToList();
+
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery { Roads = roads });
+
+            return fuelStationsResult.IsSuccess ? fuelStationsResult.Value : new List<FuelStationDto>();
         }
 
 
+        private List<RouteInfo> ExtractRouteInfo(DataObject routeData)
+        {
+            var routeInfos = new List<RouteInfo>();
 
-       
+            if (routeData?.Routes?.WaypointsAndShapes == null)
+                return routeInfos;
+
+            foreach (var item in routeData.Routes.WaypointsAndShapes)
+            {
+                if (item.Sections == null)
+                    continue;
+
+                foreach (var section in item.Sections)
+                {
+                    double miles = section.Summary?.Length ?? 0;
+                    int driveTime = section.Summary?.Duration ?? 0;
+
+                    double tolls = section.Tolls?.Count ?? 0;
+
+                    routeInfos.Add(new RouteInfo(tolls, 0.0, miles, driveTime));
+                }
+            }
+
+            return routeInfos;
+        }
+
+        private List<RouteInfo> ExtractRouteInfo(IEnumerable<RouteSection> sections)
+        {
+            var routeInfos = new List<RouteInfo>();
+        
+            if (sections == null || sections.Any())
+                return routeInfos;
+
+            foreach (var section in sections)
+            {
+                double miles = section.Summary?.Length ?? 0;
+                int driveTime = section.Summary?.Duration ?? 0;
+
+                double tolls = section.Tolls?.Count ?? 0;
+
+                routeInfos.Add(new RouteInfo(tolls, 0.0, miles, driveTime));
+            }
+
+            return routeInfos;
+        }
+
+        private RouteInfo ExtractRouteSectionInfo(RouteSection section)
+        {
+            if (section == null)
+                return null;
+           
+            double miles = section.Summary?.Length ?? 0;
+            int driveTime = section.Summary?.Duration ?? 0;
+
+            double tolls = section.Tolls?.Count ?? 0;
+
+            var routeInfo = new RouteInfo(tolls, 0.0, miles, driveTime);
+
+            return routeInfo;
+        }
 
     }
 }

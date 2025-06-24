@@ -3,6 +3,7 @@ using FluentResults;
 using Microsoft.EntityFrameworkCore;
 using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Domain.FuelStations;
+using Microsoft.EntityFrameworkCore.Storage.Json;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
@@ -56,8 +57,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (routePoints.Count < 2)
                 return Result.Fail("Маршрут содержит менее двух точек.");
 
-            // 3. Вычисляем «коридорный» bounding-box по широте/долготе, чтобы узко отфильтровать станции
-            //    (400 км = приблизительно 4° широты, но мы считаем через деление на 111 км/°, чтобы преобразовать SearchRadiusKm в градусы)
+     
             double avgLatRadians = DegreesToRadians(routePoints.Average(pt => pt.Latitude));
             var minLat = routePoints.Min(pt => pt.Latitude) - (SearchRadiusKm / 111.0);
             var maxLat = routePoints.Max(pt => pt.Latitude) + (SearchRadiusKm / 111.0);
@@ -76,79 +76,153 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .ToListAsync(cancellationToken);
 
             if (!stations.Any())
-                return Result.Ok(new List<FuelStationDto>()); 
+                return Result.Ok(new List<FuelStationDto>());
 
-            var stationsAlongRoute = request.Roads
-                .SelectMany(r => r.Points?.Where(p => p?.Count >= 2) ?? Enumerable.Empty<List<double>>())
+            var allStopPlans = new List<FuelStopPlan>();
+            var allStationsWithoutAlgo = new List<FuelStationDto>();
+
+            //var requiredStationDtos = new List<RequiredStationDto>(); // заполни по нужде
+
+            foreach (var road in request.Roads)
+            {
+                var (stopPlan, stationsWithoutAlgo) = PlanRouteStopsForRoad(road, stations, request.RequiredFuelStations);
+
+                allStopPlans.AddRange(stopPlan);
+                allStationsWithoutAlgo.AddRange(stationsWithoutAlgo);
+            }
+
+            if (!allStopPlans.Any())
+                return Result.Ok(RemoveDuplicatesByCoordinates(allStationsWithoutAlgo));
+
+
+            var resultDto = MapStopPlansToDtos(allStopPlans);
+
+            var sasddf = resultDto
+                .GroupBy(s => s.RoadSectionId)
+                .Select(g => g.Where(s => s.IsAlgorithm).ToList())
+                .Where(g => g.Any())
+                .ToList();
+            //for (int i = 0; i < allStopPlans.Count; i++)
+            //{
+            //    var current = allStopPlans[i];
+            //    double nextDistanceKm;
+
+            //    if (i < allStopPlans.Count - 1)
+            //    {
+            //        var next = allStopPlans[i + 1];
+            //        nextDistanceKm = next.StopAtKm - current.StopAtKm;
+            //    }
+            //    else
+            //    {
+            //        nextDistanceKm = 0; // или до конца маршрута?
+            //    }
+
+            //    resultDto.Add(FuelStationToDto(
+            //        current.Station,
+            //        stopOrder: i + 1,
+            //        refillLiters: current.RefillLiters,
+            //        nextDistanceKm: nextDistanceKm,
+            //        current.RoadSectionId));
+            //}
+
+            var zipStations = ZipStations(allStationsWithoutAlgo, resultDto);
+
+            var sdf = zipStations
+                .GroupBy(s => s.RoadSectionId)
+                .Select(g => g.Where(s => s.IsAlgorithm).ToList())
+                .Where(g => g.Any())
+                .ToList();
+
+            //var updatedFuelStations = RemoveDuplicatesByCoordinates(zipStations);
+            return Result.Ok(zipStations);
+        }
+
+        private List<FuelStationDto> MapStopPlansToDtos(List<FuelStopPlan> allStopPlans)
+        {
+            var result = new List<FuelStationDto>();
+
+            var groupedBySection = allStopPlans
+                .GroupBy(x => x.RoadSectionId)
+                .ToList();
+
+            foreach (var group in groupedBySection)
+            {
+                var sectionStops = group.OrderBy(x => x.StopAtKm).ToList();
+
+                for (int i = 0; i < sectionStops.Count; i++)
+                {
+                    var current = sectionStops[i];
+                    double nextDistanceKm;
+
+                    if (i < sectionStops.Count - 1)
+                    {
+                        var next = sectionStops[i + 1];
+                        nextDistanceKm = next.StopAtKm - current.StopAtKm;
+                    }
+                    else
+                    {
+                        nextDistanceKm = 0;
+                    }
+
+                    result.Add(FuelStationToDto(
+                        current.Station,
+                        stopOrder: i + 1,
+                        refillLiters: current.RefillLiters,
+                        nextDistanceKm: nextDistanceKm,
+                        roadSectionId: current.RoadSectionId,
+                        currentFuel: current.CurrentFuelLiters));
+                }
+            }
+
+            return result;
+        }
+
+
+        private (List<FuelStopPlan> StopPlan, List<FuelStationDto> StationsWithoutAlgorithm) PlanRouteStopsForRoad(
+            RoadSectionDto road,
+            List<FuelStation> allStations,
+            List<RequiredStationDto> requiredStationDtos)
+        {
+            var routePoints = road.Points
+                ?.Where(p => p?.Count >= 2)
                 .Select(p => new GeoPoint(p[0], p[1]))
-                .SelectMany(geoPoint => stations
+                .ToList() ?? new();
+
+            if (routePoints.Count < 2)
+                return (new(), new());
+
+            var stationsAlongRoute = routePoints
+                .SelectMany(geoPoint => allStations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
                 .DistinctBy(s => s.Id)
-                //.DistinctBy(s => s.Address)
                 .ToList();
 
             if (!stationsAlongRoute.Any())
-                return Result.Ok(new List<FuelStationDto>());
+                return (new(), new());
 
-            var stationsAlongFirstRout = request.Roads.FirstOrDefault().Points
-                 ?.Where(p => p?.Count >= 2)
-                 .Select(p => new GeoPoint(p[0], p[1]))
-                 .SelectMany(geoPoint => stations
-                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                    .DistinctBy(s => s.Id)
-                   //.DistinctBy(s => s.Address)
-                 .ToList();
+            var fuelstationWithoutAlgorithm = stationsAlongRoute
+                .Select(x => FuelStationToDtoNoAlgorithm(x, road.RoadSectionId))
+                .ToList();
 
-            var fuelstationWithoutAlgorithm = stationsAlongFirstRout.Select(x => FuelStationToDtoNoAlgorithm(x));
-
-
-            // 6. Считаем общую длину маршрута (в км)
-            var route = request.Roads.FirstOrDefault().Points.Select(p => new GeoPoint(p[0], p[1])).ToList();
             double totalRouteDistanceKm = 0;
-            for (int i = 0; i < route.Count - 1; i++)
+            for (int i = 0; i < routePoints.Count - 1; i++)
             {
-                totalRouteDistanceKm += GeoCalculator.CalculateHaversineDistance(route[i], route[i + 1]);
+                totalRouteDistanceKm += GeoCalculator.CalculateHaversineDistance(routePoints[i], routePoints[i + 1]);
             }
 
-            // 7. Запускаем алгоритм «по заправкам» с оптимизацией по цене
             var stopPlan = PlanStopsByStations(
                 routePoints,
-                stationsAlongFirstRout,
+                stationsAlongRoute,
                 totalRouteDistanceKm,
                 TruckFuelConsumptionLPerKm,
                 InitialFuelLiters,
-                TruckTankCapacityL);
+                TruckTankCapacityL,
+                requiredStationDtos,
+                road.RoadSectionId);
 
-
-            var resultDto = new List<FuelStationDto>();
-            for (int i = 0; i < stopPlan.Count; i++)
-            {
-                var current = stopPlan[i];
-                double nextDistanceKm;
-
-                if (i < stopPlan.Count - 1)
-                {
-                    // расстояние между этой остановкой и следующей
-                    var next = stopPlan[i + 1];
-                    nextDistanceKm = next.StopAtKm - current.StopAtKm;
-                }
-                else
-                {
-                    // для последней: от неё до конца маршрута
-                    nextDistanceKm = totalRouteDistanceKm - current.StopAtKm;
-                }
-
-                resultDto.Add(FuelStationToDto(
-                    current.Station,
-                    stopOrder: i + 1,
-                    refillLiters: current.RefillLiters,
-                    nextDistanceKm: nextDistanceKm));
-            }
-
-            var updatedFuelStations = RemoveDuplicatesByCoordinates(ZipStations(fuelstationWithoutAlgorithm.ToList(), resultDto));
-
-            return Result.Ok(updatedFuelStations);
+            return (stopPlan, fuelstationWithoutAlgorithm);
         }
+
 
         private List<FuelStationDto> RemoveDuplicatesByAddress(List<FuelStationDto> fuelStations)
         {
@@ -170,15 +244,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .ToList();
         }
 
+
         private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
         {
 
             var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
             {
-                var matchingStation = stopPlan.FirstOrDefault(s => s.Id == station.Id);
+                var matchingStation = stopPlan.FirstOrDefault(s => s.Id == station.Id && s.RoadSectionId == station.RoadSectionId);
                 if (matchingStation != null)
                 {
-                    // Создаем новый объект FuelStationDto с обновленными полями
                     return new FuelStationDto
                     {
                         Id = station.Id,
@@ -192,10 +266,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         IsAlgorithm = matchingStation.IsAlgorithm,
                         Refill = matchingStation.Refill,
                         StopOrder = matchingStation.StopOrder,
-                        NextDistanceKm = matchingStation.NextDistanceKm
+                        NextDistanceKm = matchingStation.NextDistanceKm,
+                        RoadSectionId = matchingStation.RoadSectionId,
+                        CurrentFuel = matchingStation.CurrentFuel
                     };
                 }
-                // Возвращаем копию станции без изменений, если совпадений нет
                 return new FuelStationDto
                 {
                     Id = station.Id,
@@ -209,68 +284,84 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     IsAlgorithm = station.IsAlgorithm,
                     Refill = station.Refill,
                     StopOrder = station.StopOrder,
-                    NextDistanceKm = station.NextDistanceKm
+                    NextDistanceKm = station.NextDistanceKm,
+                    RoadSectionId = station.RoadSectionId,
+                    CurrentFuel = station.CurrentFuel
                 };
             }).ToList();
 
             return updatedFuelStations ?? new List<FuelStationDto>();
         }
 
-        // --------------------------------------------------------
-        //  Шаг 5: Отфильтровать станции вдоль маршрута, используя «коридорный» подход
-        // --------------------------------------------------------
-        private List<FuelStation> GetStationsAlongRoute(
-            List<GeoPoint> route,
-            List<FuelStation> allStations,
-            double corridorRadiusKm)
-        {
-            var result = new HashSet<FuelStation>();
 
-            for (int i = 0; i < route.Count - 1; i++)
-            {
-                var a = route[i];
-                var b = route[i + 1];
+        //private List<FuelStationDto> ZipStations(List<FuelStationDto> fuelstationWithoutAlgorithm, List<FuelStationDto> stopPlan)
+        //{
+        //    // Если дубликаты допустимы — берём только первый match по Id
+        //    var stopPlanDict = stopPlan
+        //        .GroupBy(s => s.Id)
+        //        .ToDictionary(g => g.Key, g => g.First());
 
-                foreach (var station in allStations)
-                {
-                    double distToSegment = GeoCalculator.DistanceFromPointToSegmentKm(
-                        station.Coordinates, a, b);
+        //    var updatedFuelStations = fuelstationWithoutAlgorithm.Select(station =>
+        //    {
+        //        var updatedStation = CloneStation(station);
 
-                    if (distToSegment <= corridorRadiusKm)
-                    {
-                        result.Add(station);
-                    }
-                }
-            }
+        //        if (stopPlanDict.TryGetValue(station.Id, out var match))
+        //        {
+        //            updatedStation.IsAlgorithm = match.IsAlgorithm;
+        //            updatedStation.Refill = match.Refill;
+        //            updatedStation.StopOrder = match.StopOrder;
+        //            updatedStation.NextDistanceKm = match.NextDistanceKm;
+        //            updatedStation.RoadSectionId = match.RoadSectionId;
+        //        }
 
-            return result.ToList();
-        }
+        //        return updatedStation;
+        //    }).ToList();
 
-        // --------------------------------------------------------
-        //  Шаг 7: Основной метод, который планирует остановки «по заправкам»
-        // --------------------------------------------------------
+        //    return updatedFuelStations;
+        //}
+
+        //private FuelStationDto CloneStation(FuelStationDto station)
+        //{
+        //    return new FuelStationDto
+        //    {
+        //        Id = station.Id,
+        //        Name = station.Name,
+        //        Address = station.Address,
+        //        Latitude = station.Latitude,
+        //        Longitude = station.Longitude,
+        //        Price = station.Price,
+        //        Discount = station.Discount,
+        //        PriceAfterDiscount = station.PriceAfterDiscount,
+        //        IsAlgorithm = station.IsAlgorithm,
+        //        Refill = station.Refill,
+        //        StopOrder = station.StopOrder,
+        //        NextDistanceKm = station.NextDistanceKm,
+        //        RoadSectionId = station.RoadSectionId
+        //    };
+        //}
+
+
         private List<FuelStopPlan> PlanStopsByStations(
             List<GeoPoint> route,
             List<FuelStation> stationsAlongRoute,
             double totalRouteDistanceKm,
             double fuelConsumptionPerKm,
             double currentFuelLiters,
-            double tankCapacity)
+            double tankCapacity,
+            List<RequiredStationDto> requiredStops,
+            string RoadSectionId = null)
         {
-            var result = new List<FuelStopPlan>();
+            const double MinStopDistanceKm = 1200.0;  
 
-            // ---------------------------------------
-            // Шаг 0. Собираем stationInfos (без виртуальной цели)
-            // ---------------------------------------
+            // 1) Подготовка списка StationInfo (с километражем и ценой)
             var stationInfos = new List<StationInfo>();
             foreach (var st in stationsAlongRoute)
             {
                 double forwardDist = GetForwardDistanceAlongRoute(route, st.Coordinates);
                 if (forwardDist < double.MaxValue)
                 {
-                    // Берём самую низкую цену после скидки у станции
                     var cheapestFuelPrice = st.FuelPrices
-                        .Where(fp => fp.PriceAfterDiscount >= 0)         // отфильтровываем некорректные
+                        .Where(fp => fp.PriceAfterDiscount >= 0)       
                         .OrderBy(fp => fp.PriceAfterDiscount)
                         .FirstOrDefault();
 
@@ -285,7 +376,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 }
             }
 
-            // Добавляем виртуальную «цель» (конец маршрута), чтобы понимать, что до следующей реальной заправки не доехать
             var endInfo = new StationInfo
             {
                 Station = null,
@@ -294,101 +384,144 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             };
             stationInfos.Add(endInfo);
 
-            // Сортируем по возрастанию ForwardDistanceKm (необязательно, но удобно для поиска ближайших)
-            stationInfos = stationInfos.OrderBy(si => si.ForwardDistanceKm).ToList();
 
-            // ---------------------------------------
-            // Шаг 1. Задаём начальные условия
-            // ---------------------------------------
-            double prevForwardDistance = 0.0;         // Мы стартуем от «0 км»
-            double remainingFuel = currentFuelLiters; // Топливо, с которым выехали
-            var usedStationIds = new HashSet<Guid>(); // Станции, где мы уже заправлялись
+            // 2) Собираем обязательные остановки и сортируем по километражу
+            var requiredInfos = requiredStops
+                .Select(r =>
+                {
+                    var si = stationInfos.FirstOrDefault(x => x.Station != null && x.Station.Id == r.StationId);
+                    if (si == null) return null;
+                    return new
+                    {
+                        Info = si,
+                        RefillLiters = Math.Min(r.RefillLiters, tankCapacity)
+                    };
+                })
+                .Where(x => x != null)
+                .OrderBy(x => x.Info.ForwardDistanceKm)
+                .ToList()!;
 
-            // ---------------------------------------
-            // Шаг 2. Основной цикл: выбираем по очереди самую дешёвую из достижимых станций
-            // ---------------------------------------
-            while (true)
+            var result = new List<FuelStopPlan>();
+            var usedStationIds = new HashSet<Guid>();
+            double prevKm = 0.0;
+            double remainingFuel = currentFuelLiters;
+
+
+            // Вспомогательный метод: планирует промежуточные дозаправки, пока не достигнем targetKm
+            void PlanTill(double targetKm, bool useMinDistance)
             {
-                // (а) Если уже можем без дозаправки доехать до конца маршрута => выходим
-                double distanceLeftToEnd = totalRouteDistanceKm - prevForwardDistance;
-                double fuelNeededToFinish = distanceLeftToEnd * fuelConsumptionPerKm;
-                if (fuelNeededToFinish <= remainingFuel)
+
+                // сколько топлива надо, чтобы доехать от prevKm до targetKm
+                double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm;
+
+                
+
+                while (remainingFuel < neededFuel)
                 {
-                    // Дожали до финиша на текущем топливе, больше остановок нет
-                    break;
+                    double maxDistanceWithoutRefuel = remainingFuel / fuelConsumptionPerKm;
+
+                    double maxReachKm = prevKm + (remainingFuel / fuelConsumptionPerKm);
+
+                    var candidates = stationInfos
+                        .Where(si =>
+                         si.Station != null &&
+                            !usedStationIds.Contains(si.Station.Id) &&
+                            si.ForwardDistanceKm > prevKm &&
+                            (                           
+                                 maxDistanceWithoutRefuel < MinStopDistanceKm ||      
+                                 si.ForwardDistanceKm - prevKm >= MinStopDistanceKm 
+                            )&&
+                            si.ForwardDistanceKm <= maxReachKm 
+                        )
+
+                        //(useMinDistance || /*(maxReachKm >= MinStopDistanceKm &&*/ si.ForwardDistanceKm - prevKm >= MinStopDistanceKm))
+                        .OrderBy(si => si.PricePerLiter)
+                        //.OrderByDescending(si => si.ForwardDistanceKm)
+                        //.ThenBy(si => si.PricePerLiter)
+                        //.ThenByDescending(si => si.ForwardDistanceKm)
+                        .ToList();
+
+                    if (!candidates.Any())
+                        break; // нечем дозаправиться
+
+                    var best = candidates.First();
+
+                    // доезжаем до best
+                    double dist = best.ForwardDistanceKm - prevKm;
+                    remainingFuel -= dist * fuelConsumptionPerKm;
+
+                    double preRemainingFuel = remainingFuel;
+
+                    // дозаправка: минимум 30L или до полного бака
+                    //double toFull = tankCapacity - remainingFuel;
+
+                    // новый вариант – refill кратен 5 литрам
+                    double freeSpace = tankCapacity - remainingFuel;
+                    double rawRefill = freeSpace;
+
+                    double refill = Math.Floor(rawRefill / 5.0) * 5.0;
+
+                    if (refill == 0 && freeSpace >= 5.0)
+                        refill = 5.0;
+                    else if (refill == 0 && freeSpace < 5.0)
+                        refill = freeSpace; // мелкий остаток, зальём его
+
+                    //double refill = Math.Min(Math.Max(toFull, 30.0), toFull);
+                    remainingFuel += refill;
+
+                    result.Add(new FuelStopPlan
+                    {
+                        Station = best.Station!,
+                        StopAtKm = best.ForwardDistanceKm,
+                        RefillLiters = refill,
+                        CurrentFuelLiters = preRemainingFuel,
+                        RoadSectionId = RoadSectionId ?? string.Empty
+                    });
+                    usedStationIds.Add(best.Station!.Id);
+                    prevKm = best.ForwardDistanceKm;
+
+                    // пересчитаем, сколько ещё топлива нужно
+                    neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm;
                 }
 
-                // (б) Считаем, насколько далеко можем доехать до следующей заправки без дозаправки
-                double maxReachableDistance = prevForwardDistance + (remainingFuel / fuelConsumptionPerKm);
+                // «проезжаем» до targetKm
+                remainingFuel -= (targetKm - prevKm) * fuelConsumptionPerKm;
+                prevKm = targetKm;
+            }
 
-                // (в) Собираем все станции, которые:
-                //      • впереди нас (ForwardDistanceKm > prevForwardDistance)
-                //      • не дальше, чем maxReachableDistance
-                //      • и ещё не заправляемся (usedStationIds)
+            // 3) Для каждого обязательного сегмента: сначала промежуточные, затем обязательная
+            foreach (var req in requiredInfos)
+            {
+                double kmReq = req.Info.ForwardDistanceKm;
 
-                double MinStopDistanceKm = 1000.0;
+                // дозаправки между prevKm и обязательной (игнорируем MinStopDistance)
+                PlanTill(kmReq, useMinDistance: false);
 
-                var reachableStations = stationInfos
-                    .Where(si =>
+                // теперь делаем саму обязательную дозаправку ровно req.RefillLiters
+                double allowed = Math.Min(req.RefillLiters, tankCapacity - remainingFuel);
 
-                        (!result.Any() && 
-                        si.Station != null &&
-                        si.ForwardDistanceKm > prevForwardDistance &&
-                        si.ForwardDistanceKm <= maxReachableDistance &&
-                        !usedStationIds.Contains(si.Station.Id)) ||
+                double preRemainingFuel = remainingFuel;
 
-                        (si.Station != null &&
-                        si.ForwardDistanceKm > prevForwardDistance &&
-                        si.ForwardDistanceKm <= maxReachableDistance &&
-
-                        si.ForwardDistanceKm - prevForwardDistance >= MinStopDistanceKm &&
-
-                        !usedStationIds.Contains(si.Station.Id)))
-                    .ToList();
-
-                // (г) Если вовсе нет ни одной станции, до которой можно доехать на оставшемся топливе,
-                //     значит мы не дотянем ни до конца маршрута, ни до ближайшей заправки (обычный сценарий: "недостаточно топлива").
-                //     Можно просто прервать цикла — дальнейших остановок нет, но маршрут не завершится полностью.
-                if (!reachableStations.Any())
-                {
-                    break;
-                }
-
-                // (д) Из reachableStations выбираем самую дешёвую (минимальная PricePerLiter)
-                var chosenInfo = reachableStations
-                    //.Where(si => !result.Any() || si.ForwardDistanceKm - prevForwardDistance >= MinStopDistanceKm)
-                    .OrderBy(si => si.PricePerLiter)
-                    .First();
-
-                // (е) Считаем, сколько топлива потратим, чтобы доехать до chosenInfo
-                double distanceToChosen = chosenInfo.ForwardDistanceKm - prevForwardDistance;
-                double fuelNeededToChosen = distanceToChosen * fuelConsumptionPerKm;
-                remainingFuel -= fuelNeededToChosen; // доехали до этой станции
-
-                // (ж) Заправляем полный бак на этой станции
-                double neededToFull = tankCapacity - remainingFuel;
-                //double refillAmount = Math.Max(neededToFull, 30.0);
-                double refillAmount = Math.Min(Math.Max(neededToFull, 30.0), tankCapacity - remainingFuel);
+                remainingFuel += allowed;
                 result.Add(new FuelStopPlan
                 {
-                    Station = chosenInfo.Station!,
-                    StopAtKm = chosenInfo.ForwardDistanceKm,
-                    RefillLiters = refillAmount
+                    Station = req.Info.Station!,
+                    StopAtKm = kmReq,
+                    RefillLiters = allowed,
+                    CurrentFuelLiters = preRemainingFuel,
+                    RoadSectionId = RoadSectionId ?? string.Empty
                 });
-
-                // (з) Отмечаем станцию как «использованную» и обновляем параметры
-                usedStationIds.Add(chosenInfo.Station!.Id);
-                remainingFuel = tankCapacity;
-                prevForwardDistance = chosenInfo.ForwardDistanceKm;
-
-                // (и) Переходим к следующей итерации:
-                //     либо дозаправляемся снова, либо доезжаем до финиша, либо выбираем следующую станцию и т.д.
+                usedStationIds.Add(req.Info.Station!.Id);
+                // prevKm уже == kmReq
             }
+
+            // 4) Наконец, от последней обязательной до конца маршрута 
+            PlanTill(totalRouteDistanceKm, useMinDistance: true);
 
             return result;
         }
 
-        // Вспомогательный метод: вычисляем «километраж» вдоль маршрута, где расположена станция
+   
         private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
         {
             double cumulative = 0.0;
@@ -414,7 +547,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
            FuelStation station,
            int stopOrder,
            double refillLiters,
-           double nextDistanceKm)
+           double nextDistanceKm,
+           string roadSectionId,
+           double currentFuel)
         {
             var priceInfo = station?.FuelPrices.FirstOrDefault();
             string pricePerLiter = priceInfo?.Price.ToString("F2") ?? "0.00";
@@ -433,13 +568,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 Refill = refillLiters.ToString("F2"),
                 StopOrder = stopOrder,
-                NextDistanceKm = nextDistanceKm.ToString("F2")
+                NextDistanceKm = nextDistanceKm.ToString("F2"),
+                RoadSectionId = roadSectionId,
+                CurrentFuel = currentFuel
             };
         }
 
 
         private FuelStationDto FuelStationToDtoNoAlgorithm(
-         FuelStation station)
+         FuelStation station,
+         string roadSectionId)
         {
             var priceInfo = station?.FuelPrices.FirstOrDefault();
             string pricePerLiter = priceInfo?.Price.ToString("F2") ?? "0.00";
@@ -454,14 +592,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 Discount = priceInfo?.DiscountedPrice?.ToString("F2"),
                 PriceAfterDiscount = priceInfo?.PriceAfterDiscount.ToString("F2"),
 
-                IsAlgorithm = false
+                IsAlgorithm = false,
+                RoadSectionId = roadSectionId
             };
         }
 
-
-        // --------------------------------------------------------
-        //  Вспомогательный класс: храним инфу о «станции + километре вдоль маршрута + цене»
-        // --------------------------------------------------------
         private class StationInfo
         {
             public FuelStation? Station { get; set; }
@@ -469,9 +604,13 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             public double PricePerLiter { get; set; }
         }
 
-        // --------------------------------------------------------
-        //  Компаратор для SortedSet<StationInfo> по цене (и по distance, если цены равны).
-        // --------------------------------------------------------
+        public class RequiredStationDto
+        {
+            public Guid StationId { get; set; }
+            public double RefillLiters { get; set; }
+        }
+
+
         private class StationPriceComparer : IComparer<StationInfo>
         {
             public int Compare(StationInfo? x, StationInfo? y)
@@ -483,29 +622,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             }
         }
 
-        // --------------------------------------------------------
-        //  Вспомогательный метод: перевод градусов в радианы
-        // --------------------------------------------------------
+
         private static double DegreesToRadians(double degrees)
             => degrees * (Math.PI / 180.0);
     }
 
-    // ---------------------------------------------
-    //  Модель для плана остановки (DTO-like структура)
-    // ---------------------------------------------
     public class FuelStopPlan
     {
         public FuelStation Station { get; set; } = null!;
 
-        /// <summary>
-        /// Километр вдоль маршрута, где происходит остановка.
-        /// </summary>
         public double StopAtKm { get; set; }
 
-        /// <summary>
-        /// Сколько литров заливаем.
-        /// </summary>
         public double RefillLiters { get; set; }
+
+        public double CurrentFuelLiters { get; set; }
+
+        public string RoadSectionId { get; set; }
     }
 
 
@@ -527,5 +659,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public int StopOrder { get; set; }
 
         public string NextDistanceKm { get; set; } = null!;
+
+        public string RoadSectionId { get; set; }
+
+        public double CurrentFuel { get; set; } = 0.0; 
     }
 }

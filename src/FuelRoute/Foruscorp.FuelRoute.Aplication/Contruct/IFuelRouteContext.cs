@@ -7,7 +7,11 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct
     {
          DbSet<FuelRoute> FuelRoutes { get; set; }
          DbSet<MapPoint> MapPoints { get; set; }
-         //Task BulkInsertAsync<T>(T entity) where T : class;
-         Task SaveChangesAsync(CancellationToken cancellationToken = default);
+
+         DbSet<FuelRouteStation> FuelRouteStation { get; set; }
+
+         DbSet<FuelRouteSection> RouteSections { get; set; }
+        //Task BulkInsertAsync<T>(T entity) where T : class;
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }   
 }

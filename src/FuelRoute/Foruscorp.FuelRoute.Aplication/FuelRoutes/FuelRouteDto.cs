@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute.CreateFuelRouteCommandHandler;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 {
     public class FuelRouteDto
     {
-        public string ResponseId { get; set; } 
+        public string RouteId { get; set; } 
 
         public List<RouteDto> RouteDtos { get; set; } = new List<RouteDto>();  
         
@@ -19,9 +20,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes
 
     public class RouteDto
     {
-        public string RouteId { get; set; } 
+        public string RouteSectionId { get; set; } 
 
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
+
+        public RouteInfo RouteInfo { get; set; } 
     }
 
 }

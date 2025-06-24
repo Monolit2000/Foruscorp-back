@@ -11,7 +11,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
     public class AcceptFuelRouteCommandHandler(
         IMemoryCache memoryCache,
-        IServiceScopeFactory scopeFactory,
         IFuelRouteContext fuelRouteContext,
         IFuelRouteRopository fuelRouteRopository) : IRequestHandler<AcceptFuelRouteCommand, Result>
     {
@@ -26,18 +25,21 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 .SelectMany(x => x.Sections)
                 .FirstOrDefault(section => section.Id == request.RouteSectionId);
 
+            var originPoint = LocationPoint.CreateNew("origin", 0.0, 0.0);
+            var destinationPoint = LocationPoint.CreateNew("destination", 0.0, 0.0);
+
             var fuelRoute = FuelRoute.CreateNew(
                 Guid.NewGuid(),
-                "origin",
-                "destinztion",
-                new List<RouteFuelPoint>(),
+                originPoint,
+                destinationPoint,
+                new List<FuelRouteStation>(),
                 new List<MapPoint>());
 
             var mupPoints = section.ShowShape
                 .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
 
             var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
-            fuelRoute.AddEncodedRoute(encodedRoute);
+            //fuelRoute.AddEncodedRoute(encodedRoute);
 
             await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
