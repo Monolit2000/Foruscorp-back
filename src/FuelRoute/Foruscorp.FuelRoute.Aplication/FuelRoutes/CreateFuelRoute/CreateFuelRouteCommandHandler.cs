@@ -24,6 +24,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
         public record RouteInfo(double Tolls, double Gallons, double Miles, int DriveTime);
 
+        public double POINT_RADIUS_KM = 8.0;
+
         public async Task<Result<FuelRouteDto>> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
@@ -54,7 +56,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 .SelectMany(x => x.Sections)
                 .Select(s => new RoutePoints(
                     s.Id,
-                    GeoUtils.FilterPointsByDistance(s.ShowShape, 15.0)))
+                    GeoUtils.FilterPointsByDistance(s.ShowShape, POINT_RADIUS_KM)))
                 .ToList();
 
 

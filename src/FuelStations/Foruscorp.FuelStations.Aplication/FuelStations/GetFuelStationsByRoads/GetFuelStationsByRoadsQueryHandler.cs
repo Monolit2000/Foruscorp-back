@@ -11,7 +11,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         IRequestHandler<GetFuelStationsByRoadsQuery, Result<List<FuelStationDto>>>
     {
         // Радиус «коридора» вдоль маршрута (в км), в пределах которого принимаем станции
-        private const double SearchRadiusKm = 20.0;
+        private const double SearchRadiusKm = 9.0;
 
 
         //// Расход топлива: 0.3 л/км (30 л/100 км)
@@ -102,28 +102,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(g => g.Where(s => s.IsAlgorithm).ToList())
                 .Where(g => g.Any())
                 .ToList();
-            //for (int i = 0; i < allStopPlans.Count; i++)
-            //{
-            //    var current = allStopPlans[i];
-            //    double nextDistanceKm;
 
-            //    if (i < allStopPlans.Count - 1)
-            //    {
-            //        var next = allStopPlans[i + 1];
-            //        nextDistanceKm = next.StopAtKm - current.StopAtKm;
-            //    }
-            //    else
-            //    {
-            //        nextDistanceKm = 0; // или до конца маршрута?
-            //    }
-
-            //    resultDto.Add(FuelStationToDto(
-            //        current.Station,
-            //        stopOrder: i + 1,
-            //        refillLiters: current.RefillLiters,
-            //        nextDistanceKm: nextDistanceKm,
-            //        current.RoadSectionId));
-            //}
 
             var zipStations = ZipStations(allStationsWithoutAlgo, resultDto);
 
