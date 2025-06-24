@@ -133,7 +133,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Where(g => g.Any())
                 .ToList();
 
-            var updatedFuelStations = RemoveDuplicatesByCoordinates(zipStations);
+            //var updatedFuelStations = RemoveDuplicatesByCoordinates(zipStations);
             return Result.Ok(zipStations);
         }
 
@@ -169,7 +169,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         stopOrder: i + 1,
                         refillLiters: current.RefillLiters,
                         nextDistanceKm: nextDistanceKm,
-                        roadSectionId: current.RoadSectionId));
+                        roadSectionId: current.RoadSectionId,
+                        currentFuel: current.CurrentFuelLiters));
                 }
             }
 
@@ -266,7 +267,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         Refill = matchingStation.Refill,
                         StopOrder = matchingStation.StopOrder,
                         NextDistanceKm = matchingStation.NextDistanceKm,
-                        RoadSectionId = matchingStation.RoadSectionId
+                        RoadSectionId = matchingStation.RoadSectionId,
+                        CurrentFuel = matchingStation.CurrentFuel
                     };
                 }
                 return new FuelStationDto
@@ -283,7 +285,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     Refill = station.Refill,
                     StopOrder = station.StopOrder,
                     NextDistanceKm = station.NextDistanceKm,
-                    RoadSectionId = station.RoadSectionId
+                    RoadSectionId = station.RoadSectionId,
+                    CurrentFuel = station.CurrentFuel
                 };
             }).ToList();
 
@@ -424,8 +427,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                          si.Station != null &&
                             !usedStationIds.Contains(si.Station.Id) &&
                             si.ForwardDistanceKm > prevKm &&
-                            (
-                                 //useMinDistance ||                                     
+                            (                           
                                  maxDistanceWithoutRefuel < MinStopDistanceKm ||      
                                  si.ForwardDistanceKm - prevKm >= MinStopDistanceKm 
                             )&&
@@ -546,7 +548,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
            int stopOrder,
            double refillLiters,
            double nextDistanceKm,
-           string roadSectionId)
+           string roadSectionId,
+           double currentFuel)
         {
             var priceInfo = station?.FuelPrices.FirstOrDefault();
             string pricePerLiter = priceInfo?.Price.ToString("F2") ?? "0.00";
@@ -566,7 +569,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 Refill = refillLiters.ToString("F2"),
                 StopOrder = stopOrder,
                 NextDistanceKm = nextDistanceKm.ToString("F2"),
-                RoadSectionId = roadSectionId
+                RoadSectionId = roadSectionId,
+                CurrentFuel = currentFuel
             };
         }
 
@@ -657,5 +661,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public string NextDistanceKm { get; set; } = null!;
 
         public string RoadSectionId { get; set; }
+
+        public double CurrentFuel { get; set; } = 0.0; 
     }
 }

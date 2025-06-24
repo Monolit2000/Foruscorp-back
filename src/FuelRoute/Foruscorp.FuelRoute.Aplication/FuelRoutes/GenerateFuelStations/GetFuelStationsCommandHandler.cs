@@ -52,7 +52,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 
 
 
-
             var requiredStationDtos = new List<RequiredStationDto>(request.RequiredFuelStations);
 
           
@@ -73,16 +72,16 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
                 if (!request.RequiredFuelStations.Any())
                     return Result.Fail("Required fuel stations list cannot be empty.");
 
-                // Преобразуем список из request в словарь для быстрого доступа по StationId
+          
                 var requestStationsDict = request.RequiredFuelStations
                     .ToDictionary(x => x.StationId, x => x);
 
-                // Объединяем: если в request есть такая станция — берем её, иначе берем из fuelRoad
+         
                 var mergedStations = fuelRoadStations
                     .Select(s => requestStationsDict.TryGetValue(s.StationId, out var reqStation) ? reqStation : s)
                     .ToList();
 
-                // Добавляем станции из request, которые отсутствуют в fuelRoad
+          
                 var extraRequestStations = request.RequiredFuelStations
                     .Where(x => !fuelRoadStations.Any(y => y.StationId == x.StationId));
 
@@ -90,12 +89,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 
 
                 requiredStationDtos = mergedStations;
-
             }
-
-
-
-
 
 
             var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos }, cancellationToken);
@@ -146,7 +140,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
                 Refill = dto.Refill,
                 StopOrder = dto.StopOrder,
                 NextDistanceKm = dto.NextDistanceKm,
-                RoadSectionId = Guid.Parse(dto.RoadSectionId)
+                RoadSectionId = Guid.Parse(dto.RoadSectionId),
+
+                CurrentFuel = dto.CurrentFuel
             };
         }
     }

@@ -36,6 +36,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public Guid RoadSectionId { get; set; }
 
+        public double CurrentFuel { get; set; } = 0.0; // Default value 
+
         public FuelRouteStation() 
         {
             FuelStationId = Guid.NewGuid();
