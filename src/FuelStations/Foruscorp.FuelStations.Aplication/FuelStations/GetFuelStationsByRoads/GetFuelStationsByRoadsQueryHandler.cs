@@ -1,9 +1,10 @@
-﻿using MediatR;
-using FluentResults;
-using Microsoft.EntityFrameworkCore;
+﻿using FluentResults;
 using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Domain.FuelStations;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.Json;
+using System.Collections.Generic;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
@@ -187,7 +188,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 InitialFuelLiters,
                 TruckTankCapacityL,
                 requiredStationDtos,
-                140,
+                50,
                 road.RoadSectionId);
 
             return (stopPlan.StopPlan, fuelstationWithoutAlgorithm);
@@ -325,11 +326,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             void PlanTill(
                 double targetKm,
                 bool useMinDistance = false,
-                double minStopDistanceKm = 1200.0,
+                double minStopDistanceKm = 500.0,
                 double extraReserveLiters = 0.0)
             {
                 // сколько топлива нужно: доехать + оставить резерв
-                double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + extraReserveLiters;
+                double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm;
 
                 while (remainingFuel < neededFuel)
                 {
@@ -364,10 +365,28 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                     // заправляемся кратно 5 л
                     double freeSpace = tankCapacity - remainingFuel;
-                    double refill = Math.Floor(freeSpace / 5.0) * 5.0;
-                    if (refill == 0 && freeSpace >= 5.0) refill = 5.0;
-                    else if (refill == 0 && freeSpace < 5.0) refill = freeSpace;
+                    double refill;
+                    if (extraReserveLiters > 0 && (remainingFuel >= (targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm))
+                    {
+                        neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + extraReserveLiters;
+                        // нужно только дотянуть до requiredFuel
+                        double required = neededFuel - remainingFuel;
+                        // округляем вверх до кратности 5 л
+                        refill = Math.Ceiling(required / 5.0) * 5.0;
+                        refill = Math.Min(refill, freeSpace);
+                    }
+                    else
+                    {
+                        // как раньше — полный бак кратный 5 л
+                        refill = Math.Floor(freeSpace / 5.0) * 5.0;
+                        if (refill == 0 && freeSpace >= 5.0) refill = 5.0;
+                        else if (refill == 0 && freeSpace < 5.0) refill = freeSpace;
+                    }
+
+
                     remainingFuel += refill;
+
+                    bool canFinish = remainingFuel >= (targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm;
 
                     result.Add(new FuelStopPlan
                     {
@@ -379,6 +398,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     });
                     usedStationIds.Add(best.Station!.Id);
                     prevKm = best.ForwardDistanceKm;
+
+                    if (canFinish)
+                        Console.WriteLine(  );   // больше дозаправок не требуется
 
                     // пересчитываем, сколько теперь нужно с учётом резерва
                     neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + extraReserveLiters;
@@ -415,10 +437,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 extraReserveLiters: finishLiters
             );
 
+            var last = result.Last();
+            var fuelAfterLast = last.CurrentFuelLiters + last.RefillLiters;
+            var distToEnd = totalRouteDistanceKm - last.StopAtKm;
+            var finishFuel = fuelAfterLast - (distToEnd * fuelConsumptionPerKm);
+
             // 6) Собираем информацию о финише
             var finishInfo = new FinishInfo
             {
-                RemainingFuelLiters = remainingFuel,
+                RemainingFuelLiters = finishFuel,
                 Coordinates = route.Last()
             };
 
