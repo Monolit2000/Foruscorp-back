@@ -164,6 +164,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .DistinctBy(s => s.Id)
                 .ToList();
 
+            stationsAlongRoute = RemoveDuplicatesByCoordinates(stationsAlongRoute);
+
             if (!stationsAlongRoute.Any())
                 return (new(), new());
 
@@ -198,6 +200,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(group =>
                     group.OrderByDescending(station => station.IsAlgorithm) // Prioritize isAlgorithm: true
                          .First()) // Take the first (true if exists, else false)
+                .ToList();
+        }
+
+        private List<FuelStation> RemoveDuplicatesByCoordinates(List<FuelStation> fuelStations)
+        {
+            return fuelStations
+                .GroupBy(station => (station.Coordinates.Latitude, station.Coordinates.Longitude)) // Group by coordinates
+                .Select(group => group.First()) 
                 .ToList();
         }
 
