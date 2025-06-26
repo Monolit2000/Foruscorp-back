@@ -1,4 +1,5 @@
 ﻿using FluentResults;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -10,10 +11,12 @@ using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelSta
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 {
-    public class GetFuelStationsCommand : IRequest<Result<List<FuelStationDto>>>
+    public class GetFuelStationsCommand : IRequest<Result<GetFuelStationsByRoadsResponce>>
     { 
         public Guid RouteId { get; set; }
         public List<string> RouteSectionIds { get; set; }
         public List<RequiredStationDto> RequiredFuelStations { get; set; } = new List<RequiredStationDto>();    
+
+        public double FinishFuel { get; set; } = 40.0; 
     }
 }

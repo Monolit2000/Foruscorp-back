@@ -112,20 +112,20 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             };
         }
 
-        private async Task<List<FuelStationDto>> GetFuelStationsAsync(IEnumerable<RoutePoints> points)
-        {
-            var roads = points
-                .Select(x => new RoadSectionDto
-                {
-                    RoadSectionId = x.RouteSectionId,
-                    Points = x.MapPoints
-                })
-                .ToList();
+        //private async Task<List<FuelStationDto>> GetFuelStationsAsync(IEnumerable<RoutePoints> points)
+        //{
+        //    var roads = points
+        //        .Select(x => new RoadSectionDto
+        //        {
+        //            RoadSectionId = x.RouteSectionId,
+        //            Points = x.MapPoints
+        //        })
+        //        .ToList();
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery { Roads = roads });
+        //    var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery { Roads = roads });
 
-            return fuelStationsResult.IsSuccess ? fuelStationsResult.Value : new List<FuelStationDto>();
-        }
+        //    return fuelStationsResult.IsSuccess ? fuelStationsResult.Value : new List<FuelStationDto>();
+        //}
 
 
         private List<RouteInfo> ExtractRouteInfo(DataObject routeData)

@@ -80,7 +80,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");
 
-            var fuelStations = fuelStationsResult.Value.Select(x => MapToFuelStation(x, fuelRoad.Id));
+            var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id));
 
 
             var oldStations = await fuelRouteContext.FuelRouteStation
@@ -94,7 +94,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
 
-            return fuelStationsResult.Value;
+            return fuelStationsResult.Value.FuelStations;
 
         }
 

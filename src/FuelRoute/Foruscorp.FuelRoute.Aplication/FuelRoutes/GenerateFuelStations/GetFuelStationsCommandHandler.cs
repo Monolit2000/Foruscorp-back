@@ -11,11 +11,17 @@ using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelSta
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
 {
+
+    public class GetFuelStationsResponce
+    {
+
+    }
+
     public class GetFuelStationsCommandHandler(
         ISender sender,
-        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelStationsCommand, Result<List<FuelStationDto>>>
+        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelStationsCommand, Result<GetFuelStationsByRoadsResponce>>
     {
-        public async Task<Result<List<FuelStationDto>>> Handle(GetFuelStationsCommand request, CancellationToken cancellationToken)
+        public async Task<Result<GetFuelStationsByRoadsResponce>> Handle(GetFuelStationsCommand request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
                 .Include(x => x.FuelRouteStations)
@@ -92,12 +98,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
             //}
 
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos }, cancellationToken);
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos, FinishFuel = request.FinishFuel }, cancellationToken);
 
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");
 
-            var fuelStations = fuelStationsResult.Value.Select(x => MapToFuelStation(x, fuelRoad.Id));
+            var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id));
 
             var sectionIds = roadSectionDtos
                 .Select(dto => Guid.Parse(dto.RoadSectionId))
