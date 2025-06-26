@@ -414,7 +414,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     double freeSpace = tankCapacity - remainingFuel;
                     double rawRefill;
 
-                    if (targetKm == totalRouteDistanceKm && (remainingFuel >= (targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm) /*&& best.ForwardDistanceKm < targetKm*/)
+                    if (targetKm == totalRouteDistanceKm && (remainingFuel >= neededFuel) /*(targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm)*/ /*&& best.ForwardDistanceKm < targetKm*/)
                     {
                         // Для финального сегмента рассчитываем, чтобы осталось ровно finishFuel
                         double fuelToTarget = (targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm;
