@@ -13,6 +13,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public double FinishFuel { get; set; } = 40.0; 
 
         public List<string> FuelProviderNameList { get; set; } = new List<string>();
+
+        public int CurrentFuel { get; set; } = 20; 
     }
 
 

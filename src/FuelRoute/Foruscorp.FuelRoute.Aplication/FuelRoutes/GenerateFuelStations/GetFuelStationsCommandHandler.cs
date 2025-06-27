@@ -98,7 +98,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
             //}
 
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos, FinishFuel = request.FinishFuel, FuelProviderNameList = request.FuelProviderNameList }, cancellationToken);
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos, FinishFuel = request.FinishFuel, FuelProviderNameList = request.FuelProviderNameList, CurrentFuel = request.CurrentFuel }, cancellationToken);
 
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");

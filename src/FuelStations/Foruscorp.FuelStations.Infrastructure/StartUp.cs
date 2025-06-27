@@ -6,6 +6,8 @@ using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.Processing;
+using Microsoft.EntityFrameworkCore.Query;
+using Foruscorp.FuelStations.Infrastructure.Services;
 
 namespace Foruscorp.FuelStations.Infrastructure
 {
@@ -25,6 +27,8 @@ namespace Foruscorp.FuelStations.Infrastructure
             services.AddHostedService<FuelStationProcessor>();
 
             services.AddMemoryCache();
+
+            services.AddScoped<ITruckProviderService, TruckProviderService>();
 
             services.AddMediatR(cfg =>
             {

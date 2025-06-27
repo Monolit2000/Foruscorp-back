@@ -38,22 +38,37 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private const double TruckFuelConsumptionLPerKm = 0.10;
 
         // Ёмкость бака: 200 галлонов
-        private const double TruckTankCapacityL = 200.0 - 40.0;
+        private double TruckTankCapacityL = 200.0 - 40.0;
 
         // Начальный объём топлива: 60 галлонов
-        private const double InitialFuelLiters = 20.0;
+        private  double InitialFuelLiters = 20.0;
 
         private readonly IFuelStationContext fuelStationContext;
 
-        public GetFuelStationsByRoadsQueryHandler(IFuelStationContext fuelStationContext)
+        private readonly ITruckProviderService truckProviderService;
+
+        public GetFuelStationsByRoadsQueryHandler(IFuelStationContext fuelStationContext, ITruckProviderService truckProviderService)
         {
             this.fuelStationContext = fuelStationContext;
+            this.truckProviderService = truckProviderService;
         }
 
         public async Task<Result<GetFuelStationsByRoadsResponce>> Handle(
             GetFuelStationsByRoadsQuery request,
             CancellationToken cancellationToken)
         {
+
+
+            TruckTankCapacityL = TruckTankCapacityL + 40.0;
+
+            InitialFuelLiters = TruckTankCapacityL * (request.CurrentFuel / 100.0);
+
+            TruckTankCapacityL = TruckTankCapacityL - 40.0;
+            //var providerTruckId = GetProviderTruckId(Guid.Parse("5f0d3007-707e-4e5f-b46b-ebe4b50b9395"));
+
+            //var currentFuelSams = truckProviderService.GetVehicleStatsFeedAsync(providerTruckId);
+
+
             // 1. Проверка входных данных
             if (request?.Roads == null || !request.Roads.Any(r => r.Points?.Any(p => p?.Count >= 2) == true))
                 return Result.Fail("No valid roads or points provided.");
@@ -67,7 +82,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (routePoints.Count < 2)
                 return Result.Fail("Маршрут содержит менее двух точек.");
 
-     
+
             double avgLatRadians = DegreesToRadians(routePoints.Average(pt => pt.Latitude));
             var minLat = routePoints.Min(pt => pt.Latitude) - (SearchRadiusKm / 111.0);
             var maxLat = routePoints.Max(pt => pt.Latitude) + (SearchRadiusKm / 111.0);
@@ -178,12 +193,23 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (routePoints.Count < 2)
                 return new RouteStopsForRoadInfo();
 
+            // Гарантируем, что список имён поставщиков не null:
+            fuelProviderNameList = fuelProviderNameList ?? new List<string>();
+
+            // Приводим все элементы к нижнему регистру и отбрасываем пустые:
+            var providerFilter = fuelProviderNameList
+                .Where(p => !string.IsNullOrWhiteSpace(p))
+                .Select(p => p.ToLowerInvariant())
+                .ToList();
+
+            // Формируем список станций вдоль маршрута:
             var stationsAlongRoute = routePoints
                 .SelectMany(geoPoint => allStations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
                 .DistinctBy(s => s.Id)
-                .Where(s => !fuelProviderNameList.Any() || fuelProviderNameList.Select(p => p.ToLower())
-                    .Contains(s.ProviderName.ToLower()))
+                // Если providerFilter пуст, пропускаем всех; иначе — фильтруем по совпадению (игнорируя регистр)
+                .Where(s => !providerFilter.Any()
+                            || providerFilter.Contains(s.ProviderName?.ToLowerInvariant() ?? string.Empty))
                 .ToList();
 
             stationsAlongRoute = RemoveDuplicatesByCoordinates(stationsAlongRoute);
@@ -356,11 +382,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double prevKm = 0.0;
             double remainingFuel = currentFuelLiters;
 
+            bool isFirstStop = true;
+
             // Вспомогательный метод: планирует промежуточные дозаправки, пока не достигнем targetKm
             void PlanTill(double targetKm, bool useMinDistance = false, double minStopDistanceKm = 1200.0)
             {
                 // Сколько топлива надо, чтобы доехать от prevKm до targetKm, с учётом finishFuel для финального сегмента
                 double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + (targetKm == totalRouteDistanceKm ? finishFuel : 0);
+
+                double extraRange = (tankCapacity - 40.0) / fuelConsumptionPerKm;
+                double normalRange = tankCapacity / fuelConsumptionPerKm;
 
                 while (remainingFuel < neededFuel)
                 {
@@ -417,8 +448,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                     double preRemainingFuel = remainingFuel;
 
+                    bool isLastRefuel = best.ForwardDistanceKm + extraRange >= totalRouteDistanceKm;
+
+                    //double effectiveCapacity = isFirstStop
+                    //   ? tankCapacity + 40.0
+                    //   : tankCapacity;
+
+                    if(isLastRefuel)
+                        Console.WriteLine(      );
+
+
+                    double effectiveCapacity = (isFirstStop || isLastRefuel)
+                       ? tankCapacity + 40.0
+                       : tankCapacity;
+
                     // Дозаправка: для последнего сегмента учитываем finishFuel
-                    double freeSpace = tankCapacity - remainingFuel;
+                    double freeSpace = effectiveCapacity - remainingFuel;
                     double rawRefill;
 
                     if (targetKm == totalRouteDistanceKm && (remainingFuel >= neededFuel) /*(targetKm - best.ForwardDistanceKm) * fuelConsumptionPerKm)*/ /*&& best.ForwardDistanceKm < targetKm*/)
@@ -462,6 +507,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     usedStationIds.Add(best.Station!.Id);
                     prevKm = best.ForwardDistanceKm;
 
+                    if (isFirstStop)
+                        isFirstStop = false;
+
                     // Пересчитаем, сколько ещё топлива нужно
                     neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + (targetKm == totalRouteDistanceKm ? finishFuel : 0);
                 }
@@ -478,6 +526,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 // Дозаправки между prevKm и обязательной (игнорируем MinStopDistance)
                 PlanTill(kmReq);
+
+          //      double toRefill = Math.Min(req.RefillLiters,
+          //(isFirstStop ? tankCapacity + 40.0 : tankCapacity) - remainingFuel);
 
                 // Теперь делаем саму обязательную дозаправку ровно req.RefillLiters
                 double allowed = Math.Min(req.RefillLiters, tankCapacity - remainingFuel);
@@ -525,6 +576,67 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             return new StopPlanInfo { StopPlan = result, Finish = finishInfo };
         }
+
+        public string? GetProviderTruckId(Guid truckId)
+        {
+            return _truckMappings.FirstOrDefault(t => t.TruckId == truckId)?.ProviderTruckId;
+        }
+
+        private readonly List<TruckMapping> _truckMappings = new()
+        {
+            new TruckMapping { TruckId = Guid.Parse("27d6d92b-0811-40aa-8a5b-3ce1c3340662"), ProviderTruckId = "281474989545868" },
+            new TruckMapping { TruckId = Guid.Parse("155b7cad-fcb4-463e-bbbb-233395e6f63f"), ProviderTruckId = "281474987084976" },
+            new TruckMapping { TruckId = Guid.Parse("288f3419-fda6-48cb-a337-fc7d8c285185"), ProviderTruckId = "281474987084955" },
+            new TruckMapping { TruckId = Guid.Parse("8db95415-311a-4dee-a1e2-e7981014900e"), ProviderTruckId = "281474987084962" },
+            new TruckMapping { TruckId = Guid.Parse("ac114ded-5869-4c85-8a08-236e5bf3ead6"), ProviderTruckId = "281474995463189" },
+            new TruckMapping { TruckId = Guid.Parse("4494f9af-0ee4-47d1-a503-ec9be102ea54"), ProviderTruckId = "281474992399447" },
+            new TruckMapping { TruckId = Guid.Parse("b6a2b312-bbec-4d0b-9a04-5b9497845d18"), ProviderTruckId = "281474987084952" },
+            new TruckMapping { TruckId = Guid.Parse("14a99c42-8ce9-4070-a258-bc063cfb15ac"), ProviderTruckId = "281474991997217" },
+            new TruckMapping { TruckId = Guid.Parse("404c3f84-ff9f-43ac-ad12-0e6a758bd17f"), ProviderTruckId = "281474990728475" },
+            new TruckMapping { TruckId = Guid.Parse("520a5689-ea44-4c27-b835-ae5efa431a52"), ProviderTruckId = "281474992130619" },
+            new TruckMapping { TruckId = Guid.Parse("bc4a2eda-3c85-4755-8226-ad13373435f1"), ProviderTruckId = "281474993904405" },
+            new TruckMapping { TruckId = Guid.Parse("669b342f-5a9c-49ac-a4d7-51b9be57be3d"), ProviderTruckId = "281474994078463" },
+            new TruckMapping { TruckId = Guid.Parse("61661007-5b72-461e-8c56-4f06d675e119"), ProviderTruckId = "281474990886472" },
+            new TruckMapping { TruckId = Guid.Parse("6de96c31-4548-4b89-895a-64dbcca7a10a"), ProviderTruckId = "281474988967453" },
+            new TruckMapping { TruckId = Guid.Parse("dc86b94a-7cb8-40e3-b77f-f353478ca7b7"), ProviderTruckId = "281474993810614" },
+            new TruckMapping { TruckId = Guid.Parse("66ddd887-42d5-4c43-88f6-4b5e44363d5e"), ProviderTruckId = "281474993902630" },
+            new TruckMapping { TruckId = Guid.Parse("fb322783-80e5-4609-8b12-d5d664c135d5"), ProviderTruckId = "281474991624669" },
+            new TruckMapping { TruckId = Guid.Parse("5c8202f8-e765-4719-803b-f00231b37552"), ProviderTruckId = "281474987084963" },
+            new TruckMapping { TruckId = Guid.Parse("ff74a3bd-5dc5-4f44-9408-6a040f9cda21"), ProviderTruckId = "281474991333643" },
+            new TruckMapping { TruckId = Guid.Parse("ff39d81c-ccaa-4634-9e8a-ec6da8d4e58f"), ProviderTruckId = "281474991179794" },
+            new TruckMapping { TruckId = Guid.Parse("5f0d3007-707e-4e5f-b46b-ebe4b50b9395"), ProviderTruckId = "281474991223734" },
+            new TruckMapping { TruckId = Guid.Parse("718fc149-7f81-4f5d-a327-9d1244cfa516"), ProviderTruckId = "281474987084965" },
+            new TruckMapping { TruckId = Guid.Parse("dca0fe25-2fd3-4071-ac5f-86154af045b2"), ProviderTruckId = "281474987084971" },
+            new TruckMapping { TruckId = Guid.Parse("ebfc3fd8-ea02-46cd-b1a1-2d53a7fbc468"), ProviderTruckId = "281474995014481" },
+            new TruckMapping { TruckId = Guid.Parse("dd34bb0a-fbd3-41ac-bd5b-ef1da915a4d3"), ProviderTruckId = "281474990070424" },
+            new TruckMapping { TruckId = Guid.Parse("00b6499b-f5b7-4be1-9b69-d98d59c57fb5"), ProviderTruckId = "281474991758542" },
+            new TruckMapping { TruckId = Guid.Parse("06c6b9d9-c360-4d55-858e-2cb14749380a"), ProviderTruckId = "281474992602915" },
+            new TruckMapping { TruckId = Guid.Parse("0daf55d8-4287-46e0-a0b1-71c9eaff6dc1"), ProviderTruckId = "281474994078849" },
+            new TruckMapping { TruckId = Guid.Parse("155122cd-ce96-4755-a8ff-3e9074c8ef5d"), ProviderTruckId = "281474987084981" },
+            new TruckMapping { TruckId = Guid.Parse("17cd1b4b-a321-4013-94e3-5d2cd363dcc3"), ProviderTruckId = "281474987084977" },
+            new TruckMapping { TruckId = Guid.Parse("1e236684-97cd-40d1-b9d5-3c54c055b10e"), ProviderTruckId = "281474987084961" },
+            new TruckMapping { TruckId = Guid.Parse("37d9c390-cb41-4d4d-8198-cc70579c37fb"), ProviderTruckId = "281474989410782" },
+            new TruckMapping { TruckId = Guid.Parse("1df7aac4-72c9-4a31-b240-b4f5b92abe3b"), ProviderTruckId = "281474987084958" },
+            new TruckMapping { TruckId = Guid.Parse("17264a35-3bc2-4e6b-96b4-b007b32f6d72"), ProviderTruckId = "281474992183151" },
+            new TruckMapping { TruckId = Guid.Parse("332d3aaf-54d6-436f-9d54-2f200ab440e1"), ProviderTruckId = "281474991333777" },
+            new TruckMapping { TruckId = Guid.Parse("7f4ba4cf-3a15-4cf7-91ec-7882857d80d5"), ProviderTruckId = "281474993833807" },
+            new TruckMapping { TruckId = Guid.Parse("9bf4f0b3-3606-4737-90f9-42924eb9a2fa"), ProviderTruckId = "281474987084975" },
+            new TruckMapping { TruckId = Guid.Parse("3ccb12ff-91cc-40d0-9de4-505fb42cc2eb"), ProviderTruckId = "281474991131421" },
+            new TruckMapping { TruckId = Guid.Parse("a7d02bbb-2e82-4cf8-9079-fc664f64b1d5"), ProviderTruckId = "281474991993175" },
+            new TruckMapping { TruckId = Guid.Parse("7843b754-cd7d-4ed7-916c-27152c0bc49c"), ProviderTruckId = "281474995614843" },
+            new TruckMapping { TruckId = Guid.Parse("9ddc4513-204d-46dd-a6fd-b3c39fee6118"), ProviderTruckId = "281474994484552" },
+            new TruckMapping { TruckId = Guid.Parse("673431f0-89e3-4dbd-a08d-6d17d5a6771b"), ProviderTruckId = "281474992022900" },
+            new TruckMapping { TruckId = Guid.Parse("75aae08f-dff4-4b48-a1a0-a79e9d50eeda"), ProviderTruckId = "281474992766206" },
+            new TruckMapping { TruckId = Guid.Parse("a3ddd1e7-ee0b-4d30-968f-9ea1ffee479b"), ProviderTruckId = "281474987084979" },
+            new TruckMapping { TruckId = Guid.Parse("9c2acaf8-d798-41f9-acf0-b1e52e0f41cc"), ProviderTruckId = "281474987084982" },
+            new TruckMapping { TruckId = Guid.Parse("ab2dd941-3c15-4a16-a118-47383bafed6a"), ProviderTruckId = "281474990708100" },
+            new TruckMapping { TruckId = Guid.Parse("3fc1d498-e5c0-4e15-a6da-2523f0e3bb82"), ProviderTruckId = "281474991736312" },
+            new TruckMapping { TruckId = Guid.Parse("b1861c23-195b-492b-a7f1-66de309042f8"), ProviderTruckId = "281474993752437" },
+            new TruckMapping { TruckId = Guid.Parse("acca9407-d9e8-4c05-8c1f-412a145b87c9"), ProviderTruckId = "281474993962950" },
+            new TruckMapping { TruckId = Guid.Parse("c022f443-8009-4a49-90f9-9af140388216"), ProviderTruckId = "281474990186293" },
+            new TruckMapping { TruckId = Guid.Parse("b47ba435-6e47-4a9f-8342-5e947d03b478"), ProviderTruckId = "281474992647783" }
+        };
+
 
 
         private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
@@ -666,6 +778,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public string RoadSectionId { get; set; }
     }
 
+    public class TruckMapping
+    {
+        public Guid TruckId { get; set; }
+        public string ProviderTruckId { get; set; }
+    }
 
     public class FuelStationDto
     {
