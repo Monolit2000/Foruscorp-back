@@ -97,7 +97,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             foreach (var road in request.Roads)
             {
-                var routeStopsForRoadInfo = PlanRouteStopsForRoad(road, stations, request.RequiredFuelStations, request.FinishFuel);
+                var routeStopsForRoadInfo = PlanRouteStopsForRoad(road, stations, request.RequiredFuelStations, request.FuelProviderNameList, request.FinishFuel);
 
                 allStopPlans.AddRange(routeStopsForRoadInfo.StopPlan);
                 allStationsWithoutAlgo.AddRange(routeStopsForRoadInfo.StationsWithoutAlgorithm);
@@ -167,6 +167,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             RoadSectionDto road,
             List<FuelStation> allStations,
             List<RequiredStationDto> requiredStationDtos,
+            List<string> fuelProviderNameList,
             double finishFuel = 40)
         {
             var routePoints = road.Points
@@ -181,6 +182,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .SelectMany(geoPoint => allStations
                     .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
                 .DistinctBy(s => s.Id)
+                .Where(s => !fuelProviderNameList.Any() || fuelProviderNameList.Select(p => p.ToLower())
+                    .Contains(s.ProviderName.ToLower()))
                 .ToList();
 
             stationsAlongRoute = RemoveDuplicatesByCoordinates(stationsAlongRoute);
@@ -371,6 +374,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                             !usedStationIds.Contains(si.Station.Id) &&
                             si.ForwardDistanceKm > prevKm &&
                             (
+
+                                // экстренно, если до minStopDistance топлива не хватает,
+                                // или станция удовлетворяет минимальную дистанцию
+
                                 maxDistanceWithoutRefuel < minStopDistanceKm ||
                                 si.ForwardDistanceKm - prevKm >= minStopDistanceKm
                             ) &&

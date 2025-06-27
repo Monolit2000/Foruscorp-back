@@ -16,7 +16,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
         public Guid RouteId { get; set; }
         public List<string> RouteSectionIds { get; set; }
         public List<RequiredStationDto> RequiredFuelStations { get; set; } = new List<RequiredStationDto>();    
-
-        public double FinishFuel { get; set; } = 40.0; 
+        public double FinishFuel { get; set; } = 40.0;
+        public List<string> FuelProviderNameList { get; set; } = new List<string>();
     }
 }
