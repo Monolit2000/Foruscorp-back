@@ -585,7 +585,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var lastStop = result.Last();
                 double fuelToFinish = (totalRouteDistanceKm - lastStop.StopAtKm) * fuelConsumptionPerKm;
                 double requiredRefill = fuelToFinish + finishFuel - lastStop.CurrentFuelLiters;
-                requiredRefill = Math.Min(requiredRefill, tankCapacity - lastStop.CurrentFuelLiters);
+                requiredRefill = Math.Min(requiredRefill, tankCapacity + 40 - lastStop.CurrentFuelLiters);
 
                 if (requiredRefill >= 0)
                 {
