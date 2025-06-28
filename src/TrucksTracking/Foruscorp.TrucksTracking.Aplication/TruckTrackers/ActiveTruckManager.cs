@@ -45,7 +45,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
             var truckTrackers = context.TruckTrackers
-                .Where(tt => tt.Status == TruckStatus.Active)   
+                .Where(tt => tt.TruckStatus == TruckStatus.Active)   
                 .Select(tt => tt.TruckId.ToString())
                 .ToList();
 

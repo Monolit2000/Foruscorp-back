@@ -6,10 +6,10 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Domain.Trucks
 {
-    public enum TruckStatus
+    public enum TruckEngineStatus
     {
-        Active,
-        Inactive,
-        Free
+        Off = 0,
+        On = 1,
+        Unknown = 2,
     }
 }

@@ -30,7 +30,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker
             {
                 TrackerId = truckTracker.Id,
                 TruckId = truckTracker.TruckId,
-                Status = truckTracker.Status.ToString()
+                Status = truckTracker.TruckStatus.ToString()
             }); 
         }
     }

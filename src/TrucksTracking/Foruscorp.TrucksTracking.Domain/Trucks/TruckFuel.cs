@@ -9,6 +9,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
     public class TruckFuel
     {
         public Guid Id { get; private set; }
+        public Guid TruckTrackerId { get; private set; }
         public Guid TruckId { get; private set; }
         public decimal PreviousFuelLevel { get; private set; }
         public decimal NewFuelLevel { get; private set; }

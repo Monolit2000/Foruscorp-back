@@ -2,8 +2,10 @@ using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using System.Threading;
 
 namespace Foruscorp.TrucksTracking.API.Controllers
 {
@@ -49,6 +51,16 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             var result = await truckProviderService.GetVehicleStatsFeedAsync(new List<string>(), DateTime.UtcNow, cancellationToken); 
             return Ok(result);
         }
+
+        [HttpPost("UpdateTruckTrackerCommand")]
+        public async Task<ActionResult> GetVehicleStatsFeedAsync(UpdateTruckTrackerCommand updateTruckTrackerCommand)
+        {
+            await mediator.Send(updateTruckTrackerCommand);
+            return Ok();
+        }
+
+
+
 
 
 

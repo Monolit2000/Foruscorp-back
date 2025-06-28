@@ -27,100 +27,131 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
 
-            builder.Property(t => t.Status)
+            builder.Property(t => t.TruckStatus)
                 .IsRequired()
                 .HasConversion<int>();
 
-            builder.OwnsOne(t => t.CurrentTruckLocation, locationBuilder =>
-            {
-                locationBuilder.ToTable("CurrentTruckLocations");
+            builder.Property(t => t.TruckTrackerStatus)
+                .IsRequired()
+                .HasConversion<int>();
 
-                locationBuilder.Property(l => l.Id)
-                    .HasColumnName("TruckLocationId")
-                    .ValueGeneratedOnAdd();
+            //builder.OwnsOne(t => t.CurrentTruckLocation, locationBuilder =>
+            //{
+            //    locationBuilder.ToTable("CurrentTruckLocations");
 
-                locationBuilder.Property(l => l.TruckId)
-                    .IsRequired();
+            //    locationBuilder.WithOwner()
+            //        .HasForeignKey(l => l.TruckTrackerId);
 
-                locationBuilder.OwnsOne(l => l.Location, geoPointBuilder =>
-                {
-                    geoPointBuilder.Property(gp => gp.Latitude)
-                        .HasColumnName("Latitude")
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
+            //    locationBuilder.Property(l => l.Id)
+            //        .HasColumnName("TruckLocationId")
+            //        .ValueGeneratedOnAdd();
 
-                    geoPointBuilder.Property(gp => gp.Longitude)
-                        .HasColumnName("Longitude")
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
-                });
+            //    locationBuilder.Property(l => l.TruckId)
+            //        .IsRequired();
 
-                locationBuilder.Property(l => l.RecordedAt)
-                    .IsRequired();
-                    //.HasColumnType("datetime");
-            });
+            //    locationBuilder.Property(l => l.FormattedLocation)
+            //        .IsRequired(false);
 
-            builder.OwnsMany(t => t.TruckLocationHistory, historyBuilder =>
-            {
-                historyBuilder.ToTable("TruckLocationHistory");
+            //    locationBuilder.OwnsOne(l => l.Location, geoPointBuilder =>
+            //    {
+            //        geoPointBuilder.Property(gp => gp.Latitude)
+            //            .HasColumnName("Latitude")
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
 
-                historyBuilder.WithOwner()
-                    .HasForeignKey(x => x.TruckId);
+            //        geoPointBuilder.Property(gp => gp.Longitude)
+            //            .HasColumnName("Longitude")
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
+            //    });
 
-                historyBuilder.Property(h => h.Id)
-                    .HasColumnName("TruckLocationId")
-                    .ValueGeneratedOnAdd();
+            //    locationBuilder.Property(l => l.RecordedAt)
+            //        .IsRequired();
+            //    //.HasColumnType("datetime");
+            //});
 
-                historyBuilder.Property(h => h.TruckId)
-                    .IsRequired();
+            //builder.OwnsMany(t => t.TruckLocationHistory, historyBuilder =>
+            //{
+            //    historyBuilder.ToTable("TruckLocationHistory");
 
-                historyBuilder.OwnsOne(h => h.Location, geoPointBuilder =>
-                {
-                    geoPointBuilder.Property(gp => gp.Latitude)
-                        .HasColumnName(nameof(GeoPoint.Latitude))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
+            //    historyBuilder.WithOwner()
+            //        .HasForeignKey(x => x.TruckId);
 
-                    geoPointBuilder.Property(gp => gp.Longitude)
-                        .HasColumnName(nameof(GeoPoint.Longitude))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
-                });
+            //    historyBuilder.Property(h => h.Id)
+            //        .HasColumnName("TruckLocationId")
+            //        .ValueGeneratedOnAdd();
 
-                historyBuilder.Property(h => h.RecordedAt)
-                    .IsRequired();
-                    //.HasColumnType("datetime");
-            });
+            //    historyBuilder.Property(h => h.TruckId)
+            //        .IsRequired();
 
-            builder.OwnsMany(t => t.FuelHistory, fuelBuilder =>
-            {
-                fuelBuilder.ToTable("TruckFuelHistory");
+            //    historyBuilder.OwnsOne(h => h.Location, geoPointBuilder =>
+            //    {
+            //        geoPointBuilder.Property(gp => gp.Latitude)
+            //            .HasColumnName(nameof(GeoPoint.Latitude))
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
 
-                fuelBuilder.WithOwner().HasForeignKey(x => x.TruckId);
+            //        geoPointBuilder.Property(gp => gp.Longitude)
+            //            .HasColumnName(nameof(GeoPoint.Longitude))
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
+            //    });
 
-                fuelBuilder.Property(f => f.Id).HasColumnName("TruckFuelId").ValueGeneratedOnAdd();
+            //    historyBuilder.Property(h => h.RecordedAt)
+            //        .IsRequired();
+            //    //.HasColumnType("datetime");
+            //});
 
-                fuelBuilder.Property(f => f.TruckId).IsRequired();
 
-                fuelBuilder.Property(f => f.PreviousFuelLevel).IsRequired().HasColumnType("decimal(18,2)");
 
-                fuelBuilder.Property(f => f.NewFuelLevel).IsRequired().HasColumnType("decimal(18,2)");
 
-                fuelBuilder.OwnsOne(f => f.Location, geoPointBuilder =>
-                {
-                    geoPointBuilder.Property(gp => gp.Latitude)
-                        .HasColumnName(nameof(GeoPoint.Latitude))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
+            builder.HasOne(t => t.CurrentTruckLocation)
+                   .WithOne()
+                   .OnDelete(DeleteBehavior.Cascade);
 
-                    geoPointBuilder.Property(gp => gp.Longitude)
-                        .HasColumnName(nameof(GeoPoint.Longitude))
-                        .IsRequired()
-                        .HasColumnType("decimal(9,6)");
-                });
+            builder.HasMany(t => t.TruckLocationHistory)
+                   .WithOne()
+                   .HasForeignKey(h => h.TruckTrackerId)
+                   .OnDelete(DeleteBehavior.Cascade);
 
-                fuelBuilder.Property(f => f.RecordedAt).IsRequired();
-            });
+            builder.HasMany(t => t.FuelHistory)
+                   .WithOne()
+                   .HasForeignKey(h => h.TruckTrackerId)
+                   .OnDelete(DeleteBehavior.Cascade);
+
+
+
+            //builder.OwnsMany(t => t.FuelHistory, fuelBuilder =>
+            //{
+            //    fuelBuilder.ToTable("TruckFuelHistory");
+
+            //    fuelBuilder.HasKey(f => f.Id);
+
+            //    fuelBuilder.WithOwner().HasForeignKey(x => x.TruckId);
+
+            //    fuelBuilder.Property(f => f.Id).HasColumnName("TruckFuelId").ValueGeneratedOnAdd();
+
+            //    fuelBuilder.Property(f => f.TruckId).IsRequired();
+
+            //    fuelBuilder.Property(f => f.PreviousFuelLevel).IsRequired().HasColumnType("decimal(18,2)");
+
+            //    fuelBuilder.Property(f => f.NewFuelLevel).IsRequired().HasColumnType("decimal(18,2)");
+
+            //    fuelBuilder.OwnsOne(f => f.Location, geoPointBuilder =>
+            //    {
+            //        geoPointBuilder.Property(gp => gp.Latitude)
+            //            .HasColumnName(nameof(GeoPoint.Latitude))
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
+
+            //        geoPointBuilder.Property(gp => gp.Longitude)
+            //            .HasColumnName(nameof(GeoPoint.Longitude))
+            //            .IsRequired()
+            //            .HasColumnType("decimal(9,6)");
+            //    });
+
+            //    fuelBuilder.Property(f => f.RecordedAt).IsRequired();
+            //});
 
             builder.HasIndex(t => t.TruckId);
             builder.HasIndex(t => t.CurrentRouteId);

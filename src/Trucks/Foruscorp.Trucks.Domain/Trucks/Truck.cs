@@ -158,8 +158,8 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public void SetActiveStatus()
         {
             if (Status == TruckStatus.Active)
-                throw new InvalidOperationException("Truck is already active.");
-
+                return;
+            //throw new InvalidOperationException("Truck is already active.");
             Status = TruckStatus.Active;
 
             AddDomainEvent(new TruckActivatedEvent(Id));
@@ -168,18 +168,30 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public void SetInactiveStatus()
         {
             if (Status == TruckStatus.Active)
-                throw new InvalidOperationException("Truck is already active.");
+                return;
+            //throw new InvalidOperationException("Truck is already active.");
 
             Status = TruckStatus.Active;
 
             AddDomainEvent(new TruckDeactivatedEvent(Id));    
         }
 
+        public void SetFreeStatus()
+        {
+            if (Status == TruckStatus.Free)
+                return;
+            //throw new InvalidOperationException("Truck is already free.");
+
+            Status = TruckStatus.Free;
+            // Add any additional logic for setting the truck to free status
+        }   
+
     }
 
     public enum TruckStatus
     {
         Active,
-        Inactive
+        Inactive,
+        Free
     }
 }

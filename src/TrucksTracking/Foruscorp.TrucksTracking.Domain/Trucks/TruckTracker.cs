@@ -17,7 +17,11 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public string ProviderTruckId { get; private set; }
         public Guid CurrentRouteId { get; private set; }
-        public TruckStatus Status { get; private set; }
+        public TruckStatus TruckStatus { get; private set; }
+
+        public TruckEngineStatus TruckEngineStates { get; private set; } 
+
+        public TruckTrackerStatus TruckTrackerStatus { get; private set; }
         public decimal FuelStatus { get; private set; }
         public TruckLocation CurrentTruckLocation { get; set; }
 
@@ -28,7 +32,8 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             Id = Guid.NewGuid();
             TruckId = truckId;
             ProviderTruckId = providerTruckId;
-            Status = TruckStatus.Inactive;
+            TruckStatus = TruckStatus.Inactive;
+            TruckTrackerStatus = TruckTrackerStatus.Active;
         }
 
         public static TruckTracker Create(
@@ -59,10 +64,10 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public void UpdateCurrentTruckLocation(GeoPoint geoPoint)
         {
-            var newLocation = TruckLocation.CreateNew(this.TruckId, this.CurrentRouteId, geoPoint);
+            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRouteId, geoPoint);
 
-            if (CurrentTruckLocation != null)
-                TruckLocationHistory.Add(CurrentTruckLocation);
+            //if (CurrentTruckLocation != null)
+            TruckLocationHistory.Add(newLocation);
 
             CurrentTruckLocation = newLocation;
         }
@@ -91,28 +96,28 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public void ActivateTruckTrucker()
         {
-            if (Status == TruckStatus.Active)
+            if (TruckStatus == TruckStatus.Active)
                 return;
 
-            Status = TruckStatus.Active;
+            TruckStatus = TruckStatus.Active;
         }
 
         public void DeactivateTruckTrucker()
         {
-            if (Status == TruckStatus.Inactive)
+            if (TruckStatus == TruckStatus.Inactive)
                 return;
-            Status = TruckStatus.Inactive;
+            TruckStatus = TruckStatus.Inactive;
         }
 
         public void SetStatus(TruckStatus newStatus)
         {
-            if (newStatus == Status)
+            if (newStatus == TruckStatus)
                 return;
 
             //if (newStatus == TruckStatus.Active && FuelStatus <= 0)
             //    throw new InvalidOperationException("Cannot activate truck with no fuel");
 
-            Status = newStatus;
+            TruckStatus = newStatus;
         }
     }
 }

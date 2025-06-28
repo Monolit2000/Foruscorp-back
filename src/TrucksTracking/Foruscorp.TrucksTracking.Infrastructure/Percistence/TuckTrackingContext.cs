@@ -8,6 +8,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
     {
 
         public DbSet<TruckTracker> TruckTrackers { get; set; }
+        public DbSet<TruckLocation> TruckLocations { get; set; }
+        public DbSet<TruckFuel> TruckFuels { get; set; }
 
         public TuckTrackingContext(DbContextOptions<TuckTrackingContext> options) : base(options)   
         {

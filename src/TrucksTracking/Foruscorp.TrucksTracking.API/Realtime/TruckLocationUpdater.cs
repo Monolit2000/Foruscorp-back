@@ -25,7 +25,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 try
                 {
-                    await UpdateTruckLocation();
+                    //await UpdateTruckLocation();
                     await Task.Delay(2000, stoppingToken);
                 }
                 catch (Exception ex)
@@ -86,7 +86,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             var trackers = await memoryCache.GetOrCreateAsync(TrackersCacheKey, async entry =>
             {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5);
+                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
                 return await context.TruckTrackers
                     .AsNoTracking()
                     .Select(t => new { t.TruckId, t.ProviderTruckId })
@@ -102,6 +102,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             trackers = trackers.Where(t => t.ProviderTruckId != null).ToList();
 
             var providerIds = trackers.Select(t => t.ProviderTruckId).ToList();
+
+            //Call samsara API
             var response = await truckProviderService.GetVehicleStatsFeedAsync();
 
             if (response == null || response.Data == null)
