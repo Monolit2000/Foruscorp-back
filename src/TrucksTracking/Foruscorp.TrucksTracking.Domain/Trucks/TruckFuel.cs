@@ -24,7 +24,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             decimal newFuelLevel,
             GeoPoint location)
         {
-            Id = Guid.NewGuid();
+            //Id = Guid.NewGuid();
             TruckId = truckId;
             PreviousFuelLevel = previousFuelLevel;
             NewFuelLevel = newFuelLevel;

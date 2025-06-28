@@ -138,7 +138,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                             gps?.Latitude ?? 0,
                             gps?.Time ?? DateTime.UtcNow.ToString(),
                             gps?.HeadingDegrees ?? 0,
-                            fuel?.Value ?? 0);
+                            fuel?.Value ?? 0,
+                            gps?.ReverseGeo?.FormattedLocation ?? "Unknown");
                     })
                 .ToList();
 
@@ -155,7 +156,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         double Latitude, 
         string Time,
         double HeadingDegrees, 
-        double fuelPercents);
+        double fuelPercents,
+        string formattedLocation);
 }
 
 
