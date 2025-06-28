@@ -158,8 +158,8 @@ services:
       - 5342:5341
     environment:
       - ACCEPT_EULA=Y
-      - SEQ_RETENTIONDAYS=2
-      - SEQ_FIRSTRUN_ADMINPASSWORD=YourStr0ngP@ssw0rd
+      # - SEQ_RETENTIONDAYS=2
+      # - SEQ_FIRSTRUN_ADMINPASSWORD=YourStr0ngP@ssw0rd
     volumes:
       - seq-data:/data
     networks:
