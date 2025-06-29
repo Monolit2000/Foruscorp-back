@@ -13,7 +13,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks
         public Guid Id { get; set; }
         public string ProviderTruckId { get; set; }
         public string LicensePlate { get; set; }
-        public string Status { get; set; }
+        public int Status { get; set; }
         public Guid? DriverId { get; set; }
         public DriverDto Driver { get; set; }
         public string Name { get; set; }
