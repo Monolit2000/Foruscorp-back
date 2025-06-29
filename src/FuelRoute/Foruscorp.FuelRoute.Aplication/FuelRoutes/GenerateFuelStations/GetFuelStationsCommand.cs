@@ -19,6 +19,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
         public double FinishFuel { get; set; } = 40.0;
         public List<string> FuelProviderNameList { get; set; } = new List<string>();
 
+        public double Weight { get; set; } = 40000.0; // in Paunds
         public int CurrentFuel { get; set; } = 20;
     }
 }

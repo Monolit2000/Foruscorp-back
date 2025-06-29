@@ -3,6 +3,8 @@ using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.IntegrationEvents;
+using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -17,7 +19,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus
     public class UpdateTruckStatusCommandHandler(
         ITuckTrackingContext tuckTrackingContext,
         ILogger<UpdateTruckTrackerCommandHandler> logger,
-        ISignalRNotificationSender signalRNotificationSender) : IRequestHandler<UpdateTruckStatusCommand>
+        ISignalRNotificationSender signalRNotificationSender,
+        IPublishEndpoint publishEndpoint) : IRequestHandler<UpdateTruckStatusCommand>
     {
         public async Task Handle(UpdateTruckStatusCommand request, CancellationToken cancellationToken)
         {
@@ -44,8 +47,14 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus
 
             await tuckTrackingContext.SaveChangesAsync();
 
-           await signalRNotificationSender.SendTruckStatusUpdateAsync(
+            await signalRNotificationSender.SendTruckStatusUpdateAsync(
                new TruckStausUpdate(truckTracker.TruckId.ToString(), (int)status));
+
+            await publishEndpoint.Publish(new TruckStatusChengedIntegreationEvent
+            {
+                TruckId = truckTracker.TruckId,
+                Status = (int)status,
+            });
         }
     }
 }

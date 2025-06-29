@@ -16,7 +16,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
         public int CurrentFuel { get; set; } = 20; 
 
-        public double Weight { get; set; } = 50000.0; // in Paunds
+        public double Weight { get; set; } = 40000.0; // in Paunds
     }
 
 

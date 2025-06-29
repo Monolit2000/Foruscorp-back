@@ -186,12 +186,18 @@ namespace Foruscorp.Trucks.Domain.Trucks
             // Add any additional logic for setting the truck to free status
         }   
 
+        public void UpdateStatus(TruckStatus status)
+        {
+            Status = status;
+        }
+
+
     }
 
     public enum TruckStatus
     {
-        Active,
-        Inactive,
-        Free
+        Inactive = 0,
+        Active = 1,
+        Free = 2
     }
 }

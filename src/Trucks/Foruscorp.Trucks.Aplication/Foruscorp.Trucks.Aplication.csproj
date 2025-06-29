@@ -14,6 +14,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\TrucksTracking\Foruscorp.TrucksTracking.IntegrationEvents\Foruscorp.TrucksTracking.IntegrationEvents.csproj" />
 	  <ProjectReference Include="..\Foruscorp.Trucks.Domain\Foruscorp.Trucks.Domain.csproj" />
 	  <ProjectReference Include="..\Foruscorp.Trucks.IntegrationEvents\Foruscorp.Trucks.IntegrationEvents.csproj" />
 	</ItemGroup>

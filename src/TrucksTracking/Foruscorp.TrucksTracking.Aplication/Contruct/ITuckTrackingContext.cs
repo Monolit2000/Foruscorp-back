@@ -7,6 +7,7 @@ namespace Foruscorp.TrucksTracking.Aplication.Contruct
     {
         DbSet<Route> Routes { get; set; }
         DbSet<TruckTracker> TruckTrackers { get; set; }
+        DbSet<TruckLocation> TruckLocations { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
