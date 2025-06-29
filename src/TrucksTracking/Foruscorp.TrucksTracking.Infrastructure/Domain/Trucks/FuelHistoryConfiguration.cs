@@ -8,16 +8,13 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
     {
         public void Configure(EntityTypeBuilder<TruckFuel> builder)
         {
-            // Map to separate table
             builder.ToTable("TruckFuelHistory", schema: "TuckTracking");
 
-            // Primary Key
             builder.HasKey(f => f.Id);
             builder.Property(f => f.Id)
                    .HasColumnName("TruckFuelId")
                    .ValueGeneratedOnAdd();
 
-            // Foreign Key to TruckTracker
             builder.Property(f => f.TruckId)
                    .IsRequired();
             builder.HasOne<TruckTracker>()
@@ -25,7 +22,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .HasForeignKey(f => f.TruckId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            // Fuel level properties
             builder.Property(f => f.PreviousFuelLevel)
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
@@ -33,21 +29,14 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
-            // GeoPoint value object mapping
-            builder.OwnsOne(f => f.Location, geoPointBuilder =>
-            {
-                geoPointBuilder.Property(gp => gp.Latitude)
-                               .HasColumnName(nameof(GeoPoint.Latitude))
-                               .HasColumnType("decimal(9,6)")
-                               .IsRequired();
+            builder.Property(f => f.TruckLocationId)
+                   .IsRequired(false); 
+            builder.HasOne(f => f.TruckLocation)
+                   .WithMany() 
+                   .HasForeignKey(f => f.TruckLocationId)
+                   .OnDelete(DeleteBehavior.Restrict); 
 
-                geoPointBuilder.Property(gp => gp.Longitude)
-                               .HasColumnName(nameof(GeoPoint.Longitude))
-                               .HasColumnType("decimal(9,6)")
-                               .IsRequired();
-            });
 
-            // Recorded timestamp
             builder.Property(f => f.RecordedAt)
                    .IsRequired();
         }

@@ -1,4 +1,5 @@
 ﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -22,7 +23,10 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
                 return;
             }
 
-            truckTracker.UpdateTruck(request.CurrentTruckLocation, request.FuelStatus);
+            truckTracker.UpdateTruck(
+                new GeoPoint(request.truckStatsUpdate.Latitude, request.truckStatsUpdate.Longitude),
+                request.truckStatsUpdate.formattedLocation, 
+                request.truckStatsUpdate.fuelPercents);
 
             await tuckTrackingContext.SaveChangesAsync(cancellationToken);  
         }

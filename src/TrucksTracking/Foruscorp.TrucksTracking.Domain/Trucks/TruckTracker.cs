@@ -22,7 +22,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public TruckEngineStatus TruckEngineStates { get; private set; } 
 
         public TruckTrackerStatus TruckTrackerStatus { get; private set; }
-        public decimal FuelStatus { get; private set; }
+        public double FuelStatus { get; private set; }
         public TruckLocation CurrentTruckLocation { get; set; }
 
         private TruckTracker(
@@ -53,26 +53,25 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         }
 
 
-        public void UpdateTruck(GeoPoint geoPoint, decimal newFuelStatus)
+        public void UpdateTruck(GeoPoint geoPoint, string formattedLocation, double newFuelStatus)
         {
-            UpdateCurrentTruckLocation(geoPoint);
+            UpdateCurrentTruckLocation(geoPoint, formattedLocation);
 
             UpdateFuelStatus(newFuelStatus);
         }
 
 
-
-        public void UpdateCurrentTruckLocation(GeoPoint geoPoint)
+        public void UpdateCurrentTruckLocation(GeoPoint geoPoint, string formattedLocation)
         {
-            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRouteId, geoPoint);
+            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRouteId, geoPoint, formattedLocation);
 
-            //if (CurrentTruckLocation != null)
-            TruckLocationHistory.Add(newLocation);
+            if (CurrentTruckLocation != null)
+                TruckLocationHistory.Add(newLocation);
 
             CurrentTruckLocation = newLocation;
         }
 
-        public void UpdateFuelStatus(decimal newFuelStatus/*, GeoPoint location*/)
+        public void UpdateFuelStatus(double newFuelStatus/*, GeoPoint location*/)
         {
             //FuelHistory.Add(TruckFuel.CreateNew(
             //    this.TruckId,
@@ -84,7 +83,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
                 this.TruckId,
                 this.FuelStatus,
                 newFuelStatus,
-                this.CurrentTruckLocation.Location));
+                this.CurrentTruckLocation));
 
             FuelStatus = newFuelStatus;
         }

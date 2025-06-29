@@ -21,25 +21,29 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         private TruckLocation(
             Guid truckId,
             Guid truckTrackerId,
-            GeoPoint location)
+            GeoPoint location,
+            string formattedLocation)
         {
             //Id = Guid.NewGuid();
             TruckId = truckId;
             TruckTrackerId = truckTrackerId;
             Location = location;
-            RecordedAt = DateTime.UtcNow;    
+            RecordedAt = DateTime.UtcNow;
+            FormattedLocation = formattedLocation;
         }
 
         public static TruckLocation CreateNew(
             Guid truckId,
             Guid truckTrackerId,
             Guid routeId,
-            GeoPoint location)
+            GeoPoint location,
+            string formattedLocation)
         {
             return new TruckLocation(
                 truckId,
                 truckTrackerId,
-                location);    
+                location,
+                formattedLocation);    
         }
     }
 }

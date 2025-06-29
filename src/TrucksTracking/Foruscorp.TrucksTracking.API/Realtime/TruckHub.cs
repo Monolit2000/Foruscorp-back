@@ -1,29 +1,10 @@
 ﻿using Microsoft.AspNetCore.SignalR;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
-    public interface ITruckLocationUpdateClient
-    {
-        Task ReceiveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
-        Task ReceiveTruckFuelUpdate(TruckFuelUpdate truckLocationUpdate);
-    }
-
-    public sealed record TruckLocationUpdate(
-        string TruckId, 
-        string TruckName, 
-        double Longitude, 
-        double Latitude, 
-        string Time, 
-        double HeadingDegrees);
-    public sealed record TruckFuelUpdate(
-        string TruckId, 
-        double fuelPercentage);
-
-    public sealed record TruckStausUpdate(
-        string TruckId,
-        string Status);
-
+ 
     public sealed class TruckHub(ActiveTruckManager activeTruckManager) : Hub<ITruckLocationUpdateClient>
     {
         public async Task JoinTruckGroup(string truckId)

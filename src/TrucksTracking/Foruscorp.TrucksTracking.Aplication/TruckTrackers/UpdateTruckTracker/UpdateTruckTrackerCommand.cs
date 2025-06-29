@@ -1,6 +1,7 @@
 ﻿using System;
 using MediatR;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
 {
@@ -8,8 +9,6 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
     {
         public Guid TruckId { get; set; }
 
-        public GeoPoint CurrentTruckLocation { get; set; }
-
-        public decimal FuelStatus { get; set; } 
+        public TruckInfoUpdate truckStatsUpdate { get; set; }
     }
 }

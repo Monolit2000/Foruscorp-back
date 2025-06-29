@@ -1,8 +1,13 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
+using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Domain.Trucks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Foruscorp.TrucksTracking.Aplication.Contruct;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using System.Linq;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -18,6 +23,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         private readonly Random _random = new();
 
         private const string TrackersCacheKey = "TruckTrackersCache";
+        private const string FuelCacheKey = "TruckFuelCache"; 
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -79,7 +85,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
 
 
-        private async Task<List<TruckStatsUpdate>> UpdateTrucksStat()
+        private async Task<List<TruckInfoUpdate>> UpdateTrucksStat()
         {
             using var scope = scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
@@ -96,7 +102,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             if (trackers == null || !trackers.Any())
             {
                 logger.LogWarning("No trackers found in cache or database.");
-                return new List<TruckStatsUpdate>();
+                return new List<TruckInfoUpdate>();
             }
 
             trackers = trackers.Where(t => t.ProviderTruckId != null).ToList();
@@ -109,7 +115,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             if (response == null || response.Data == null)
             {
                 logger.LogWarning("Vehicle stats feed response or data is null.");
-                return new List<TruckStatsUpdate>();
+                return new List<TruckInfoUpdate>();
             }
 
             var filteredData = response.Data
@@ -119,7 +125,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             if (!filteredData.Any())
             {
                 logger.LogWarning("No vehicle stats matched the filter criteria.");
-                return new List<TruckStatsUpdate>();
+                return new List<TruckInfoUpdate>();
             }
 
             var updates = filteredData
@@ -131,7 +137,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                         var gps = vs.Gps != null ? vs.Gps.FirstOrDefault() : null;
                         var fuel = vs.FuelPercents != null ? vs.FuelPercents.FirstOrDefault() : null;
 
-                        return new TruckStatsUpdate(
+                        return new TruckInfoUpdate(
                             t.TruckId.ToString(),
                             vs.Name ?? "Unknown",
                             gps?.Longitude ?? 0,
@@ -139,7 +145,8 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                             gps?.Time ?? DateTime.UtcNow.ToString(),
                             gps?.HeadingDegrees ?? 0,
                             fuel?.Value ?? 0,
-                            gps?.ReverseGeo?.FormattedLocation ?? "Unknown");
+                            gps?.ReverseGeo?.FormattedLocation ?? "Unknown",
+                            vs.EngineStates.FirstOrDefault());
                     })
                 .ToList();
 
@@ -147,160 +154,66 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             return updates;
         }
+
+        //private async Task ProcessFuelChangesAsync(
+        //    List<TruckInfoUpdate> updates,
+        //    List<VehicleStat> filteredData, // Replace with actual type of response.Data
+        //    List<TruckTracker> trackers, // Replace with actual type of trackers
+        //    ITuckTrackingContext context)
+        //{
+        //    // Get all previous fuel levels from the database in one query
+        //    var truckIds = updates.Select(u => Guid.Parse(u.TruckId)).ToList();
+        //    var latestFuelRecords = await context.TruckTrackers
+        //        .Where(f => truckIds.Contains(f.Id))
+        //        .GroupBy(f => f.TruckId)
+        //        .Select(g => new
+        //        {
+        //            TruckId = g.Key,
+        //            LatestFuel = g.OrderByDescending(f => f.RecordedAt).Select(f => f.NewFuelLevel).FirstOrDefault()
+        //        })
+        //        .ToDictionaryAsync(f => f.TruckId, f => f.LatestFuel);
+
+        //    // Get or set cache for all trucks
+        //    var fuelCacheKeys = truckIds.Select(id => $"{FuelCacheKey}_{id}").ToList();
+        //    var cachedFuelValues = new Dictionary<string, decimal>();
+
+        //    foreach (var truckId in truckIds)
+        //    {
+        //        var cacheKey = $"{FuelCacheKey}_{truckId}";
+        //        var cachedFuel = await memoryCache.GetOrCreateAsync(cacheKey, entry =>
+        //        {
+        //            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
+        //            return Task.FromResult(latestFuelRecords.TryGetValue(truckId, out var fuel) ? fuel : 0m);
+        //        });
+        //        cachedFuelValues[cacheKey] = cachedFuel;
+        //    }
+
+        //    // Detect fuel changes and trigger HandleFuelChangeAsync.Tasks
+        //    var fuelChangeTasks = updates
+        //        .Where(u =>
+        //        {
+        //            var cacheKey = $"{FuelCacheKey}_{u.TruckId}";
+        //            return cachedFuelValues.TryGetValue(cacheKey, out var previousFuel) && previousFuel != u.fuelPercents;
+        //        })
+        //        .Select(async u =>
+        //        {
+        //            var gps = filteredData
+        //                .Join(trackers, vs => vs.Id, t => t.ProviderTruckId, (vs, t) => new { vs, t })
+        //                .Where(x => x.t.TruckId.ToString() == u.TruckId)
+        //                .Select(x => x.vs.Gps?.FirstOrDefault())
+        //                .FirstOrDefault();
+
+        //            //await HandleFuelChangeAsync(
+        //            //    Guid.Parse(u.TruckId),
+        //            //    cachedFuelValues[$"{FuelCacheKey}_{u.TruckId}"],
+        //            //    u.fuelPercents,
+        //            //    gps != null ? new GeoPoint(gps.Latitude, gps.Longitude) : null,
+        //            //    gps?.ReverseGeo?.FormattedLocation);
+        //        })
+        //        .ToList();
+
+        //    // Await all fuel change tasks
+        //    await Task.WhenAll(fuelChangeTasks);
+        //}
     }
-
-    public sealed record TruckStatsUpdate(
-        string TruckId, 
-        string TruckName,
-        double Longitude,
-        double Latitude, 
-        string Time,
-        double HeadingDegrees, 
-        double fuelPercents,
-        string formattedLocation);
 }
-
-
-
-
-
-//using Microsoft.AspNetCore.SignalR;
-//using Foruscorp.TrucksTracking.Domain.Trucks;
-//using Foruscorp.TrucksTracking.Aplication.Contruct;
-//using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-//using Microsoft.EntityFrameworkCore;
-//using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
-//using System.Diagnostics.CodeAnalysis;
-//using System.Linq;
-//using System.Collections.Concurrent;
-
-//namespace Foruscorp.TrucksTracking.API.Realtime
-//{
-//    internal sealed class TruckLocationUpdater(
-//        IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
-//        ILogger<TruckLocationUpdater> logger,
-//        ActiveTruckManager activeTruckManager,
-//        IServiceScopeFactory scopeFactory,
-//        ITruckProviderService truckProviderService) : BackgroundService
-//    {
-//        private readonly Random _random = new();
-//        // Очередь для хранения обновлений с номером тика, когда они были добавлены
-//        private readonly ConcurrentQueue<(TruckLocationUpdate Update, int TickCount)> _updateQueue = new();
-//        // Глобальный счетчик тиков
-//        private int _globalTickCount = 0;
-
-//        // Основной метод выполнения фоновой службы
-//        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
-//        {
-//            while (!stoppingToken.IsCancellationRequested)
-//            {
-//                await UpdateTruckLocation();
-//                await Task.Delay(1500, stoppingToken);
-//            }
-//        }
-
-//        // Метод обновления местоположения грузовиков
-//        private async Task UpdateTruckLocation()
-//        {
-//            _globalTickCount++;
-
-//            // Получение данных о грузовиках
-//            var trucks = await UpdateTrucksStat();
-
-//            if (trucks.Any())
-//            {
-//                foreach (var truck in trucks)
-//                {
-//                    // Создание обновления с координатами
-//                    var update = new TruckLocationUpdate(
-//                        truck.Name,
-//                        truck.Gps.FirstOrDefault()?.Longitude ?? 0,
-//                        truck.Gps.FirstOrDefault()?.Latitude ?? 0,
-//                        truck.Gps.FirstOrDefault()?.Time);
-
-//                    // Добавление обновления в очередь с текущим номером тика
-//                    _updateQueue.Enqueue((update, _globalTickCount));
-
-//                    logger.LogInformation("Добавлено в очередь {Truck} местоположение: долгота {Longitude}, широта {Latitude} на тике {Tick}",
-//                        truck.Name, update.Longitude, update.Latitude, _globalTickCount);
-//                }
-//            }
-
-//            // Проверка и отправка обновлений, которые находятся в очереди 3 тика
-//            while (_updateQueue.TryPeek(out var item) && _globalTickCount >= item.TickCount + 3)
-//            {
-//                if (_updateQueue.TryDequeue(out var dequeuedItem))
-//                {
-//                    var update = dequeuedItem.Update;
-//                    // Отправка обновления клиентам в соответствующей группе
-//                    await hubContext.Clients.Group(update.TruckId.ToString()).ReceiveTruckLocationUpdate(update);
-//                    logger.LogInformation("GPS data = {Time}  Отправлено обновление местоположения {Truck} клиентам после задержки в 3 тика", update.Time, update.TruckId);
-//                }
-//            }
-//        }
-
-//        private async Task<List<VehicleStat>> UpdateTrucksStat()
-//        {
-//            using var scope = scopeFactory.CreateScope();
-//            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
-
-//            var trackers = await context.TruckTrackers
-//                .AsNoTracking()
-//                .Where(t => activeTruckManager.GetAllTrucks().Contains(t.TruckId.ToString()))
-//                .Select(t => t.ProviderTruckId)
-//                .ToListAsync();
-
-//            if (!trackers.Any())
-//                return new List<VehicleStat>();
-
-//            // Запрос данных о грузовиках
-//            var response = await truckProviderService.GetVehicleStatsFeedAsync();
-
-//            return response.Data
-//                .Where(vs => trackers.Contains(vs.Id) ||
-//                             vs.EngineStates?.Any(es => es.Value == "On") == true)
-//                .ToList();
-//        }
-
-//        private GeoPoint CalculateNewLocation(GeoPoint currentLocation)
-//        {
-//            const decimal MaxCoordinateChange = 0.01m;
-//            var random = _random;
-
-//            double change = (double)MaxCoordinateChange;
-//            decimal latFactor = (decimal)(random.NextDouble() * change * 2 - change);
-//            decimal lonFactor = (decimal)(random.NextDouble() * change * 2 - change);
-
-//            decimal latChange = currentLocation.Latitude * latFactor;
-//            decimal lonChange = currentLocation.Longitude * lonFactor;
-
-//            decimal newLatitude = Math.Max(-90m, Math.Min(90m, currentLocation.Latitude + latChange));
-//            decimal newLongitude = Math.Max(-180m, Math.Min(180m, currentLocation.Longitude + lonChange));
-
-//            newLatitude = Math.Round(newLatitude, 6);
-//            newLongitude = Math.Round(newLongitude, 6);
-
-//            return new GeoPoint(newLatitude, newLongitude);
-//        }
-//    }
-
-//    public class TruckLocationDto
-//    {
-//        public string TruckId { get; }
-//        public string TruckName { get; }
-//        public DateTime TimeSpan { get; }
-//        public decimal Longitude { get; }
-//        public decimal Latitude { get; }
-//        public TruckLocationDto(string truckId, decimal longitude, decimal latitude)
-//        {
-//            TruckId = truckId;
-//            Longitude = longitude;
-//            Latitude = latitude;
-//        }
-//    }
-
-//    internal sealed class TruckLocationUpdateOptions
-//    {
-//        public TimeSpan UpdateInterval { get; set; } = TimeSpan.FromSeconds(1);
-//    }
-//}
