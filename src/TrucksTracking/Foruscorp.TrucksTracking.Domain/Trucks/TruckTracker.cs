@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,11 +13,14 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public Guid TruckId { get; private set; }
         public List<TruckFuel> FuelHistory { get; private set; } = [];
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
+        public List<Route> Routes { get; set; } = [];
+
+        //public Guid? CurrentRouteId { get; private set; }
+        public Route CurrentRoute { get; private set; }    
 
         public Guid Id { get; private set; }
 
         public string ProviderTruckId { get; private set; }
-        public Guid CurrentRouteId { get; private set; }
         public TruckStatus TruckStatus { get; private set; }
 
         public TruckEngineStatus TruckEngineStates { get; private set; } 
@@ -44,7 +48,16 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
                 providerTruckId);
 
 
+        public Route SetCurrentRoute(Guid routeId)
+        {
+            var route = Route.CreateNew(routeId, this.Id, this.TruckId);   
 
+            CurrentRoute = route;
+
+            Routes.Add(route);
+
+            return route;
+        }
 
         public void UpdateTruckTracker(Guid truckId, string providerTruckId)
         {
@@ -63,7 +76,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public void UpdateCurrentTruckLocation(GeoPoint geoPoint, string formattedLocation)
         {
-            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRouteId, geoPoint, formattedLocation);
+            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRoute?.TruckId, geoPoint, formattedLocation);
 
             if (CurrentTruckLocation != null)
                 TruckLocationHistory.Add(newLocation);
@@ -88,10 +101,10 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             FuelStatus = newFuelStatus;
         }
 
-        public void ChangeRoute(Guid newRouteId)
-        {
-            CurrentRouteId = newRouteId;
-        }
+        //public void ChangeRoute(Guid newRouteId)
+        //{
+        //    CurrentRouteId = newRouteId;
+        //}
 
         public void ActivateTruckTrucker()
         {

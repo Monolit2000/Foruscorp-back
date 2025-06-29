@@ -7,8 +7,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
 {
     public class UpdateTruckTrackerCommand : IRequest 
     {
-        public Guid TruckId { get; set; }
+        //public Guid TruckId { get; set; }
 
-        public TruckInfoUpdate truckStatsUpdate { get; set; }
+        public TruckInfoUpdate TruckStatsUpdate { get; set; }
     }
 }

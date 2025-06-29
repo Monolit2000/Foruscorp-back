@@ -3,6 +3,7 @@ using System;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    partial class TuckTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250629115710_Add_Rout_to_TruckTracker")]
+    partial class Add_Rout_to_TruckTracker
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,11 +28,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("RouteId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("RouteId");
 
@@ -41,17 +41,11 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("TruckTrackerId");
 
-                    b.Property<Guid?>("TruckTrackerId1")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
+                    b.HasKey("RouteId");
 
                     b.HasIndex("TruckId");
 
                     b.HasIndex("TruckTrackerId");
-
-                    b.HasIndex("TruckTrackerId1")
-                        .IsUnique();
 
                     b.ToTable("Routes", "TuckTracking");
                 });
@@ -129,6 +123,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("Id");
 
+                    b.Property<Guid?>("CurrentRouteId")
+                        .HasColumnType("uuid");
+
                     b.Property<double>("FuelStatus")
                         .HasColumnType("decimal(18,2)");
 
@@ -150,6 +147,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CurrentRouteId");
+
                     b.HasIndex("TruckId");
 
                     b.ToTable("TruckTrackers", "TuckTracking");
@@ -162,11 +161,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasForeignKey("TruckTrackerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", null)
-                        .WithOne("CurrentRoute")
-                        .HasForeignKey("Foruscorp.TrucksTracking.Domain.Trucks.Route", "TruckTrackerId1")
-                        .OnDelete(DeleteBehavior.SetNull);
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckFuel", b =>
@@ -224,8 +218,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>
                 {
-                    b.Navigation("CurrentRoute");
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.Route", "CurrentRoute")
+                        .WithMany()
+                        .HasForeignKey("CurrentRouteId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
+                    b.Navigation("CurrentRoute");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>
+                {
                     b.Navigation("CurrentTruckLocation");
 
                     b.Navigation("FuelHistory");

@@ -48,7 +48,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 
 
             services.AddMemoryCache();
-            services.AddSingleton<ActiveTruckManager, ActiveTruckManager>();  
+            services.AddSingleton<ActiveTruckManager, ActiveTruckManager>();
+            services.AddSingleton<TruckInfoManager>();
             services.AddSingleton<ITruckProviderService, TruckProviderService>();
 
             return services;

@@ -9,6 +9,7 @@ using System.Runtime.Serialization;
 using Microsoft.Extensions.Logging;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Infrastructure.Domain.FuelRoutes;
+using MassTransit;
 
 
 namespace Foruscorp.FuelRoutes.Infrastructure
@@ -30,6 +31,25 @@ namespace Foruscorp.FuelRoutes.Infrastructure
                 //options.ReplaceService<IValueConverterSelector, StronglyTypedIdValueConverterSelector>();
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
                 //options.AddInterceptors(sp.GetServices<ISaveChangesInterceptor>());
+            });
+
+            services.AddMassTransit(busConfiguration =>
+            {
+                busConfiguration.SetKebabCaseEndpointNameFormatter();
+
+                busConfiguration.UsingRabbitMq((context, configurator) =>
+                {
+                    configurator.Host(new Uri("rabbitmq://rabbitmq"/*configuration["MessageBroker:HostName"]!*/), h =>
+                    {
+                        h.Username(configuration["MessageBroker:Username"]!);
+                        h.Username(configuration["MessageBroker:Password"]!);
+                    });
+
+                    configurator.ConfigureEndpoints(context);
+
+                });
+
+                busConfiguration.AddConsumers(typeof(IApplication).Assembly);
             });
 
             services.AddMemoryCache();

@@ -2,6 +2,7 @@ using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
@@ -60,9 +61,12 @@ namespace Foruscorp.TrucksTracking.API.Controllers
         }
 
 
-
-
-
+        [HttpPost("SetCurrentRouteCommand")]
+        public async Task<ActionResult> SetCurrentRouteCommand(SetCurrentRouteCommand setCurrentRouteCommand)
+        {
+            await mediator.Send(setCurrentRouteCommand);
+            return Ok();
+        }
 
 
     }

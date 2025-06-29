@@ -3,7 +3,9 @@ using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
 using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIfChanged;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -31,7 +33,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 try
                 {
-                    //await UpdateTruckLocation();
+                    await UpdateTruckLocation();
                     await Task.Delay(2000, stoppingToken);
                 }
                 catch (Exception ex)
@@ -151,6 +153,10 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                 .ToList();
 
             logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
+
+            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+
+            await sender.Send(new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates });  
 
             return updates;
         }

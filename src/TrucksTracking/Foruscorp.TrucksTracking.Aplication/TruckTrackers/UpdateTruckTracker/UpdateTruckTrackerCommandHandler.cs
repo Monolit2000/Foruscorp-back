@@ -12,21 +12,23 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
     {
         public async Task Handle(UpdateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
+            var truckId = Guid.Parse(request.TruckStatsUpdate.TruckId);
+
             var truckTracker = await tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.CurrentTruckLocation)
                 .Include(tt => tt.TruckLocationHistory)
-                .FirstOrDefaultAsync(t => t.TruckId == request.TruckId, cancellationToken);
+                .FirstOrDefaultAsync(t => t.TruckId == truckId, cancellationToken);
 
             if (truckTracker == null)
             {
-                logger.LogWarning("Truck Tracker not found for TruckId: {TruckId}", request.TruckId);
+                logger.LogWarning("Truck Tracker not found for TruckId: {TruckId}", truckId);
                 return;
             }
 
             truckTracker.UpdateTruck(
-                new GeoPoint(request.truckStatsUpdate.Latitude, request.truckStatsUpdate.Longitude),
-                request.truckStatsUpdate.formattedLocation, 
-                request.truckStatsUpdate.fuelPercents);
+                new GeoPoint(request.TruckStatsUpdate.Latitude, request.TruckStatsUpdate.Longitude),
+                request.TruckStatsUpdate.formattedLocation, 
+                request.TruckStatsUpdate.fuelPercents);
 
             await tuckTrackingContext.SaveChangesAsync(cancellationToken);  
         }

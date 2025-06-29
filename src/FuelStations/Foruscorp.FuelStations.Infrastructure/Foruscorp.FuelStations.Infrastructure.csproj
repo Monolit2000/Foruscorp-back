@@ -23,6 +23,8 @@
 	  <PackageReference Include="Npgsql" Version="9.0.3" />
 	  <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
+    
 	<PackageReference Include="Microsoft.Playwright" Version="1.51.0" />
 	<PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>

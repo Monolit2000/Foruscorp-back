@@ -3,6 +3,7 @@ using System;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    partial class TuckTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250629124418_Update2_Rout_to_TruckTracker")]
+    partial class Update2_Rout_to_TruckTracker
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -25,11 +28,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
                     b.Property<Guid>("RouteId")
+                        .ValueGeneratedOnAdd()
                         .HasColumnType("uuid")
                         .HasColumnName("RouteId");
 
@@ -44,7 +44,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.Property<Guid?>("TruckTrackerId1")
                         .HasColumnType("uuid");
 
-                    b.HasKey("Id");
+                    b.HasKey("RouteId");
 
                     b.HasIndex("TruckId");
 

@@ -35,7 +35,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public static TruckLocation CreateNew(
             Guid truckId,
             Guid truckTrackerId,
-            Guid routeId,
+            Guid? routeId,
             GeoPoint location,
             string formattedLocation)
         {

@@ -3,8 +3,6 @@ using System.Net.Http.Headers;
 using Microsoft.Extensions.Configuration;
 using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
-using RabbitMQ.Client;
-using FluentResults;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Services
 {
@@ -18,6 +16,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
         {
             _apiToken = configuration["SamsaraApi:ApiToken"]
                 ?? throw new ArgumentNullException("API token is missing in configuration.");
+
+
+
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _apiToken);

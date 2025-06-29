@@ -19,9 +19,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 .HasColumnName("TruckId")
                 .IsRequired();
 
-            builder.Property(t => t.CurrentRouteId)
-                .IsRequired();
-
             builder.Property(t => t.FuelStatus)
                 .IsRequired()
                 .HasColumnType("decimal(18,2)");
@@ -48,8 +45,21 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .HasForeignKey(h => h.TruckTrackerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
+            //builder.Property(t => t.CurrentRouteId)
+            //    .IsRequired(false); // Since CurrentRouteId is Guid? (nullable)
+
+            builder.HasOne(t => t.CurrentRoute)
+                .WithOne()
+                //.HasForeignKey<TruckTracker>(tt => tt.CurrentRouteId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+
             builder.HasIndex(t => t.TruckId);
-            builder.HasIndex(t => t.CurrentRouteId);
+            //builder.HasIndex(t => t.CurrentRouteId);
+
+            //builder.HasIndex(t => t.CurrentRouteId)
+            //    .IsUnique(false);
+            //.HasDatabaseName("IX_TruckTrackers_CurrentRouteId");
         }
     }
 }

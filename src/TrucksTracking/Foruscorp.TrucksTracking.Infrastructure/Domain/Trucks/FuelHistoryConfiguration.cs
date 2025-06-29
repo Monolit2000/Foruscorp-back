@@ -29,8 +29,10 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .IsRequired()
                    .HasColumnType("decimal(18,2)");
 
+
             builder.Property(f => f.TruckLocationId)
                    .IsRequired(false); 
+
             builder.HasOne(f => f.TruckLocation)
                    .WithMany() 
                    .HasForeignKey(f => f.TruckLocationId)
