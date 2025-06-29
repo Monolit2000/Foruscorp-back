@@ -16,35 +16,35 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
     {
         public async Task<Result> Handle(AcceptFuelRouteCommand request, CancellationToken cancellationToken)
         {
-            memoryCache.TryGetValue(FuelRoutesCachKeys.RouteById(request.Id), out DataObject routeDataValue);
-            if (routeDataValue is null)
-                return Result.Fail("Route not found");
+            //memoryCache.TryGetValue(FuelRoutesCachKeys.RouteById(request.Id), out DataObject routeDataValue);
+            //if (routeDataValue is null)
+            //    return Result.Fail("Route not found");
 
-            var section = routeDataValue.Routes.WaypointsAndShapes
-                .Where(ws => ws != null && ws.Sections != null)
-                .SelectMany(x => x.Sections)
-                .FirstOrDefault(section => section.Id == request.RouteSectionId);
+            //var section = routeDataValue.Routes.WaypointsAndShapes
+            //    .Where(ws => ws != null && ws.Sections != null)
+            //    .SelectMany(x => x.Sections)
+            //    .FirstOrDefault(section => section.Id == request.RouteSectionId);
 
-            var originPoint = LocationPoint.CreateNew("origin", 0.0, 0.0);
-            var destinationPoint = LocationPoint.CreateNew("destination", 0.0, 0.0);
+            //var originPoint = LocationPoint.CreateNew("origin", 0.0, 0.0);
+            //var destinationPoint = LocationPoint.CreateNew("destination", 0.0, 0.0);
 
-            var fuelRoute = FuelRoute.CreateNew(
-                Guid.NewGuid(),
-                originPoint,
-                destinationPoint,
-                new List<FuelRouteStation>(),
-                new List<MapPoint>());
+            //var fuelRoute = FuelRoute.CreateNew(
+            //    Guid.NewGuid(),
+            //    originPoint,
+            //    destinationPoint,
+            //    new List<FuelRouteStation>(),
+            //    new List<MapPoint>());
 
-            var mupPoints = section.ShowShape
-                .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
+            //var mupPoints = section.ShowShape
+            //    .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
 
-            var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
-            //fuelRoute.AddEncodedRoute(encodedRoute);
+            //var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
+            ////fuelRoute.AddEncodedRoute(encodedRoute);
 
-            await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
-            await fuelRouteContext.SaveChangesAsync(cancellationToken);
+            //await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
+            //await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
-            //await fuelRouteRopository.BulkInsertAsync(mupPoints);
+            ////await fuelRouteRopository.BulkInsertAsync(mupPoints);
 
             return Result.Ok();
         }

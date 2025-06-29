@@ -17,6 +17,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
             _apiToken = configuration["SamsaraApi:ApiToken"]
                 ?? throw new ArgumentNullException("API token is missing in configuration.");
 
+
+
             _httpClient = new HttpClient();
             _httpClient.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", _apiToken);

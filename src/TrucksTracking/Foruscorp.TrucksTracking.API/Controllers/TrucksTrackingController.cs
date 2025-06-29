@@ -2,6 +2,7 @@ using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using MediatR;
@@ -67,6 +68,40 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             await mediator.Send(setCurrentRouteCommand);
             return Ok();
         }
+
+        [HttpPost("get-route")]
+        public async Task<ActionResult> GetRoute(GetRouteQuery routeQuery)
+        {
+            var result = await mediator.Send(routeQuery);
+            return Ok(result);
+        }
+
+
+        [HttpGet("{truckId:guid}/route")]
+        [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<RouteDto>> GetRouteAsync(
+         [FromRoute] Guid truckId,
+         CancellationToken cancellationToken)
+        {
+            // Собираем команду-Query
+            var query = new GetRouteQuery { TruckId = truckId };
+
+            // Шлём через MediatR
+            var route = await mediator.Send(query, cancellationToken);
+
+            if (route == null)
+                return NotFound($"Маршрут для TruckId = '{truckId}' не найден.");
+
+            return Ok(route);
+        }
+
+        //[HttpPost("GetRouteQuery")]
+        //public async Task<ActionResult> GetRoute(GetRouteQuery routeQuery)
+        //{
+        //    var result = await mediator.Send(routeQuery);
+        //    return Ok(result);
+        //}
 
 
     }

@@ -103,7 +103,15 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
+        [HttpPost("get-current-route")]
+        public async Task<IActionResult> GetFuelRoute(GetFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(getFuelRouteQuery);
 
+            if (result.IsSuccess)
+                return Ok(result.Value);
 
+            return BadRequest(result.Errors);
+        }
     }
 }

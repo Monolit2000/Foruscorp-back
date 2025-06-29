@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Infrastructure.Domain.FuelRoutes;
 using MassTransit;
+using Foruscorp.FuelRoutes.Infrastructure.Services;
 
 
 namespace Foruscorp.FuelRoutes.Infrastructure
@@ -20,6 +21,14 @@ namespace Foruscorp.FuelRoutes.Infrastructure
             this IServiceCollection services, IConfiguration configuration)
         {
             //services.AddScoped<ISaveChangesInterceptor, DispatchDomainEventsInterceptor>();
+
+            services
+                .AddHttpClient<ITruckTrackingService, TruckTrackingService>(client =>
+                {
+                    client.BaseAddress = new Uri("http://foruscorp.truckstracking.api:5001");
+                });
+
+            services.AddScoped<ITruckTrackingService, TruckTrackingService>();
 
             services.AddMediatR(cfg =>
             {

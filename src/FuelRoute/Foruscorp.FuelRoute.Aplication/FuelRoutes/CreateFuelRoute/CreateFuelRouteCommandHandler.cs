@@ -77,11 +77,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             //var destinationPoint = LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude);
 
             var fuelRoute = FuelRoute.CreateNew(
-                Guid.NewGuid(), // TODO: replace with truckId
-                LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude),
-                LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude),
+                request.TruckId, 
+                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude),
+                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude),
                 new List<FuelRouteStation>(),
-                new List<MapPoint>());
+                new List<MapPoint>(),
+                request.Weight);
 
 
             var routeSections = points

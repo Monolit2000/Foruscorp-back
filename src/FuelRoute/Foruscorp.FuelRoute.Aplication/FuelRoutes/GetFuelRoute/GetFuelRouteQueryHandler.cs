@@ -8,33 +8,43 @@ using Microsoft.EntityFrameworkCore;
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 {
     public class GetFuelRouteQueryHandler(
-        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelRouteQuery, Result<FuelRouteDto>>
+        IFuelRouteContext fuelRouteContext,
+        ITruckTrackingService truckClient) : IRequestHandler<GetFuelRouteQuery, Result<RoutInfoDto>>
     {
-        public async Task<Result<FuelRouteDto>> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
+        public async Task<Result<RoutInfoDto>> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
         {
-            if (string.IsNullOrWhiteSpace(request.RequestRouteId))
-                return Result.Fail("Id is null");
+            var route = await truckClient.GetRouteAsync(request.TruckId);
 
-            var fuelRoute = await fuelRouteContext.FuelRoutes.FirstOrDefaultAsync(x => x.Id == request.RouteId);
+            var fuelRoute = await fuelRouteContext.FuelRoutes
+                .Include(x => x.OriginLocation)
+                .Include(x => x.DestinationLocation)
+                .FirstOrDefaultAsync(x => x.Id == route.RouteId);
             if (fuelRoute == null)
                 return Result.Fail("Route not found");
 
-            //var decodedRoute = PolylineEncoder.DecodePolyline(fuelRoute.EncodeRoute);
-
-            var routeDto = new RouteDto
+            var fuelRouteDto = new RoutInfoDto
             {
-                RouteSectionId = "1",
-                //MapPoints = decodedRoute
+                TruckId = fuelRoute.TruckId,
+                OriginName = fuelRoute.OriginLocation.Name,
+                DestinationName = fuelRoute.DestinationLocation.Name,
+                Origin = new GeoPoint(fuelRoute.OriginLocation.Latitude, fuelRoute.OriginLocation.Longitude),
+                Destination = new GeoPoint(fuelRoute.DestinationLocation.Latitude, fuelRoute.DestinationLocation.Longitude),
+                routeDto = route,
+                Weight = fuelRoute.Weight   
             };
 
-            //return new FuelRouteDto
-            //{
-            //    RouteId = result.RoadSectionId,
-            //    RouteDtos = new List<RouteDto>(){routeDto},
-            //    FuelStationDtos = fuelStations
-            //};
-
-            throw new NotImplementedException();
+            return Result.Ok(fuelRouteDto);
         }
+    }
+
+    public class RoutInfoDto
+    {
+        public Guid TruckId { get; set; }
+        public string OriginName { get; set; }
+        public string DestinationName { get; set; }
+        public GeoPoint Origin { get; set; }
+        public GeoPoint Destination { get; set; }
+        public TrackedRouteDto routeDto { get; set; }
+        public double Weight { get; set; }  
     }
 }

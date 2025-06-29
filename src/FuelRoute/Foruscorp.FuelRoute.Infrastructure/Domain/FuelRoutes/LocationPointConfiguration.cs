@@ -31,7 +31,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .IsRequired()
                 .HasColumnType("double precision");
 
-        
+            builder.Property(l => l.RouteId)
+                 .IsRequired(false);
+
             builder.HasOne<FuelRoute>()
                 .WithMany()
                 .HasForeignKey(lp => lp.RouteId);

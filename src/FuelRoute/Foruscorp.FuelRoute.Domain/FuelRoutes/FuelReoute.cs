@@ -25,6 +25,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
 
+        public double Weight { get; private set; }
+
         public bool IsAccepted { get; private set; }
         public byte[] RowVersion { get; set; }
 
@@ -35,7 +37,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             LocationPoint originLocation,
             LocationPoint destinationLocation,
             List<FuelRouteStation> fuelPoints,
-            List<MapPoint> mapPoints)
+            List<MapPoint> mapPoints,
+            double weight)
         {
 
             Id = Guid.NewGuid();
@@ -44,6 +47,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             CreatedAt = DateTime.UtcNow;
             ChangedAt = DateTime.UtcNow;
             IsAccepted = true;
+            OriginLocation = originLocation;
+            DestinationLocation = destinationLocation;
+            Weight = weight;
 
             if (fuelPoints.Any())
             {
@@ -61,7 +67,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             LocationPoint originLocation,
             LocationPoint destinationLocation,
             List<FuelRouteStation> fuelPoints,
-            List<MapPoint> mapPoints)
+            List<MapPoint> mapPoints,
+            double weight)
         {
             return new FuelRoute(
                 truckId,
@@ -69,7 +76,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 originLocation,
                 destinationLocation,
                 fuelPoints,
-                mapPoints);
+                mapPoints,
+                weight);
         }
 
         // Business methods

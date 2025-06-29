@@ -4,7 +4,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
     public class LocationPoint : Entity, IAggregateRoot
     {
-        public Guid RouteId { get; private set; } 
+        public Guid? RouteId { get; private set; } 
         public Guid Id { get; private set; }
         public string Name { get; private set; } 
         public double Latitude { get; private set; }

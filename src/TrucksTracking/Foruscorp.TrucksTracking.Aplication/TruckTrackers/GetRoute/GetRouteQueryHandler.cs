@@ -12,9 +12,9 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 {
     public class GetRouteQueryHandler(
         ITuckTrackingContext tuckTrackingContext,
-        ILogger<GetRouteQueryHandler> logger) : IRequestHandler<GetRouteQuery>
+        ILogger<GetRouteQueryHandler> logger) : IRequestHandler<GetRouteQuery, RouteDto>
     {
-        public Task Handle(GetRouteQuery request, CancellationToken cancellationToken)
+        public async Task<RouteDto> Handle(GetRouteQuery request, CancellationToken cancellationToken)
         {
             var truckTracker = tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.CurrentRoute)
@@ -28,9 +28,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
             if (route == null)
                 throw new InvalidOperationException($"No current route set for TruckId: {request.TruckId}");
 
-            // Fetch, sort descending by RecordedAt, and project to [lat, lon]
             var mapPoints = await tuckTrackingContext.TruckLocations
-                .Where(tl => tl.RouteId == route.Id)
+                .Where(tl => tl.RouteId == route.RouteId)
                 .OrderByDescending(tl => tl.RecordedAt)
                 .Select(tl => new[]
                 {
@@ -41,7 +40,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 
             return new RouteDto
             {
-                RouteId = route.Id,
+                RouteId = route.RouteId,
                 MapPoints = mapPoints
             };
 
