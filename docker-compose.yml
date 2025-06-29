@@ -27,7 +27,7 @@ services:
   foruscorp.fuelstations.api:
     container_name: fuelstations-api
     image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
-    build:
+    build: 
       context: .
       dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
     ports:

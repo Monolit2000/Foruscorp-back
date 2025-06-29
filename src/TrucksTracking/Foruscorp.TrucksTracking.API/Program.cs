@@ -84,6 +84,8 @@ builder.Services.AddTrucksTrackingServices(builder.Configuration);
 
 builder.Services.AddScoped<ISignalRNotificationSender, SignalRNotificationSender>();
 
+builder.Services.AddSingleton<TruckGroupSubscriptionManager>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
