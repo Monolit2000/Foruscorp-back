@@ -28,7 +28,7 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
 
                 busConfiguration.UsingRabbitMq((context, configurator) =>
                 {
-                    configurator.Host(new Uri(configuration["MessageBroker:HostName"]!), h =>
+                    configurator.Host(new Uri("rabbitmq://rabbitmq"/*configuration["MessageBroker:HostName"]!*/), h =>
                     {
                         h.Username(configuration["MessageBroker:Username"]!);
                         h.Username(configuration["MessageBroker:Password"]!);
