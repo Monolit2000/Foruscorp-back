@@ -3,6 +3,7 @@ using System;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    partial class TuckTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250629145324_AddedCurrentRouteId_Location_to_TruckTracker")]
+    partial class AddedCurrentRouteId_Location_to_TruckTracker
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -111,6 +114,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("RouteId");
+
                     b.HasIndex("TruckTrackerId");
 
                     b.HasIndex("TruckTrackerId1")
@@ -135,7 +140,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.Property<string>("ProviderTruckId")
                         .HasColumnType("text");
 
-                    b.Property<int>("TruckEngineStatus")
+                    b.Property<int>("TruckEngineStates")
                         .HasColumnType("integer");
 
                     b.Property<Guid>("TruckId")
@@ -185,6 +190,11 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", b =>
                 {
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.Route", null)
+                        .WithMany("TruckLocations")
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
                     b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", null)
                         .WithMany("TruckLocationHistory")
                         .HasForeignKey("TruckTrackerId")
@@ -228,6 +238,11 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CurrentRoute");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
+                {
+                    b.Navigation("TruckLocations");
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>

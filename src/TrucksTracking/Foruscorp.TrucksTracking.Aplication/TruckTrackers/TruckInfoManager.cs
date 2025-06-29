@@ -74,6 +74,30 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
         }
 
 
+        public bool UpdateTruckEngineInfoIfChanged(TruckInfoUpdate newUpdate)
+        {
+            if (newUpdate == null)
+            {
+                return false;
+            }
+
+
+            if (_truckInfoUpdates.TryGetValue(newUpdate.TruckId, out var existingUpdate))
+            {
+                var previousLatitude = existingUpdate.Latitude ;
+                if (existingUpdate.engineStateData.Value != newUpdate.engineStateData.Value)
+                {
+                    _truckInfoUpdates[newUpdate.TruckId] = newUpdate;
+                    return true;
+                }
+                return false;
+            }
+
+            _truckInfoUpdates.TryAdd(newUpdate.TruckId, newUpdate);
+            return true;
+        }
+
+
 
 
         public IReadOnlyCollection<TruckInfoUpdate> GetAllTruckInfo()

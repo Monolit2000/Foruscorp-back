@@ -12,6 +12,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public Guid TruckId { get; set; }
         public Guid TruckTrackerId { get; set; }
         public Guid Id { get; set; }    
+        public Guid? RouteId { get; set; } 
         public GeoPoint Location { get; set; }  
         public string FormattedLocation { get; set; }
         public DateTime RecordedAt { get; set; }
@@ -21,12 +22,14 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         private TruckLocation(
             Guid truckId,
             Guid truckTrackerId,
+            Guid? routeId,
             GeoPoint location,
             string formattedLocation)
         {
             //Id = Guid.NewGuid();
             TruckId = truckId;
             TruckTrackerId = truckTrackerId;
+            RouteId = routeId;
             Location = location;
             RecordedAt = DateTime.UtcNow;
             FormattedLocation = formattedLocation;
@@ -42,6 +45,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             return new TruckLocation(
                 truckId,
                 truckTrackerId,
+                routeId,
                 location,
                 formattedLocation);    
         }

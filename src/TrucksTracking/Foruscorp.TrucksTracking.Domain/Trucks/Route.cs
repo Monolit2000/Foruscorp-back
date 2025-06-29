@@ -8,10 +8,13 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 {
     public class Route
     {
-        public Guid Id { get; set; }
         public Guid RouteId { get; set; }
-        public Guid TruckTrackerId { get; set; }
         public Guid TruckId { get; set; }
+        public Guid TruckTrackerId { get; set; }
+        //public List<TruckLocation> TruckLocations { get; set; } = [];
+
+        public Guid Id { get; set; }
+
 
         public Route()
         {

@@ -15,7 +15,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
         public List<Route> Routes { get; set; } = [];
 
-        //public Guid? CurrentRouteId { get; private set; }
+        public Guid? CurrentRouteId { get; private set; }
         public Route CurrentRoute { get; private set; }    
 
         public Guid Id { get; private set; }
@@ -23,7 +23,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public string ProviderTruckId { get; private set; }
         public TruckStatus TruckStatus { get; private set; }
 
-        public TruckEngineStatus TruckEngineStates { get; private set; } 
+        public TruckEngineStatus TruckEngineStatus { get; private set; } 
 
         public TruckTrackerStatus TruckTrackerStatus { get; private set; }
         public double FuelStatus { get; private set; }
@@ -50,7 +50,9 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public Route SetCurrentRoute(Guid routeId)
         {
-            var route = Route.CreateNew(routeId, this.Id, this.TruckId);   
+            var route = Route.CreateNew(routeId, this.Id, this.TruckId);
+
+            CurrentRouteId = routeId;
 
             CurrentRoute = route;
 
@@ -66,17 +68,22 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         }
 
 
-        public void UpdateTruck(GeoPoint geoPoint, string formattedLocation, double newFuelStatus)
+        public void UpdateTruckTracker(GeoPoint geoPoint, string formattedLocation, double newFuelStatus)
         {
             UpdateCurrentTruckLocation(geoPoint, formattedLocation);
 
-            UpdateFuelStatus(newFuelStatus);
+            //UpdateFuelStatus(newFuelStatus);
+        }
+
+        public void UpdateTruckEnginStatus(TruckEngineStatus truckEngineStatus)
+        {
+            TruckEngineStatus = truckEngineStatus;
         }
 
 
         public void UpdateCurrentTruckLocation(GeoPoint geoPoint, string formattedLocation)
         {
-            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRoute?.TruckId, geoPoint, formattedLocation);
+            var newLocation = TruckLocation.CreateNew(this.TruckId, this.Id, this.CurrentRoute?.RouteId, geoPoint, formattedLocation);
 
             if (CurrentTruckLocation != null)
                 TruckLocationHistory.Add(newLocation);
@@ -86,12 +93,6 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public void UpdateFuelStatus(double newFuelStatus/*, GeoPoint location*/)
         {
-            //FuelHistory.Add(TruckFuel.CreateNew(
-            //    this.TruckId,
-            //    this.FuelStatus,
-            //    newFuelStatus,
-            //    location));
-
             FuelHistory.Add(TruckFuel.CreateNew(
                 this.TruckId,
                 this.FuelStatus,

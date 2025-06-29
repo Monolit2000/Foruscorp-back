@@ -33,6 +33,11 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 .HasForeignKey(r => r.TruckTrackerId)
                 .OnDelete(DeleteBehavior.Cascade); // Cascade delete to remove routes when the associated TruckTracker is deleted
 
+            //builder.HasMany(r => r.TruckLocations)
+            //    .WithOne()
+            //    .HasForeignKey(tl => tl.RouteId)
+            //    .OnDelete(DeleteBehavior.Cascade); // Cascade delete to remove locations when the route is deleted  
+
             // Optional: Index for performance
             builder.HasIndex(r => r.TruckTrackerId);
 

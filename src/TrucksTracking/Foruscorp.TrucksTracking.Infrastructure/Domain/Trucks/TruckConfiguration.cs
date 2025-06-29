@@ -45,12 +45,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .HasForeignKey(h => h.TruckTrackerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
-            //builder.Property(t => t.CurrentRouteId)
-            //    .IsRequired(false); // Since CurrentRouteId is Guid? (nullable)
+            builder.Property(t => t.CurrentRouteId)
+                .IsRequired(false); 
 
             builder.HasOne(t => t.CurrentRoute)
                 .WithOne()
-                //.HasForeignKey<TruckTracker>(tt => tt.CurrentRouteId)
+                .HasForeignKey<TruckTracker>(tt => tt.CurrentRouteId)
                 .OnDelete(DeleteBehavior.SetNull);
 
 

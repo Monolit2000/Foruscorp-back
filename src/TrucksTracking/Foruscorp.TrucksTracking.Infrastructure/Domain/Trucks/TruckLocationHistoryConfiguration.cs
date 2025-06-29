@@ -17,6 +17,14 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                    .HasColumnName("TruckLocationId")
                    .ValueGeneratedOnAdd();
 
+            builder.Property(h => h.RouteId)
+                   .IsRequired(false);
+
+            //builder.HasOne<Route>()
+            //       .WithMany(r => r.TruckLocations)
+            //       .HasForeignKey(h => h.RouteId)
+            //       .OnDelete(DeleteBehavior.Cascade);
+
             // Foreign Key to TruckTracker
             builder.Property(h => h.TruckId)
                    .IsRequired();

@@ -8,5 +8,5 @@ namespace Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels
 {
     public sealed record TruckStausUpdate(
        string TruckId,
-       string Status);
+       int Status);
 }

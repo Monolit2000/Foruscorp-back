@@ -5,12 +5,14 @@ using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
-using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
-
+using Foruscorp.FuelRoutes.IntegrationEvents;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
+using MassTransit;
+using MassTransit.Transports;
 using MediatR;
 using Microsoft.Extensions.Caching.Memory;
 using System.Linq;
+using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 {
@@ -18,7 +20,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
         IFuelRouteContext fuelRouteContext,
         ITruckerPathApi truckerPathApi,
         IMemoryCache memoryCache,
-        ISender sender) : IRequestHandler<CreateFuelRouteCommand, Result<FuelRouteDto>>
+        ISender sender,
+        IPublishEndpoint publishEndpoint) : IRequestHandler<CreateFuelRouteCommand, Result<FuelRouteDto>>
     {
         private record RoutePoints(string RouteSectionId, List<List<double>> MapPoints);
 
@@ -28,6 +31,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
         public async Task<Result<FuelRouteDto>> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
         {
+
+            if (request.TruckId == default)
+                throw new ArgumentException("TruckId cannot be default value", nameof(request.TruckId));
+
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
@@ -103,6 +110,16 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             fuelRouteContext.FuelRoutes.Add(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
+
+  
+
+            await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
+            {
+                TruckId = request.TruckId,
+                RouteId = fuelRoute.Id
+            });
+
+
 
             return new FuelRouteDto
             {

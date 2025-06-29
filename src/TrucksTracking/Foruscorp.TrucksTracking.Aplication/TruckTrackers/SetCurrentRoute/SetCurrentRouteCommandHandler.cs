@@ -18,7 +18,6 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute
     {
         public async Task Handle(SetCurrentRouteCommand request, CancellationToken cancellationToken)
         {
-
             var truckTracker = tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.Routes)
                 .Include(tt => tt.CurrentRoute)
@@ -29,10 +28,6 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute
                 logger.LogWarning("Truck Tracker not found for TruckId: {TruckId}", request.TruckId);
                 return;
             }
-
-            //var route = Route.CreateNew(request.RouteId, truckTracker.Id, truckTracker.TruckId);
-
-            //await tuckTrackingContext.Routes.AddAsync(route);    
 
             truckTracker.SetCurrentRoute(request.RouteId);
 

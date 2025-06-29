@@ -25,7 +25,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
                 return;
             }
 
-            truckTracker.UpdateTruck(
+            truckTracker.UpdateTruckTracker(
                 new GeoPoint(request.TruckStatsUpdate.Latitude, request.TruckStatsUpdate.Longitude),
                 request.TruckStatsUpdate.formattedLocation, 
                 request.TruckStatsUpdate.fuelPercents);

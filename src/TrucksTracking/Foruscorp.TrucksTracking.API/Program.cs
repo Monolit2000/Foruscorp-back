@@ -1,13 +1,14 @@
-using System.Diagnostics.Metrics;
 using Foruscorp.TrucksTracking.API.Realtime;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Foruscorp.TrucksTracking.Infrastructure.Satup;
+using MassTransit;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using MassTransit;
 using Serilog;
+using System.Diagnostics.Metrics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -80,6 +81,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddTrucksTrackingServices(builder.Configuration);
+
+builder.Services.AddScoped<ISignalRNotificationSender, SignalRNotificationSender>();
 
 var app = builder.Build();
 

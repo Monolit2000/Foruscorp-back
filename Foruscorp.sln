@@ -64,6 +64,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 		dotnet.yml = dotnet.yml
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelRoutes.IntegrationEvents", "src\FuelRoute\Foruscorp.FuelRoutes.IntegrationEvents\Foruscorp.FuelRoutes.IntegrationEvents.csproj", "{DF533589-2B57-4BDB-8377-97CB08D990EF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -154,6 +156,10 @@ Global
 		{53C93610-31BF-4C8B-A722-A445AA4B4FFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{53C93610-31BF-4C8B-A722-A445AA4B4FFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{53C93610-31BF-4C8B-A722-A445AA4B4FFB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DF533589-2B57-4BDB-8377-97CB08D990EF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DF533589-2B57-4BDB-8377-97CB08D990EF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DF533589-2B57-4BDB-8377-97CB08D990EF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DF533589-2B57-4BDB-8377-97CB08D990EF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -185,6 +191,7 @@ Global
 		{1AEEA61D-CD21-4957-956A-D558D2301D76} = {49C09F7C-C68E-4556-8CB9-80B2285B76AE}
 		{53C93610-31BF-4C8B-A722-A445AA4B4FFB} = {36D591C7-65C7-A0D1-1CBC-10CDE441BDC8}
 		{F8B66AEA-D87C-435D-96BD-EBB5CBC7625A} = {F5A5786B-9BBE-4DCE-9EF1-F100E06DF3ED}
+		{DF533589-2B57-4BDB-8377-97CB08D990EF} = {25134F56-9F3B-4CD8-9890-ADA628FE97AF}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2904CEA6-8C5E-4BE6-8C16-181313AB69B3}

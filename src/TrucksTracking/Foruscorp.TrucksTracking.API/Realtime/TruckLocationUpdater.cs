@@ -148,7 +148,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                             gps?.HeadingDegrees ?? 0,
                             fuel?.Value ?? 0,
                             gps?.ReverseGeo?.FormattedLocation ?? "Unknown",
-                            vs.EngineStates.FirstOrDefault());
+                            vs.EngineStates?.FirstOrDefault());
                     })
                 .ToList();
 
@@ -156,7 +156,25 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             var sender = scope.ServiceProvider.GetRequiredService<ISender>();
 
-            await sender.Send(new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates });  
+            var command = new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates };
+
+            // fire-and-forget
+            _ = Task.Run(async () =>
+            {
+                // создаём новый scope именно для отправки команды
+                using var innerScope = scopeFactory.CreateScope();
+                var sender = innerScope.ServiceProvider.GetRequiredService<ISender>();
+
+                try
+                {
+                    await sender.Send(command);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex,
+                        "Ошибка при асинхронной отправке UpdateTruckTrackerIfChangedCommand");
+                }
+            });
 
             return updates;
         }
