@@ -188,16 +188,17 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
         public void UpdateStatus(TruckStatus status)
         {
+            if (Status == status)
+                return;
             Status = status;
         }
-
 
     }
 
     public enum TruckStatus
     {
-        Inactive = 0,
-        Active = 1,
-        Free = 2
+        Active,
+        Inactive,
+        Free
     }
 }

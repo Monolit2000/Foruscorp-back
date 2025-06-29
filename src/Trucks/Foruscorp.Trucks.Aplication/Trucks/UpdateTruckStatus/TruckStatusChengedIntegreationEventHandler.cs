@@ -18,7 +18,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.UpdateTruckStatus
             await sender.Send(new UpdateTruckStatusCommand()
             {
                 TruckId = context.Message.TruckId,
-                Status = context.Message.Status,
+                Status = context.Message.StatusCode,
             });
         }
     }

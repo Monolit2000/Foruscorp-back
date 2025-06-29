@@ -48,13 +48,13 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus
             await tuckTrackingContext.SaveChangesAsync();
 
             await signalRNotificationSender.SendTruckStatusUpdateAsync(
-               new TruckStausUpdate(truckTracker.TruckId.ToString(), (int)status));
+                new TruckStausUpdate(truckTracker.TruckId.ToString(), (int)status));
 
             await publishEndpoint.Publish(new TruckStatusChengedIntegreationEvent
             {
                 TruckId = truckTracker.TruckId,
-                Status = (int)status,
-            });
+                StatusCode = (int)status
+            });  
         }
     }
 }

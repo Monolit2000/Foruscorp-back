@@ -9,6 +9,7 @@ namespace Foruscorp.TrucksTracking.IntegrationEvents
     public class TruckStatusChengedIntegreationEvent 
     {
         public Guid TruckId { get; set; }
-        public int Status { get; set; } 
+
+        public int StatusCode { get; set; }
     }
 }
