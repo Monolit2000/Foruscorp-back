@@ -16,6 +16,7 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public GeoPoint Location { get; set; }  
         public string FormattedLocation { get; set; }
         public DateTime RecordedAt { get; set; }
+        public Guid? CurrentTruckTrackerId { get; set; }
 
         public TruckLocation() { }
 
