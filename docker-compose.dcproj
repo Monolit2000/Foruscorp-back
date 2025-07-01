@@ -16,6 +16,7 @@
     </None>
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
+    <None Include="docker-stack.yml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />

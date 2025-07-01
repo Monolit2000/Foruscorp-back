@@ -2,6 +2,11 @@ services:
   foruscorp.truckstracking.api:
     container_name: truckstracking-api
     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+    deploy:
+      replicas: 3            # три реплики
+      update_config:
+        parallelism: 1       # сколько обновлять одновременно
+        delay: 10s
     build:
       context: .
       dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
@@ -15,10 +20,6 @@ services:
       - MessageBroker__Password=guest
       - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
       - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341 # Add Seq URL for Serilog
-      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889 # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
     depends_on:
       - foruscorp.db
       - rabbitmq
@@ -134,7 +135,7 @@ services:
 
   aspire-dashboard:
     container_name: aspire-dashboard
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:8.0
     ports:
       - 18888:18888
       - 4317:4317 # OpenTelemetry gRPC port for metrics and traces
@@ -142,8 +143,7 @@ services:
       - DOTNET_ENVIRONMENT=Development
       - Dashboard__Otlp__EndpointUrl=http://aspire-dashboard:4317
       - Dashboard__Frontend__AuthMode=Unsecured # Set to 'BrowserToken' for secured mode
-      # - Dashboard__Frontend__BrowserToken=your_secure_browser_token # Uncomment for secured 
-      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true # Allow anonymous access for development 
+      # - Dashboard__Frontend__BrowserToken=your_secure_browser_token # Uncomment for secured mode
     networks:
       - foruscorp-docker-network
     depends_on:

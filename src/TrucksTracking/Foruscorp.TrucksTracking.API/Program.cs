@@ -3,6 +3,8 @@ using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Foruscorp.TrucksTracking.Infrastructure.Satup;
 using MassTransit;
+using Npgsql;
+using OpenTelemetry;
 using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -18,50 +20,46 @@ var testCounter = meter.CreateCounter<long>("test_counter");
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService("TrucksTracking.API"))
-    .WithTracing(tracing => tracing
+    .ConfigureResource(resource => resource.AddService("TrucksTracking.API"))
+    .WithMetrics(metrics => metrics
+          .AddAspNetCoreInstrumentation()
+          .AddHttpClientInstrumentation()
+          .AddRuntimeInstrumentation()
+          .AddNpgsqlInstrumentation())
+    .WithTracing(tracing =>
+    tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
+        .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName))
+    .UseOtlpExporter();
 
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddMeter("TrucksTracking")
-        .AddMeter("TrucksTracking.Diagnostics")
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }));
+
 
 //// Configure logging
-//builder.Logging.AddOpenTelemetry(logging => logging
-//    .AddOtlpExporter(options =>
-//    {
-//        options.Endpoint = new Uri("http://aspire-dashboard:18889");
-//        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-//    })).AddConsole();
-
-
-builder.Host.UseSerilog((context, services, configuration) =>
+builder.Logging.AddOpenTelemetry(logging =>
 {
-    configuration
-        .ReadFrom.Configuration(context.Configuration) // Read settings from appsettings.json
-        .ReadFrom.Services(services)
-        .Enrich.FromLogContext()
-        .WriteTo.Console() // Keep console logging
-        .WriteTo.Seq("http://seq:5341"); // Seq server URL (adjust as needed)
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
 });
+    //.AddOtlpExporter(options =>
+    //{
+    //    options.Endpoint = new Uri("http://aspire-dashboard:18889");
+    //    options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
+    //})).AddConsole();
+
+
+//builder.Host.UseSerilog((context, services, configuration) =>
+//{
+//    configuration
+//        .ReadFrom.Configuration(context.Configuration) // Read settings from appsettings.json
+//        .ReadFrom.Services(services)
+//        .Enrich.FromLogContext()
+//        .WriteTo.Console() // Keep console logging
+//        .WriteTo.Seq("http://seq:5341"); // Seq server URL (adjust as needed)
+//});
 
 
 // Add services to the container.
@@ -102,7 +100,7 @@ app.UseCors("AllowAll");
 app.MapHub<TruckHub>("/truck-tracking");
 
 
-app.UseSerilogRequestLogging();
+//app.UseSerilogRequestLogging();
 
 //app.UseHttpsRedirection();
 
