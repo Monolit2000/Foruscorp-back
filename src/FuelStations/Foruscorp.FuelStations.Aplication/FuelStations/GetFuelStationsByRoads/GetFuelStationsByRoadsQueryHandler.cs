@@ -405,10 +405,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                             !usedStationIds.Contains(si.Station.Id) &&
                             si.ForwardDistanceKm > prevKm &&
                             (
-
                                 // экстренно, если до minStopDistance топлива не хватает,
                                 // или станция удовлетворяет минимальную дистанцию
-
                                 maxDistanceWithoutRefuel < minStopDistanceKm ||
                                 si.ForwardDistanceKm - prevKm >= minStopDistanceKm
                             ) &&

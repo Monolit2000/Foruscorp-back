@@ -1,4 +1,5 @@
 ﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -18,15 +19,32 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
         {
             var truckTracker = tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.CurrentRoute)
+                .Include(tt => tt.CurrentTruckLocation)
+                .AsNoTracking()
                 .FirstOrDefault(tt => tt.TruckId == request.TruckId);
 
-            if(truckTracker == null)
-                throw new InvalidOperationException($"Truck Tracker not found for TruckId: {request.TruckId}");
+            if (truckTracker == null)
+            {
+                logger.LogWarning($"Truck Tracker not found for TruckId: {request.TruckId}");
+                return new RouteDto
+                {
+                    CurrentLocation = null,
+                    RouteId = null,
+                    MapPoints = new List<double[]>()
+                };
+            }
 
             var route = truckTracker.CurrentRoute;
 
             if (route == null)
-                throw new InvalidOperationException($"No current route set for TruckId: {request.TruckId}");
+            {
+                return new RouteDto
+                {
+                    CurrentLocation = truckTracker.CurrentTruckLocation?.Location,
+                    RouteId = null,
+                    MapPoints = new List<double[]>()
+                };
+            }
 
             var mapPoints = await tuckTrackingContext.TruckLocations
                 .Where(tl => tl.RouteId == route.RouteId)
@@ -43,14 +61,14 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
                 RouteId = route.RouteId,
                 MapPoints = mapPoints
             };
-
-            throw new NotImplementedException();
         }
     }
 
     public class RouteDto
     {
-        public Guid RouteId { get; set; }
+        public bool IsRoute { get; set; }
+        public GeoPoint CurrentLocation { get; set; }
+        public Guid? RouteId { get; set; }
         public List<double[]> MapPoints { get; set; }
     }
 }

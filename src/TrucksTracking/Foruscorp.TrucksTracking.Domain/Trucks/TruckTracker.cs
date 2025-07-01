@@ -15,8 +15,8 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
         public List<TruckLocation> TruckLocationHistory { get; private set; } = [];
         public List<Route> Routes { get; set; } = [];
 
-        public Guid? CurrentRouteId { get; private set; }
-        public Route CurrentRoute { get; private set; }    
+        public Guid? CurrentRouteId { get;  set; }
+        public Route CurrentRoute { get;  set; }    
 
         public Guid Id { get; private set; }
 
