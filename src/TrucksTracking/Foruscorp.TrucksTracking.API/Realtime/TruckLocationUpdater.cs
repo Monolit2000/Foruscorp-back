@@ -33,7 +33,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 try
                 {
-                    //await UpdateTruckLocation();
+                    await UpdateTruckLocation();
                     await Task.Delay(1000, stoppingToken);
                 }
                 catch (Exception ex)

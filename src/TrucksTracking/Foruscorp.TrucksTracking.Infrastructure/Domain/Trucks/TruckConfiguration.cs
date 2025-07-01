@@ -33,6 +33,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
 
             builder.HasOne(t => t.CurrentTruckLocation)
                    .WithOne()
+                   .HasForeignKey<TruckLocation>(tt => tt.CurrentTruckTrackerId)
                    .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(t => t.TruckLocationHistory)
