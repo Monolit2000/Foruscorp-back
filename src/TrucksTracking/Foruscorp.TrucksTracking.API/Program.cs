@@ -106,6 +106,7 @@ app.MapHub<TruckHub>("/truck-tracking");
 
 //app.UseAuthorization();
 
+
 app.MapControllers();
 
 app.Run();

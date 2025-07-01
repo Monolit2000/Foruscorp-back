@@ -4,6 +4,8 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Npgsql;
+using OpenTelemetry;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,39 +21,30 @@ builder.Services.AddSwaggerGen();
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService("FuelStations.API"))
-    .WithTracing(tracing => tracing
+    .ConfigureResource(resource => resource.AddService("FuelStations.API"))
+    .WithMetrics(metrics => metrics
+          .AddAspNetCoreInstrumentation()
+          .AddHttpClientInstrumentation()
+          .AddRuntimeInstrumentation()
+          .AddNpgsqlInstrumentation())
+    .WithTracing(tracing =>
+    tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddSource()
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddMeter("FuelStations")
-        .AddMeter("FuelStations.Diagnostics")
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }));
+        .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName))
+    .UseOtlpExporter();
 
-// Configure logging
-builder.Logging.AddOpenTelemetry(logging => logging
-    .AddOtlpExporter(options =>
-    {
-        options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-    })).AddConsole();
 
+
+//// Configure logging
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
 
 
 builder.Services.AddFuelStationServices(builder.Configuration);

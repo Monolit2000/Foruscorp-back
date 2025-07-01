@@ -22,7 +22,7 @@ services:
     depends_on:
       - foruscorp.db
       - rabbitmq
-      - seq # Add dependency on Seq
+      # - seq # Add dependency on Seq
     networks:
       - foruscorp-docker-network
     restart: unless-stopped
@@ -42,6 +42,9 @@ services:
       - MessageBroker__HostName=rabbitmq://rabbitmq
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
     depends_on:
       - foruscorp.db
       - rabbitmq
@@ -63,6 +66,9 @@ services:
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
       - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
     depends_on:
       - foruscorp.db
       - rabbitmq
@@ -83,6 +89,9 @@ services:
       - MessageBroker__HostName=rabbitmq://rabbitmq
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
     depends_on:
       - foruscorp.db
       - rabbitmq
@@ -155,21 +164,21 @@ services:
       - foruscorp.fuelroutes.api
 
 
-  seq:
-    container_name: seq
-    image: datalust/seq:latest
-    ports:
-      - 5341:80
-      - 5342:5341
-    environment:
-      - ACCEPT_EULA=Y
-      # - SEQ_RETENTIONDAYS=2
-      # - SEQ_FIRSTRUN_ADMINPASSWORD=YourStr0ngP@ssw0rd
-    volumes:
-      - seq-data:/data
-    networks:
-      - foruscorp-docker-network
-    restart: unless-stopped
+  # seq:
+  #   container_name: seq
+  #   image: datalust/seq:latest
+  #   ports:
+  #     - 5341:80
+  #     - 5342:5341
+  #   environment:
+  #     - ACCEPT_EULA=Y
+  #     # - SEQ_RETENTIONDAYS=2
+  #     # - SEQ_FIRSTRUN_ADMINPASSWORD=YourStr0ngP@ssw0rd
+  #   volumes:
+  #     - seq-data:/data
+  #   networks:
+  #     - foruscorp-docker-network
+  #   restart: unless-stopped
 
 
 networks:

@@ -10,6 +10,8 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using System;
 using StackExchange.Redis;
+using Npgsql;
+using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,46 +21,32 @@ builder.Services.AddSwaggerGen();
 
 
 // Configure OpenTelemetry
+// Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService("Trucks.API"))
-    .WithTracing(tracing => tracing
+    .ConfigureResource(resource => resource.AddService("Trucks.API"))
+    .WithMetrics(metrics => metrics
+          .AddAspNetCoreInstrumentation()
+          .AddHttpClientInstrumentation()
+          .AddRuntimeInstrumentation()
+          .AddNpgsqlInstrumentation())
+    .WithTracing(tracing =>
+    tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddRedisInstrumentation(options =>
-        {
-            options.SetVerboseDatabaseStatements = true; // Example configuration
-            options.Enrich = (activity, command) =>
-            {
-                activity.SetTag("redis.command", command?.ToString());
-            };
-        })
-        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddMeter("Trucks")
-        .AddMeter("Trucks.Diagnostics")
-        .AddMeter("Trucks.Redis") // Optional: for custom Redis metrics
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        }));
+        .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName))
+    .UseOtlpExporter();
 
-// Configure logging
-builder.Logging.AddOpenTelemetry(logging => logging
-    .AddOtlpExporter(options =>
-    {
-        options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-    })).AddConsole();
+
+
+//// Configure logging
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
 
 builder.Services.AddCors(options =>
 {

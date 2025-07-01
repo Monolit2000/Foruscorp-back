@@ -10,6 +10,8 @@ using OpenTelemetry.Trace;
 using OpenTelemetry.Logs;
 using System;
 using Foruscorp.FuelStations.Infrastructure;
+using Npgsql;
+using OpenTelemetry;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,42 +23,32 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 
-
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource
-        .AddService("FuelRoutes.API"))
-    .WithTracing(tracing => tracing
+    .ConfigureResource(resource => resource.AddService("FuelRoutes.API"))
+    .WithMetrics(metrics => metrics
+          .AddAspNetCoreInstrumentation()
+          .AddHttpClientInstrumentation()
+          .AddRuntimeInstrumentation()
+          .AddNpgsqlInstrumentation())
+    .WithTracing(tracing =>
+    tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
-        .AddSource("FuelRoutes")
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }))
-    .WithMetrics(metrics => metrics
-        .AddAspNetCoreInstrumentation()
-        .AddHttpClientInstrumentation()
-        .AddRuntimeInstrumentation()
-        .AddMeter("FuelRoutes")
-        .AddMeter("FuelRoutes.Diagnostics")
-        .AddOtlpExporter(options =>
-        {
-            options.Endpoint = new Uri("http://aspire-dashboard:18889");
-            //options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-        }));
+        .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName))
+    .UseOtlpExporter();
 
-// Configure logging
-builder.Logging.AddOpenTelemetry(logging => logging
-    .AddOtlpExporter(options =>
-    {
-        options.Endpoint = new Uri("http://aspire-dashboard:18889");
-        options.Protocol = OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
-    })).AddConsole();
 
+
+//// Configure logging
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+});
 
 
 
