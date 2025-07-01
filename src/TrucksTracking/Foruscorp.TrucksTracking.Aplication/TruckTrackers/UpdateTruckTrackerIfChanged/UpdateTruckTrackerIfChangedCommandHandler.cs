@@ -30,7 +30,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                 return;
             }
 
-            foreach (var truckStatsUpdate in request.TruckStatsUpdates)
+            foreach (var truckStatsUpdate in request.TruckStatsUpdates.DistinctBy(t => t.TruckId))
             {
 
                 var isLocationChanged = truckInfoManager.UpdateTruckLocationInfoIfChanged(truckStatsUpdate);

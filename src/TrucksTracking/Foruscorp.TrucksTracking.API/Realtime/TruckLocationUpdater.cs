@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using System.Linq;
+using System.Threading.Channels;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -25,11 +26,15 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         private readonly Random _random = new();
 
         private const string TrackersCacheKey = "TruckTrackersCache";
-        private const string FuelCacheKey = "TruckFuelCache"; 
+        private const string FuelCacheKey = "TruckFuelCache";
+        private readonly List<Task> _runningTasks = new List<Task>();
+        private readonly Channel<UpdateTruckTrackerIfChangedCommand> _commandChannel = Channel.CreateUnbounded<UpdateTruckTrackerIfChangedCommand>();
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            while(!stoppingToken.IsCancellationRequested)
+            var commandProcessor = Task.Run(() => ProcessCommands(stoppingToken), stoppingToken);
+
+            while (!stoppingToken.IsCancellationRequested)
             {
                 try
                 {
@@ -44,6 +49,26 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             }
         }
 
+        private async Task ProcessCommands(CancellationToken stoppingToken)
+        {
+            while (await _commandChannel.Reader.WaitToReadAsync(stoppingToken))
+            {
+                if (_commandChannel.Reader.TryRead(out var command))
+                {
+                    using var scope = scopeFactory.CreateScope();
+                    var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+
+                    try
+                    {
+                        await sender.Send(command, stoppingToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogError(ex, "Ошибка при обработке UpdateTruckTrackerIfChangedCommand");
+                    }
+                }
+            }
+        }
 
         private async Task UpdateTruckLocation()
         {
@@ -154,27 +179,31 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
             logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
 
-            var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+            //var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+
+            //var command = new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates };
+
+            //// fire-and-forget
+            //_ = Task.Run(async () =>
+            //{
+            //    // создаём новый scope именно для отправки команды
+            //    using var innerScope = scopeFactory.CreateScope();
+            //    var sender = innerScope.ServiceProvider.GetRequiredService<ISender>();
+
+            //    try
+            //    {
+            //        await sender.Send(command);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        logger.LogError(ex,
+            //            "Ошибка при асинхронной отправке UpdateTruckTrackerIfChangedCommand");
+            //    }
+            //});
 
             var command = new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates };
+            await _commandChannel.Writer.WriteAsync(command);
 
-            // fire-and-forget
-            _ = Task.Run(async () =>
-            {
-                // создаём новый scope именно для отправки команды
-                using var innerScope = scopeFactory.CreateScope();
-                var sender = innerScope.ServiceProvider.GetRequiredService<ISender>();
-
-                try
-                {
-                    await sender.Send(command);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex,
-                        "Ошибка при асинхронной отправке UpdateTruckTrackerIfChangedCommand");
-                }
-            });
 
             return updates;
         }
