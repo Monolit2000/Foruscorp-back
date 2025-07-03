@@ -3,6 +3,8 @@ using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.DataBase;
 using Foruscorp.Auth.Domain.Users;
 using Foruscorp.Auth.Infrastructure;
+using Foruscorp.Users.IntegrationEvents;
+
 //using Foruscorp.TrucksTracking.IntegrationEvents;
 using MassTransit;
 using Microsoft.AspNetCore.Identity;
@@ -16,7 +18,7 @@ namespace Foruscorp.Auth.Servises
         ITokenProvider tokenProvider,
         IPublishEndpoint publishEndpoint) : IAuthService
     {
-        public async Task<string> LoginAsync(UserLoginDto request)
+        public async Task<LoginResponce> LoginAsync(UserLoginDto request)
         {
             var user = await context.Users
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName);
@@ -30,7 +32,7 @@ namespace Foruscorp.Auth.Servises
 
             var token = tokenProvider.Create(user);
 
-            return token;
+            return new LoginResponce { UserId = user.Id, Token = token };
         }
 
         public async Task<User> RegisterAsync(UserDto request)
@@ -49,10 +51,10 @@ namespace Foruscorp.Auth.Servises
 
             await context.SaveChangesAsync();
 
-            //await publishEndpoint.Publish(new NewUserRegistratedIntegrationEvent
-            //{
-            //    UserId = user.Id,
-            //});
+            await publishEndpoint.Publish(new NewUserRegistratedIntegrationEvent
+            {
+                UserId = user.Id,
+            });
 
             return user;
         }

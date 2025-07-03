@@ -30,11 +30,11 @@ namespace Foruscorp.Auth.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginDto request)
         {
-            var token = await authService.LoginAsync(request); 
-            if (string.IsNullOrEmpty(token))
+            var responce = await authService.LoginAsync(request); 
+            if (string.IsNullOrEmpty(responce.Token))
                 return Unauthorized("Invalid credentials");
 
-            return Ok(token);   
+            return Ok(responce);   
 
         }
 

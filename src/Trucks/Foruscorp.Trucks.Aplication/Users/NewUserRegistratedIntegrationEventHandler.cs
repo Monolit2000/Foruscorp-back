@@ -1,5 +1,6 @@
 ﻿using Foruscorp.Trucks.IntegrationEvents;
 using Foruscorp.TrucksTracking.IntegrationEvents;
+using Foruscorp.Users.IntegrationEvents;
 using MassTransit;
 using MediatR;
 using System;

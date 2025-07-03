@@ -28,4 +28,8 @@
     <PackageReference Include="Scalar.AspNetCore" Version="2.5.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Foruscorp.Users.IntegrationEvents\Foruscorp.Users.IntegrationEvents.csproj" />
+  </ItemGroup>
+
 </Project>
