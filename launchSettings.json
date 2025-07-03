@@ -8,7 +8,10 @@
         "foruscorp.truckstracking.api": "StartDebugging",
         "foruscorp.fuelstations.api": "StartDebugging",
         "foruscorp.trucks.api": "StartDebugging",
-        "foruscorp.fuelroutes.api": "StartDebugging"
+        "foruscorp.fuelroutes.api": "StartDebugging",
+        "foruscorp.gateway": "StartDebugging",
+        "foruscorp.fuelroutes.auth": "StartDebugging",
+        "foruscorp.auth": "StartDebugging"
       }
     }
   }

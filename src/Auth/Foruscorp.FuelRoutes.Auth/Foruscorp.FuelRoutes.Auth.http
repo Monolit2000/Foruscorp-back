@@ -1,0 +1,6 @@
+@Foruscorp.FuelRoutes.Auth_HostAddress = http://localhost:5146
+
+GET {{Foruscorp.FuelRoutes.Auth_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

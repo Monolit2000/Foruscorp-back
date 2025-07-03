@@ -1,4 +1,27 @@
 services:
+
+
+  foruscorp.gateway:
+    image: ${DOCKER_REGISTRY-}foruscorpgateway
+    build:
+      context: .
+      dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
+    volumes:
+      # - ./appsettings.json:/etc/yarp.config
+      - ./certs/server.pfx:/etc/certs/certificate.pfx
+    ports:
+      # - "5011:5011" 
+      - "5000:5000" 
+    environment:
+      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+    networks:
+      - foruscorp-docker-network
+
+
+
+
   foruscorp.truckstracking.api:
     container_name: truckstracking-api
     image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
@@ -99,17 +122,17 @@ services:
       - foruscorp-docker-network
 
 
-  gateway.api:
-    container_name: gateway-api
-    image: mcr.microsoft.com/dotnet/nightly/yarp:latest
-    volumes:
-      - ./appsettings.json:/etc/yarp.config
-      - ./certs/certificate.pfx:/etc/certs/certificate.pfx
-    ports:
-      - "5011:5011" 
-      - "5000:5000" 
-    networks:
-      - foruscorp-docker-network
+  # gateway.api:
+  #   container_name: gateway-api
+  #   image: mcr.microsoft.com/dotnet/nightly/yarp:latest
+  #   volumes:
+  #     - ./appsettings.json:/etc/yarp.config
+  #     - ./certs/server.pfx:/etc/certs/certificate.pfx
+  #   ports:
+  #     - "5011:5011" 
+  #     - "5000:5000" 
+  #   networks:
+  #     - foruscorp-docker-network
 
   foruscorp.db:
     container_name: foruscorp-postgres
@@ -181,6 +204,29 @@ services:
   #   restart: unless-stopped
 
 
+
+
+
+  # foruscorp.fuelroutes.auth:
+  #   image: ${DOCKER_REGISTRY-}foruscorpfuelroutesauth
+  #   build:
+  #     context: .
+  #     dockerfile: src/Auth/Foruscorp.FuelRoutes.Auth/Dockerfile
+  #   ports:
+  #     - 5007:5007
+  #   networks:
+  #     - foruscorp-docker-network
+
+  foruscorp.auth:
+    image: ${DOCKER_REGISTRY-}foruscorpauth
+    build:
+      context: .
+      dockerfile: src/Auth/Foruscorp.Auth/Dockerfile
+    ports:
+      - 5007:5007
+    networks:
+      - foruscorp-docker-network
+
 networks:
   foruscorp-docker-network:
     driver: bridge
@@ -192,3 +238,6 @@ volumes:
     driver: local
   seq-data:
     driver: local
+
+
+
