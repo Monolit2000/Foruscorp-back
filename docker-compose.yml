@@ -9,11 +9,12 @@ services:
       dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
     volumes:
       # - ./appsettings.json:/etc/yarp.config
-      - ./certs/certificate.pfx:/etc/certs/certificate.pfx
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000" 
       - "5011:5011" 
     environment:
+      - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_HTTP_PORTS=5000
       - ASPNETCORE_HTTPS_PORTS=5011
       - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
