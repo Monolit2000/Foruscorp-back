@@ -1,6 +1,6 @@
-@Foruscorp.Gateway_HostAddress = http://localhost:5000
+@Foruscorp.Gateway_HostAddress = http://localhost:5228
 
-GET {{Foruscorp.Gateway_HostAddress}}/login
+GET {{Foruscorp.Gateway_HostAddress}}/weatherforecast/
 Accept: application/json
 
 ###

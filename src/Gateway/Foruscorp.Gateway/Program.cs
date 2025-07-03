@@ -1,9 +1,12 @@
+
+//using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.BearerToken;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Security.Claims;
-using OpenTelemetry;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -31,35 +34,35 @@ builder.Services.AddOpenTelemetry()
 //builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
 //    .AddBearerToken();
 
-//builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-//    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
-//    {
-//        options.TokenValidationParameters = new()
-//        {
-//            ValidateIssuer = false,
-//            ValidateAudience = false,
-//            ValidateLifetime = true,
-//            ValidateIssuerSigningKey = true,
-//            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
-//                Encoding.UTF8.GetBytes(jwtOptions!.SecretKey))
-//        };
-//    });
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+    });
 
 var app = builder.Build();
 
-app.MapGet("login", () =>
-    Results.SignIn(
-        new ClaimsPrincipal(
-            new ClaimsIdentity(
-                new[]
-                {
-                    new Claim("sub", Guid.NewGuid().ToString())
-                },
-                BearerTokenDefaults.AuthenticationScheme)
-        ),
-        authenticationScheme: BearerTokenDefaults.AuthenticationScheme
-    )
-);
+//app.MapGet("login", () =>
+//    Results.SignIn(
+//        new ClaimsPrincipal(
+//            new ClaimsIdentity(
+//                new[]
+//                {
+//                    new Claim("sub", Guid.NewGuid().ToString())
+//                },
+//                BearerTokenDefaults.AuthenticationScheme)
+//        ),
+//        authenticationScheme: BearerTokenDefaults.AuthenticationScheme
+//    )
+//);
 
 app.Use(async (context, next) =>
 {

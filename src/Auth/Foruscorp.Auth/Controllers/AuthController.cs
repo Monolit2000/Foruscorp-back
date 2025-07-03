@@ -1,71 +1,54 @@
 using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.Domain.Users;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Threading.Tasks;
 
 namespace Foruscorp.Auth.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class AuthController(
-        ITokenProvider tokenProvider) : ControllerBase
+        IAuthService authService) : ControllerBase
     {
 
-
-        [HttpPost("SetCurrentRouteCommand")]
-        public async Task<ActionResult> SetCurrentRouteCommand()
+        [HttpPost("Register")]
+        public async Task<ActionResult<User>> Register(UserDto request)
         {
-            return Ok();
+            var user = await authService.RegisterAsync(request);
+            if(user is null)
+                return BadRequest("User already exists");
+
+            return Ok(user);
         }
 
 
-        //[HttpPost(Name = "Register")]
-        //public ActionResult<User> Register(UserDto request)
-        //{
-        //    var user = new User
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        Email = request.Email,
-        //        UserName = request.UserName 
-        //    };  
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> Login(UserLoginDto request)
+        {
+            var token = await authService.LoginAsync(request); 
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized("Invalid credentials");
 
-        //    var hasedPass = new PasswordHasher<User>()
-        //        .HashPassword(user, request.Password);
+            return Ok(token);   
 
-        //    user.PasswordHash = hasedPass;
+        }
 
-        //    return Ok(user);    
-        //}
+        [Authorize] // обязательная авторизация
+        [HttpGet("me")]
+        public ActionResult<string> GetCurrentUserId()
+        {
+            var userId = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value; 
+            if (string.IsNullOrEmpty(userId))
+            {
+                return Unauthorized("Token does not contain user ID");
+            }
 
-
-        //[HttpPost(Name = "login")]
-        //public ActionResult<string> Login(UserDto request)
-        //{
-        //    var user = new User
-        //    {
-        //        Id = Guid.NewGuid(),
-        //        Email = request.Email,
-        //        UserName = request.UserName
-        //    };
-
-        //    user.PasswordHash = new PasswordHasher<User>().HashPassword(user, request.Password); // Simulating a user fetch from a database   
-
-        //    if (user.UserName != request.UserName)
-        //    {
-        //        return BadRequest("User not found");
-        //    }
-
-        //    if(new PasswordHasher<User>().VerifyHashedPassword(user, user.PasswordHash, request.Password) == PasswordVerificationResult.Failed)
-        //    { 
-        //        return BadRequest("Invalid password");  
-        //    }
-
-        //    var token = tokenProvider.Create(user);
-
-        //    return Ok(token);
-        //}
-
-
+            return Ok(userId);
+        }
     }
 }
