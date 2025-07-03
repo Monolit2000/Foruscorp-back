@@ -9,7 +9,7 @@ services:
       dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
     volumes:
       # - ./appsettings.json:/etc/yarp.config
-      - ./certs/server.pfx:/etc/certs/certificate.pfx
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx
     ports:
       - "5000:5000" 
       - "5011:5011" 
