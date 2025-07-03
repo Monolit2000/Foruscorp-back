@@ -1,27 +1,27 @@
 services:
 
 
-  foruscorp.gateway:
-    container_name: foruscorp-gateway
-    image: ${DOCKER_REGISTRY-}foruscorpgateway
-    build:
-      context: .
-      dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
-    volumes:
-      # - ./appsettings.json:/etc/yarp.config
-      - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
-    ports:
-      - "5000:5000" 
-      - "5011:5011" 
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_HTTP_PORTS=5000
-      - ASPNETCORE_HTTPS_PORTS=5011
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
-    networks:
-      - foruscorp-docker-network
+  # foruscorp.gateway:
+  #   container_name: foruscorp-gateway
+  #   image: ${DOCKER_REGISTRY-}foruscorpgateway
+  #   build:
+  #     context: .
+  #     dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
+  #   volumes:
+  #     # - ./appsettings.json:/etc/yarp.config
+  #     - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
+  #   ports:
+  #     - "5000:5000" 
+  #     - "5011:5011" 
+  #   environment:
+  #     - ASPNETCORE_ENVIRONMENT=Production
+  #     - ASPNETCORE_HTTP_PORTS=5000
+  #     - ASPNETCORE_HTTPS_PORTS=5011
+  #     - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
+  #     - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+  #     - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+  #   networks:
+  #     - foruscorp-docker-network
 
 
     
@@ -145,17 +145,17 @@ services:
       - foruscorp-docker-network
 
 
-  # gateway.api:
-  #   container_name: gateway-api
-  #   image: mcr.microsoft.com/dotnet/nightly/yarp:latest
-  #   volumes:
-  #     - ./appsettings.json:/etc/yarp.config
-  #     - ./certs/server.pfx:/etc/certs/certificate.pfx
-  #   ports:
-  #     - "5011:5011" 
-  #     - "5000:5000" 
-  #   networks:
-  #     - foruscorp-docker-network
+  gateway.api:
+    container_name: gateway-api
+    image: mcr.microsoft.com/dotnet/nightly/yarp:latest
+    volumes:
+      - ./appsettings.json:/etc/yarp.config
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx
+    ports:
+      - "5011:5011" 
+      - "5000:5000" 
+    networks:
+      - foruscorp-docker-network
 
   foruscorp.db:
     container_name: foruscorp-postgres
