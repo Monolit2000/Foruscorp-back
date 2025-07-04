@@ -8,14 +8,14 @@ services:
       dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
     volumes:
       # - ./appsettings.json:/etc/yarp.config
-      - ./certs/server.pfx:/etc/certs/certificate.pfx:ro
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000" 
       - "5011:5011" 
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_Kestrel__Certificates__Default__Path=/etc/certs/certificate.pfx
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=master
+      - ASPNETCORE_Kestrel__Certificates__Default__Password=foruscorp
       - ASPNETCORE_HTTP_PORTS=5000
       - ASPNETCORE_HTTPS_PORTS=5011
       - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
@@ -33,7 +33,6 @@ services:
     ports:
       - 5007:5007
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
       - MessageBroker__HostName=rabbitmq://rabbitmq
       - MessageBroker__Username=guest
       - MessageBroker__Password=guest
@@ -54,7 +53,6 @@ services:
     ports:
       - 5001:5001
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_ENVIRONMENT=Development
       - MessageBroker__HostName=rabbitmq://rabbitmq
@@ -84,7 +82,6 @@ services:
     ports:
       - 5002:5002
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_ENVIRONMENT=Development
       - MessageBroker__HostName=rabbitmq://rabbitmq
@@ -108,7 +105,6 @@ services:
     ports:
       - 5003:5003
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_ENVIRONMENT=Development
       - MessageBroker__HostName=rabbitmq://rabbitmq
@@ -133,7 +129,6 @@ services:
     ports:
       - 5004:5004
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
       - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_ENVIRONMENT=Development
       - MessageBroker__HostName=rabbitmq://rabbitmq

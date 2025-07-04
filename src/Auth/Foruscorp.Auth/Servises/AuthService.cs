@@ -35,6 +35,10 @@ namespace Foruscorp.Auth.Servises
             return new LoginResponce { UserId = user.Id, Token = token };
         }
 
+        public async Task GenerateRefreshToken(Guid userId)
+        {
+
+        }
         public async Task<User> RegisterAsync(UserDto request)
         {
             if(await context.Users.AnyAsync(u => u.UserName == request.UserName))
