@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Foruscorp.Push.Controllers
 {
     [ApiController]
-    [Route("api/devices")]
+    [Route("[controller]")]
     public class DevicesController : ControllerBase
     {
         private readonly ISender _mediator;
@@ -27,7 +27,6 @@ namespace Foruscorp.Push.Controllers
         public async Task<IActionResult> UpdateToken(
             [FromBody] UpdateDeviceTokenCommand cmdBody)
         {
-            // Переписываем DeviceId из URL в команду
             var cmd = cmdBody with { DeviceId = cmdBody.DeviceId };
             await _mediator.Send(cmd);
             return NoContent();

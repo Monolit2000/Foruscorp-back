@@ -6,8 +6,8 @@ namespace Foruscorp.Push.Domain.PushNotifications
     public class Notification
     {
         public Guid Id { get; private set; }
-        public NotificationContent Content { get; private set; }            // ValueObject
-        public NotificationPayload Payload { get; private set; }            // ValueObject
+        public NotificationContent Content { get; private set; }           
+        public NotificationPayload Payload { get; private set; }            
         public DateTime CreatedAt { get; private set; }
         public NotificationStatus Status { get; private set; }
 

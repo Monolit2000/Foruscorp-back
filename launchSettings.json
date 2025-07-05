@@ -11,7 +11,8 @@
         "foruscorp.fuelroutes.api": "StartDebugging",
         "foruscorp.gateway": "StartDebugging",
         "foruscorp.fuelroutes.auth": "StartDebugging",
-        "foruscorp.auth": "StartDebugging"
+        "foruscorp.auth": "StartDebugging",
+        "foruscorp.push": "StartDebugging"
       }
     }
   }

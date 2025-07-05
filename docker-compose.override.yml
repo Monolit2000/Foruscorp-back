@@ -84,3 +84,11 @@ services:
 
 
 
+
+  foruscorp.push:
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5010
+    ports:
+      - "5010"
+

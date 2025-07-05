@@ -61,11 +61,11 @@ var app = builder.Build();
 
 //app.UsePathBase("/scalar/v1");
 
-//app.MapGet("/", context =>
-//{
-//    context.Response.Redirect("/scalar/v1", permanent: false);
-//    return Task.CompletedTask;
-//});
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/scalar/v1", permanent: false);
+    return Task.CompletedTask;
+});
 
 
 // Configure the HTTP request pipeline.

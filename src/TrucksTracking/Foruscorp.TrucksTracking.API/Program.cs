@@ -86,6 +86,12 @@ builder.Services.AddSingleton<TruckGroupSubscriptionManager>();
 
 var app = builder.Build();
 
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger/index.html", permanent: false);
+    return Task.CompletedTask;
+});
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

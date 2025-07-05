@@ -1,17 +1,18 @@
+using Foruscorp.FuelRoutes.Infrastructure;
+using Foruscorp.FuelStations.Infrastructure;
+using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Foruscorp.FuelRoutes.Infrastructure;
-using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Microsoft.Extensions.Logging;
+using Npgsql;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using OpenTelemetry.Logs;
 using System;
-using Foruscorp.FuelStations.Infrastructure;
-using Npgsql;
-using OpenTelemetry;
+using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -66,12 +67,17 @@ builder.Services.AddCors(options =>
 builder.Services.AddPersistenceServices(builder.Configuration); 
 
 
-builder.Services.AddFuelStationServices(builder.Configuration); 
-
+builder.Services.AddFuelStationServices(builder.Configuration);
 
 
 
 var app = builder.Build();
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/swagger/index.html", permanent: false);
+    return Task.CompletedTask;
+});
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

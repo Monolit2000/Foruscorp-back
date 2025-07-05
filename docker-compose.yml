@@ -25,7 +25,7 @@ services:
       - foruscorp-docker-network
     
   foruscorp.auth:
-    container_name: foruscorp-auth
+    container_name: auth-api
     image: ${DOCKER_REGISTRY-}foruscorpauth
     build:
       context: .
@@ -40,9 +40,34 @@ services:
       - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
       - ASPNETCORE_HTTP_PORTS=5007
       - DOTNET_ENVIRONMENT=Development
+    depends_on:
+      - foruscorp.db
+      - rabbitmq
     networks:
       - foruscorp-docker-network
 
+
+    
+
+  foruscorp.push:
+    container_name: push-api
+    image: ${DOCKER_REGISTRY-}foruscorppush
+    build:
+      context: .
+      dockerfile: src/Push/Foruscorp.Push/Dockerfile
+    ports:
+      - 5010:5010
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - MessageBroker__HostName=rabbitmq://rabbitmq
+      - MessageBroker__Username=guest
+      - MessageBroker__Password=guest
+      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
+    depends_on:
+      - foruscorp.db
+      - rabbitmq
+    networks:
+      - foruscorp-docker-network
 
 
   foruscorp.truckstracking.api:
@@ -233,9 +258,6 @@ services:
 
 
 
-
-
-
 networks:
   foruscorp-docker-network:
     driver: bridge
@@ -247,6 +269,7 @@ volumes:
     driver: local
   seq-data:
     driver: local
+
 
 
 
