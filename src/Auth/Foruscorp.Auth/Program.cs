@@ -28,7 +28,7 @@ builder.Services.AddMassTransit(busConfiguration =>
 
     busConfiguration.UsingRabbitMq((context, configurator) =>
     {
-        configurator.Host(new Uri("rabbitmq://rabbitmq"/*configuration["MessageBroker:HostName"]!*/), h =>
+        configurator.Host(new Uri(builder.Configuration["MessageBroker:Host"]!), h =>
         {
             h.Username(builder.Configuration["MessageBroker:Username"]!);
             h.Username(builder.Configuration["MessageBroker:Password"]!);
@@ -58,6 +58,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 builder.Services.AddScoped<ITokenProvider, TokenProvider>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 var app = builder.Build();
+
+//app.UsePathBase("/scalar/v1");
+
+//app.MapGet("/", context =>
+//{
+//    context.Response.Redirect("/scalar/v1", permanent: false);
+//    return Task.CompletedTask;
+//});
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

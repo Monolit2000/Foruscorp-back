@@ -1,0 +1,6 @@
+@Foruscorp.Push_HostAddress = http://localhost:5299
+
+GET {{Foruscorp.Push_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

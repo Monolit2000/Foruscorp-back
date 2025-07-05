@@ -76,6 +76,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Gateway", "src\Ga
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Users.IntegrationEvents", "src\Auth\Foruscorp.Users.IntegrationEvents\Foruscorp.Users.IntegrationEvents.csproj", "{3D8702D0-61F1-44DD-AC3D-25A1CC598D92}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Push", "Push", "{676DE73E-4244-4A05-ACB8-297B6135F49A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Push", "src\Push\Foruscorp.Push\Foruscorp.Push.csproj", "{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -182,6 +186,10 @@ Global
 		{3D8702D0-61F1-44DD-AC3D-25A1CC598D92}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3D8702D0-61F1-44DD-AC3D-25A1CC598D92}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3D8702D0-61F1-44DD-AC3D-25A1CC598D92}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -219,6 +227,8 @@ Global
 		{5DDF41A6-2146-48FA-8D1C-79B28D39FEE6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{2F619DC2-7F59-4B26-A009-1650100DB7BD} = {531AE1BD-D4CF-4741-B531-71F9FF323825}
 		{3D8702D0-61F1-44DD-AC3D-25A1CC598D92} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{676DE73E-4244-4A05-ACB8-297B6135F49A} = {CC87C304-2DA1-4C19-A7E3-A70B423D365D}
+		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E} = {676DE73E-4244-4A05-ACB8-297B6135F49A}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2904CEA6-8C5E-4BE6-8C16-181313AB69B3}

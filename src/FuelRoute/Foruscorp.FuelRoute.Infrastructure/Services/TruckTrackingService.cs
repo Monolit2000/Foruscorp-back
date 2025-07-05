@@ -19,10 +19,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Services
 
         public async Task<TrackedRouteDto> GetRouteAsync(Guid truckId, CancellationToken cancellationToken = default)
         {
-            // Формируем путь запроса без ведущего слеша — BaseAddress уже настроен
             var requestUri = $"http://truckstracking-api:5001/TrucksTracking/{truckId}/route";
 
-            // Делаем GET и сразу десериализуем JSON в TrackedRouteDto
             var dto = await _http.GetFromJsonAsync<TrackedRouteDto>(requestUri, cancellationToken);
             if (dto == null)
             {
