@@ -17,6 +17,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.Id)
                 .HasColumnName("DriverId");
 
+            builder.Property(d => d.UserId)
+                .IsRequired(false);
 
             builder.Property(d => d.FullName)
                 .IsRequired()
@@ -84,6 +86,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
                 .IsUnique();
 
             builder.HasIndex(d => d.TruckId);
+
+            builder.HasIndex(d => d.UserId);
         }
     }
 

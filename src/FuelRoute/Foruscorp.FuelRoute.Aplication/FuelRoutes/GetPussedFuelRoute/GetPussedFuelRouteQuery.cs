@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 {
-    public class GetFuelRouteQuery : IRequest<Result<RoutInfoDto>>
+    public class GetPussedFuelRouteQuery : IRequest<Result<RoutInfoDto>>
     {
         public Guid TruckId { get; set; }
     }

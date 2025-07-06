@@ -10,6 +10,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
 {
     public class Driver : Entity, IAggregateRoot
     {
+        public Guid? UserId { get; private set; }   
         public Guid? TruckId { get; private set; }
         public Truck Truck { get; private set; }
         public Contact Contact { get; private set; } 
@@ -33,10 +34,12 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string fullName,
             string phoneNumber = null,
             string email = null,
-            string telegramLink = null)
+            string telegramLink = null,
+            Guid? userId = null)
         {
             Id = Guid.NewGuid();
             FullName = fullName;
+            UserId = userId;    
 
             Contact = Contact.Create(
                 phoneNumber,
@@ -49,13 +52,18 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string fullName, 
             string phoneNumber = null, 
             string email = null,
-            string telegramLink = null)
+            string telegramLink = null,
+            Guid? userId = null)
         {
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
-            return new Driver(fullName, phoneNumber, email, telegramLink);
+            return new Driver(fullName, phoneNumber, email, telegramLink, userId);
         }
 
+        public void SetUser(Guid userId)
+        {
+            UserId = userId;
+        }   
 
 
         public void UpdateContact(

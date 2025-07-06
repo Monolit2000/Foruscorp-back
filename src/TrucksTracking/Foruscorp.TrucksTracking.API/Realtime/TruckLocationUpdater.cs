@@ -3,21 +3,11 @@ using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIfChanged;
-using Foruscorp.TrucksTracking.Domain.Trucks;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using System.Threading.Channels;
-using System.Threading.Tasks;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {

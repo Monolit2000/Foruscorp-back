@@ -67,7 +67,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         }
 
         [HttpPost("get-fuel-route")]
-        public async Task<ActionResult> GetFuelRouteQuery(GetFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
+        public async Task<ActionResult> GetFuelRouteQuery(GetPussedFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(getFuelRouteQuery);
 
@@ -104,7 +104,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         }
 
         [HttpPost("get-current-route")]
-        public async Task<IActionResult> GetFuelRoute(GetFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetFuelRoute(GetPussedFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(getFuelRouteQuery);
 
