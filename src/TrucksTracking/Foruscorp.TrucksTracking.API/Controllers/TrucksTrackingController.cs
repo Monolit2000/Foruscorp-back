@@ -1,4 +1,5 @@
 using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
@@ -75,6 +76,14 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             var result = await mediator.Send(routeQuery);
             return Ok(result);
         }
+
+        [HttpGet("getLastTruckLocations/{TruckId:guid}")]
+        public async Task<ActionResult> GetLastTruckLocationsQuery(Guid TruckId)
+        {
+            var result = await mediator.Send(new GetLastTruckLocationsQuery(TruckId));
+            return Ok(result);
+        }
+
 
 
         [HttpGet("{truckId:guid}/route")]

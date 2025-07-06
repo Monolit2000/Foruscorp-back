@@ -1,23 +1,34 @@
-﻿using Microsoft.AspNetCore.SignalR;
+﻿using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
+using Foruscorp.TrucksTracking.Aplication.TruckLocations;
+using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
+using MediatR;
+using Microsoft.AspNetCore.SignalR;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
  
     public sealed class TruckHub(
         ActiveTruckManager activeTruckManager,
-        TruckGroupSubscriptionManager truckGroupSubscriptionManager) : Hub<ITruckLocationUpdateClient>
+        TruckGroupSubscriptionManager truckGroupSubscriptionManager,
+        ISender sender) : Hub<ITruckLocationUpdateClient>
     {
-        public async Task JoinTruckGroup(string truckId)
+        public async Task<List<TruckLocationDto>> JoinTruckGroup(string truckId)
         {
+            var result = new List<TruckLocationDto>();
             var connectionId = Context.ConnectionId;
+         
+            activeTruckManager.AddTruck(truckId);
+            await Groups.AddToGroupAsync(connectionId, truckId);
 
-            if (truckGroupSubscriptionManager.TrySubscribe(connectionId, truckId))
+            if (Guid.TryParse(truckId, out var truckGuid))
             {
-                activeTruckManager.AddTruck(truckId);
-                await Groups.AddToGroupAsync(Context.ConnectionId, truckId);
+                result = await sender.Send(
+                    new GetLastTruckLocationsQuery(truckGuid),
+                    CancellationToken.None);
             }
+
+            return result;
         }
 
         public override async Task OnDisconnectedAsync(Exception? exception)
