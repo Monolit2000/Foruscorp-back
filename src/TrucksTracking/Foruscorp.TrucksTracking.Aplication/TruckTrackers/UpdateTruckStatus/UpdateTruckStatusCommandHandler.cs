@@ -18,16 +18,16 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus
 {
     public class UpdateTruckStatusCommandHandler(
         ITuckTrackingContext tuckTrackingContext,
-        ILogger<UpdateTruckTrackerCommandHandler> logger,
+        ILogger<UpdateTruckStatusCommandHandler> logger,
         ISignalRNotificationSender signalRNotificationSender,
         IPublishEndpoint publishEndpoint) : IRequestHandler<UpdateTruckStatusCommand>
     {
         public async Task Handle(UpdateTruckStatusCommand request, CancellationToken cancellationToken)
         {
             var truckTracker = await tuckTrackingContext.TruckTrackers
-                .Include(tt => tt.CurrentRoute)
-                .Include(tt => tt.CurrentTruckLocation)
-                .Include(tt => tt.TruckLocationHistory)
+                //.Include(tt => tt.CurrentRoute)
+                //.Include(tt => tt.CurrentTruckLocation)
+                //.Include(tt => tt.TruckLocationHistory)
                 .FirstOrDefaultAsync(t => t.TruckId == request.TruckId);
 
             if (truckTracker == null)

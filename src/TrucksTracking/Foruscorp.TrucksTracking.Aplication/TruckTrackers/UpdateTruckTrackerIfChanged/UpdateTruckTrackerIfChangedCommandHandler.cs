@@ -16,75 +16,90 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIfChanged
 {
-    public class UpdateTruckTrackerIfChangedCommandHandler(
-        ITuckTrackingContext tuckTrackingContext,
-        ILogger<UpdateTruckTrackerCommandHandler> logger,
-        TruckInfoManager truckInfoManager,
-        ISender sender) : IRequestHandler<UpdateTruckTrackerIfChangedCommand>
+    public class UpdateTruckTrackerIfChangedCommandHandler : IRequestHandler<UpdateTruckTrackerIfChangedCommand>
     {
-        public async Task Handle(UpdateTruckTrackerIfChangedCommand request, CancellationToken cancellationToken)
+        private readonly ITuckTrackingContext _context;
+        private readonly ILogger<UpdateTruckTrackerIfChangedCommandHandler> _logger;
+        private readonly TruckInfoManager _truckInfoManager;
+        private readonly ISender _sender;
+
+        public UpdateTruckTrackerIfChangedCommandHandler(
+            ITuckTrackingContext context,
+            ILogger<UpdateTruckTrackerIfChangedCommandHandler> logger,
+            TruckInfoManager truckInfoManager,
+            ISender sender)
         {
-            if (!request.TruckStatsUpdates.Any())
-            {
-                logger.LogWarning("No truck stats updates provided.");
-                return;
-            }
-
-            foreach (var truckStatsUpdate in request.TruckStatsUpdates.DistinctBy(t => t.TruckId))
-            {
-
-                var isLocationChanged = truckInfoManager.UpdateTruckLocationInfoIfChanged(truckStatsUpdate);
-                if (isLocationChanged)
-                    logger.LogInformation("TruckId: {TruckId}, Location changed", truckStatsUpdate.TruckId);
-
-
-                var isFuelChanged = truckInfoManager.UpdateTruckIFuelnfoIfChanged(truckStatsUpdate);
-                if (isFuelChanged)
-                    logger.LogInformation("TruckId: {TruckId}, Fuel changed", truckStatsUpdate.TruckId);
-
-                var isEngineSatusChanged = truckInfoManager.UpdateTruckEngineInfoIfChanged(truckStatsUpdate);
-                if (isEngineSatusChanged)
-                {
-                    await sender.Send(new UpdateTruckStatusCommand() {TruckId = Guid.Parse(truckStatsUpdate.TruckId), EngineStatus = truckStatsUpdate.engineStateData.Value }, cancellationToken);  
-                    logger.LogInformation("TruckId: {TruckId}, Engine status changed", truckStatsUpdate.TruckId);
-                }
-
-
-                if (isLocationChanged || isFuelChanged)
-                    await UpdateTrukTracker(truckStatsUpdate, isLocationChanged, isFuelChanged);
-            }
+            _context = context;
+            _logger = logger;
+            _truckInfoManager = truckInfoManager;
+            _sender = sender;
         }
 
-        public async Task UpdateTrukTracker(TruckInfoUpdate truckStatsUpdate, bool isLocationChanged = false, bool IsFuelOnly = false)
+        public async Task Handle(UpdateTruckTrackerIfChangedCommand request, CancellationToken cancellationToken)
         {
-            var truckId = Guid.Parse(truckStatsUpdate.TruckId);
+            var updates = request.TruckStatsUpdates
+                .Where(u => u != null)
+                .DistinctBy(u => u.TruckId)
+                .ToList();
 
-            var truckTracker = await tuckTrackingContext.TruckTrackers
-                .Include(tt => tt.CurrentRoute)
-                .Include(tt => tt.CurrentTruckLocation)
-                .Include(tt => tt.TruckLocationHistory)
-                .FirstOrDefaultAsync(t => t.TruckId == truckId);
-
-            if (truckTracker == null)
+            if (!updates.Any())
             {
-                logger.LogWarning("Truck Tracker not found for TruckId: {TruckId}", truckId);
+                _logger.LogWarning("No truck stats updates provided.");
                 return;
             }
 
-            if (IsFuelOnly)
+            // Группируем все TruckIds
+            var truckIds = updates.Select(u => Guid.Parse(u.TruckId)).ToList();
+
+            // Загружаем все трекеры одним запросом
+            var trackers = await _context.TruckTrackers
+                .Where(tt => truckIds.Contains(tt.TruckId))
+                .Include(tt => tt.CurrentTruckLocation)
+                .ToListAsync(cancellationToken);
+
+            var statusCommands = new List<UpdateTruckStatusCommand>();
+
+            foreach (var tracker in trackers)
             {
-                truckTracker.UpdateFuelStatus(truckStatsUpdate.fuelPercents);
-            }
-            else if(isLocationChanged)
-            {
-                truckTracker.UpdateCurrentTruckLocation(
-                    new GeoPoint(truckStatsUpdate.Latitude, truckStatsUpdate.Longitude),
-                    truckStatsUpdate.formattedLocation);
+                var updateModel = updates.First(u => Guid.Parse(u.TruckId) == tracker.TruckId);
+
+                bool locationChanged = _truckInfoManager.UpdateTruckLocationInfoIfChanged(updateModel);
+                bool fuelChanged = _truckInfoManager.UpdateTruckIFuelnfoIfChanged(updateModel);
+                bool engineChanged = _truckInfoManager.UpdateTruckEngineInfoIfChanged(updateModel);
+
+                if (locationChanged)
+                {
+                    tracker.UpdateCurrentTruckLocation(
+                        new GeoPoint(updateModel.Latitude, updateModel.Longitude),
+                        updateModel.formattedLocation);
+                    _logger.LogInformation("TruckId: {TruckId}, Location changed", tracker.TruckId);
+                }
+
+                if (fuelChanged)
+                {
+                    tracker.UpdateFuelStatus(updateModel.fuelPercents);
+                    _logger.LogInformation("TruckId: {TruckId}, Fuel changed", tracker.TruckId);
+                }
+
+                if (engineChanged)
+                {
+                    statusCommands.Add(new UpdateTruckStatusCommand
+                    {
+                        TruckId = tracker.TruckId,
+                        EngineStatus = updateModel.engineStateData?.Value ?? string.Empty
+                    });
+                    _logger.LogInformation("TruckId: {TruckId}, Engine status changed", tracker.TruckId);
+                }
             }
 
-            logger.LogInformation("Updated Truck Tracker for TruckId: {TruckId}", truckId);
+            // Сохраняем все изменения разом
+            await _context.SaveChangesAsync(cancellationToken);
 
-            await tuckTrackingContext.SaveChangesAsync();
+            // Отправляем команды обновления статуса двигателя
+            foreach (var cmd in statusCommands)
+            {
+                await _sender.Send(cmd, cancellationToken);
+            }
         }
     }
 }

@@ -1,272 +1,478 @@
-﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
+﻿
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
-using Foruscorp.TrucksTracking.Aplication.Contruct.TruckProvider;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIfChanged;
 using Foruscorp.TrucksTracking.Domain.Trucks;
 using MediatR;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Channels;
+using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
-    internal sealed class TruckLocationUpdater(
-        IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
-        ILogger<TruckLocationUpdater> logger,
-        ActiveTruckManager activeTruckManager,
-        IServiceScopeFactory scopeFactory,
-        ITruckProviderService truckProviderService,
-        IMemoryCache memoryCache) : BackgroundService
+    internal sealed class TruckLocationUpdater : BackgroundService
     {
+        private readonly IHubContext<TruckHub, ITruckLocationUpdateClient> _hubContext;
+        private readonly ILogger<TruckLocationUpdater> _logger;
+        private readonly IServiceScopeFactory _scopeFactory;
+        private readonly ITruckProviderService _providerService;
+        private readonly IMemoryCache _memoryCache;
 
-        private readonly Random _random = new();
+        private const int WorkerCount = 1;
+        private const int ChannelCapacity = 400;
+        private readonly Channel<UpdateTruckTrackerIfChangedCommand>[] _commandChannels;
+        private readonly Task[] _processorTasks;
 
-        private const string TrackersCacheKey = "TruckTrackersCache";
-        private const string FuelCacheKey = "TruckFuelCache";
-        private readonly List<Task> _runningTasks = new List<Task>();
-        private readonly Channel<UpdateTruckTrackerIfChangedCommand> _commandChannel = Channel.CreateUnbounded<UpdateTruckTrackerIfChangedCommand>();
-
-        protected override async Task ExecuteAsync(CancellationToken stoppingToken)
+        public TruckLocationUpdater(
+            IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
+            ILogger<TruckLocationUpdater> logger,
+            IServiceScopeFactory scopeFactory,
+            ITruckProviderService providerService,
+            IMemoryCache memoryCache)
         {
-            var commandProcessor = Task.Run(() => ProcessCommands(stoppingToken), stoppingToken);
+            _hubContext = hubContext;
+            _logger = logger;
+            _scopeFactory = scopeFactory;
+            _providerService = providerService;
+            _memoryCache = memoryCache;
 
-            while (!stoppingToken.IsCancellationRequested)
+            _commandChannels = new Channel<UpdateTruckTrackerIfChangedCommand>[WorkerCount];
+            _processorTasks = new Task[WorkerCount];
+
+            // Initialize channels
+            for (int i = 0; i < WorkerCount; i++)
+            {
+                _commandChannels[i] = Channel.CreateBounded<UpdateTruckTrackerIfChangedCommand>(
+                    new BoundedChannelOptions(ChannelCapacity)
+                    {
+                        SingleReader = true,
+                        SingleWriter = false,
+                        FullMode = BoundedChannelFullMode.Wait
+                    });
+            }
+        }
+
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            // Start processors
+            for (int i = 0; i < WorkerCount; i++)
+            {
+                var reader = _commandChannels[i].Reader;
+                _processorTasks[i] = Task.Run(() => ProcessCommandsAsync(reader, stoppingToken), stoppingToken);
+            }
+
+            // Start polling
+            return PollLoopAsync(stoppingToken);
+        }
+
+        private async Task PollLoopAsync(CancellationToken token)
+        {
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
-                    await UpdateTruckLocation();
-                    await Task.Delay(2000, stoppingToken);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred while updating truck locations or delaying execution.");
-                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
-                }
-            }
-        }
-
-        private async Task ProcessCommands(CancellationToken stoppingToken)
-        {
-            while (await _commandChannel.Reader.WaitToReadAsync(stoppingToken))
-            {
-                if (_commandChannel.Reader.TryRead(out var command))
-                {
-                    using var scope = scopeFactory.CreateScope();
-                    var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-                    try
+                    var updates = await FetchUpdatesAsync(token);
+                    if (updates.Any())
                     {
-                        await sender.Send(command, stoppingToken);
+                        await BroadcastUpdatesAsync(updates, token);
+                        EnqueueUpdates(updates, token);
                     }
-                    catch (Exception ex)
-                    {
-                        logger.LogError(ex, "Ошибка при обработке UpdateTruckTrackerIfChangedCommand");
-                    }
+
+                    await Task.Delay(TimeSpan.FromSeconds(2), token);
                 }
-            }
-        }
-
-        private async Task UpdateTruckLocation()
-        {
-            var trucks = await UpdateTrucksStat();
-
-            if (!trucks.Any())
-                return;
-
-            foreach (var truck in trucks)
-            {
-
-                if (truck == null)
+                catch (OperationCanceledException)
                 {
                     break;
                 }
-
-                var locationUpdate = new TruckLocationUpdate(
-                    truck.TruckId,
-                    truck.TruckName,
-                    truck.Longitude,
-                    truck.Latitude,
-                    truck.Time,
-                    truck.HeadingDegrees);
-
-                var fuelUpdate = new TruckFuelUpdate(
-                    truck.TruckId,
-                    truck.fuelPercents);
-
-
-
-                await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckLocationUpdate(locationUpdate);
-                await hubContext.Clients.Group(truck.TruckId.ToString()).ReceiveTruckFuelUpdate(fuelUpdate);
-
-                //logger.LogInformation("Updated {@Tracker} location",
-                //    truck);
-
-                //logger.LogInformation("Updated {@FuelUpdate} location",
-                //    fuelUpdate);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error during polling loop");
+                    await Task.Delay(TimeSpan.FromSeconds(5), token);
+                }
             }
         }
 
-
-
-        private async Task<List<TruckInfoUpdate>> UpdateTrucksStat()
+        private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
         {
-            using var scope = scopeFactory.CreateScope();
+            using var scope = _scopeFactory.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
 
-            var trackers = await memoryCache.GetOrCreateAsync(TrackersCacheKey, async entry =>
-            {
-                entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
-                return await context.TruckTrackers
-                    .AsNoTracking()
-                    .Select(t => new { t.TruckId, t.ProviderTruckId })
-                    .ToListAsync();
-            });
+            var trackers = await _memoryCache.GetOrCreateAsync(
+                TrackersCacheKey,
+                async entry =>
+                {
+                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+                    return await context.TruckTrackers
+                        .AsNoTracking()
+                        .Select(t => new { t.TruckId, t.ProviderTruckId })
+                        .ToListAsync(token);
+                });
 
             if (trackers == null || !trackers.Any())
             {
-                logger.LogWarning("No trackers found in cache or database.");
+                _logger.LogWarning("No trackers found.");
                 return new List<TruckInfoUpdate>();
             }
 
-            trackers = trackers.Where(t => t.ProviderTruckId != null).ToList();
+            var providerIds = trackers
+                .Where(t => !string.IsNullOrEmpty(t.ProviderTruckId))
+                .Select(t => t.ProviderTruckId)
+                .ToHashSet();
 
-            var providerIds = trackers.Select(t => t.ProviderTruckId).ToList();
-
-            //Call samsara API
-            var response = await truckProviderService.GetVehicleStatsFeedAsync();
-
-            if (response == null || response.Data == null)
+            var response = await _providerService.GetVehicleStatsFeedAsync();
+            if (response?.Data == null)
             {
-                logger.LogWarning("Vehicle stats feed response or data is null.");
+                _logger.LogWarning("External stats feed is null.");
                 return new List<TruckInfoUpdate>();
             }
 
-            var filteredData = response.Data
-                .Where(vs => vs.Id != null && (providerIds.Contains(vs.Id) || vs.EngineStates?.Any(es => es.Value == "On") == true))
+            var filtered = response.Data
+                .Where(v => v.Id != null && (providerIds.Contains(v.Id) ||
+                                              v.EngineStates?.Any(es => es.Value == "On") == true))
                 .ToList();
 
-            if (!filteredData.Any())
+            if (!filtered.Any())
             {
-                logger.LogWarning("No vehicle stats matched the filter criteria.");
+                _logger.LogInformation("No matching vehicle stats.");
                 return new List<TruckInfoUpdate>();
             }
 
-            var updates = filteredData
+            var updates = filtered
                 .Join(trackers,
-                    vs => vs.Id,
-                    t => t.ProviderTruckId,
-                    (vs, t) =>
-                    {
-                        var gps = vs.Gps != null ? vs.Gps.FirstOrDefault() : null;
-                        var fuel = vs.FuelPercents != null ? vs.FuelPercents.FirstOrDefault() : null;
-
-                        return new TruckInfoUpdate(
-                            t.TruckId.ToString(),
-                            vs.Name ?? "Unknown",
-                            gps?.Longitude ?? 0,
-                            gps?.Latitude ?? 0,
-                            gps?.Time ?? DateTime.UtcNow.ToString(),
-                            gps?.HeadingDegrees ?? 0,
-                            fuel?.Value ?? 0,
-                            gps?.ReverseGeo?.FormattedLocation ?? "Unknown",
-                            vs.EngineStates?.FirstOrDefault());
-                    })
+                      vs => vs.Id,
+                      t => t.ProviderTruckId,
+                      (vs, t) =>
+                      {
+                          var gps = vs.Gps?.FirstOrDefault();
+                          var fuel = vs.FuelPercents?.FirstOrDefault();
+                          return new TruckInfoUpdate(
+                              t.TruckId.ToString(),
+                              vs.Name ?? "Unknown",
+                              gps?.Longitude ?? 0,
+                              gps?.Latitude ?? 0,
+                              gps?.Time ?? DateTime.UtcNow.ToString("o"),
+                              gps?.HeadingDegrees ?? 0,
+                              fuel?.Value ?? 0,
+                              gps?.ReverseGeo?.FormattedLocation ?? "Unknown",
+                              vs.EngineStates?.FirstOrDefault());
+                      })
                 .ToList();
 
-            logger.LogInformation("Retrieved {UpdateCount} truck stat updates.", updates.Count);
-
-            //var sender = scope.ServiceProvider.GetRequiredService<ISender>();
-
-            //var command = new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates };
-
-            //// fire-and-forget
-            //_ = Task.Run(async () =>
-            //{
-            //    // создаём новый scope именно для отправки команды
-            //    using var innerScope = scopeFactory.CreateScope();
-            //    var sender = innerScope.ServiceProvider.GetRequiredService<ISender>();
-
-            //    try
-            //    {
-            //        await sender.Send(command);
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        logger.LogError(ex,
-            //            "Ошибка при асинхронной отправке UpdateTruckTrackerIfChangedCommand");
-            //    }
-            //});
-
-            var command = new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates };
-            await _commandChannel.Writer.WriteAsync(command);
-
-
+            _logger.LogInformation("Fetched {Count} updates.", updates.Count);
             return updates;
         }
 
-        //private async Task ProcessFuelChangesAsync(
-        //    List<TruckInfoUpdate> updates,
-        //    List<VehicleStat> filteredData, // Replace with actual type of response.Data
-        //    List<TruckTracker> trackers, // Replace with actual type of trackers
-        //    ITuckTrackingContext context)
-        //{
-        //    // Get all previous fuel levels from the database in one query
-        //    var truckIds = updates.Select(u => Guid.Parse(u.TruckId)).ToList();
-        //    var latestFuelRecords = await context.TruckTrackers
-        //        .Where(f => truckIds.Contains(f.Id))
-        //        .GroupBy(f => f.TruckId)
-        //        .Select(g => new
-        //        {
-        //            TruckId = g.Key,
-        //            LatestFuel = g.OrderByDescending(f => f.RecordedAt).Select(f => f.NewFuelLevel).FirstOrDefault()
-        //        })
-        //        .ToDictionaryAsync(f => f.TruckId, f => f.LatestFuel);
+        private void EnqueueUpdates(List<TruckInfoUpdate> updates, CancellationToken token)
+        {
+            foreach (var update in updates)
+            {
+                int shard = Math.Abs(update.TruckId.GetHashCode()) % WorkerCount;
+                _commandChannels[shard].Writer.WriteAsync(
+                    new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = new List<TruckInfoUpdate> { update } },
+                    token);
+            }
+        }
 
-        //    // Get or set cache for all trucks
-        //    var fuelCacheKeys = truckIds.Select(id => $"{FuelCacheKey}_{id}").ToList();
-        //    var cachedFuelValues = new Dictionary<string, decimal>();
+        private async Task BroadcastUpdatesAsync(
+            List<TruckInfoUpdate> updates,
+            CancellationToken token)
+        {
+            foreach (var u in updates)
+            {
+                try
+                {
+                    var group = u.TruckId.ToString();
+                    await _hubContext.Clients.Group(group).ReceiveTruckLocationUpdate(
+                        new TruckLocationUpdate(
+                            u.TruckId,
+                            u.TruckName,
+                            u.Longitude,
+                            u.Latitude,
+                            u.Time,
+                            u.HeadingDegrees));
 
-        //    foreach (var truckId in truckIds)
-        //    {
-        //        var cacheKey = $"{FuelCacheKey}_{truckId}";
-        //        var cachedFuel = await memoryCache.GetOrCreateAsync(cacheKey, entry =>
-        //        {
-        //            entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10);
-        //            return Task.FromResult(latestFuelRecords.TryGetValue(truckId, out var fuel) ? fuel : 0m);
-        //        });
-        //        cachedFuelValues[cacheKey] = cachedFuel;
-        //    }
+                    await _hubContext.Clients.Group(group).ReceiveTruckFuelUpdate(
+                        new TruckFuelUpdate(u.TruckId, u.fuelPercents));
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Failed to broadcast update for {TruckId}", u.TruckId);
+                }
+            }
+        }
 
-        //    // Detect fuel changes and trigger HandleFuelChangeAsync.Tasks
-        //    var fuelChangeTasks = updates
-        //        .Where(u =>
-        //        {
-        //            var cacheKey = $"{FuelCacheKey}_{u.TruckId}";
-        //            return cachedFuelValues.TryGetValue(cacheKey, out var previousFuel) && previousFuel != u.fuelPercents;
-        //        })
-        //        .Select(async u =>
-        //        {
-        //            var gps = filteredData
-        //                .Join(trackers, vs => vs.Id, t => t.ProviderTruckId, (vs, t) => new { vs, t })
-        //                .Where(x => x.t.TruckId.ToString() == u.TruckId)
-        //                .Select(x => x.vs.Gps?.FirstOrDefault())
-        //                .FirstOrDefault();
+        private async Task ProcessCommandsAsync(
+            ChannelReader<UpdateTruckTrackerIfChangedCommand> reader,
+            CancellationToken token)
+        {
+            await foreach (var cmd in reader.ReadAllAsync(token))
+            {
+                try
+                {
+                    _logger.LogInformation("Processing reader for {Count} items", reader.Count);
 
-        //            //await HandleFuelChangeAsync(
-        //            //    Guid.Parse(u.TruckId),
-        //            //    cachedFuelValues[$"{FuelCacheKey}_{u.TruckId}"],
-        //            //    u.fuelPercents,
-        //            //    gps != null ? new GeoPoint(gps.Latitude, gps.Longitude) : null,
-        //            //    gps?.ReverseGeo?.FormattedLocation);
-        //        })
-        //        .ToList();
+                    using var scope = _scopeFactory.CreateScope();
+                    var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+                    await sender.Send(cmd, token);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error processing command");
+                }
+            }
+        }
 
-        //    // Await all fuel change tasks
-        //    await Task.WhenAll(fuelChangeTasks);
-        //}
+        public override async Task StopAsync(CancellationToken cancellationToken)
+        {
+            // Complete all writers
+            foreach (var channel in _commandChannels)
+                channel.Writer.Complete();
+
+            // Wait for all processors to finish
+            await Task.WhenAll(_processorTasks);
+
+            await base.StopAsync(cancellationToken);
+        }
+
+        private const string TrackersCacheKey = "TruckTrackersCache";
     }
 }
+
+
+
+
+
+
+//using Foruscorp.TrucksTracking.Aplication.Contruct;
+//using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
+//using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
+//using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIfChanged;
+//using Foruscorp.TrucksTracking.Domain.Trucks;
+//using MediatR;
+//using Microsoft.AspNetCore.SignalR;
+//using Microsoft.EntityFrameworkCore;
+//using Microsoft.Extensions.Caching.Memory;
+//using Microsoft.Extensions.DependencyInjection;
+//using Microsoft.Extensions.Hosting;
+//using Microsoft.Extensions.Logging;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Threading;
+//using System.Threading.Channels;
+//using System.Threading.Tasks;
+
+//namespace Foruscorp.TrucksTracking.API.Realtime
+//{
+//    internal sealed class TruckLocationUpdater : BackgroundService
+//    {
+//        private readonly IHubContext<TruckHub, ITruckLocationUpdateClient> _hubContext;
+//        private readonly ILogger<TruckLocationUpdater> _logger;
+//        private readonly IServiceScopeFactory _scopeFactory;
+//        private readonly ITruckProviderService _providerService;
+//        private readonly IMemoryCache _memoryCache;
+
+//         Bound channel to avoid unbounded growth
+//        private readonly Channel<UpdateTruckTrackerIfChangedCommand> _commandChannel =
+//            Channel.CreateBounded<UpdateTruckTrackerIfChangedCommand>(
+//                new BoundedChannelOptions(100)
+//                {
+//                    SingleReader = true,
+//                    SingleWriter = false,
+//                    FullMode = BoundedChannelFullMode.Wait
+//                });
+
+//        private Task _processorTask;
+
+//        public TruckLocationUpdater(
+//            IHubContext<TruckHub, ITruckLocationUpdateClient> hubContext,
+//            ILogger<TruckLocationUpdater> logger,
+//            IServiceScopeFactory scopeFactory,
+//            ITruckProviderService providerService,
+//            IMemoryCache memoryCache)
+//        {
+//            _hubContext = hubContext;
+//            _logger = logger;
+//            _scopeFactory = scopeFactory;
+//            _providerService = providerService;
+//            _memoryCache = memoryCache;
+//        }
+
+//        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+//        {
+//             Start command processor
+//            _processorTask = ProcessCommandsAsync(stoppingToken);
+//             Start main polling loop
+//            return PollLoopAsync(stoppingToken);
+//        }
+
+//        private async Task PollLoopAsync(CancellationToken token)
+//        {
+//            while (!token.IsCancellationRequested)
+//            {
+//                try
+//                {
+//                    var updates = await FetchUpdatesAsync(token);
+//                    if (updates.Any())
+//                    {
+//                        await BroadcastUpdatesAsync(updates, token);
+//                    }
+//                    await Task.Delay(TimeSpan.FromSeconds(2), token);
+//                }
+//                catch (OperationCanceledException)
+//                {
+//                    break;
+//                }
+//                catch (Exception ex)
+//                {
+//                    _logger.LogError(ex, "Error during polling loop");
+//                    await Task.Delay(TimeSpan.FromSeconds(5), token);
+//                }
+//            }
+//        }
+
+//        private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
+//        {
+//            using var scope = _scopeFactory.CreateScope();
+//            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+
+//             Load trackers from cache or DB
+//            var trackers = await _memoryCache.GetOrCreateAsync(
+//                TrackersCacheKey,
+//                async entry =>
+//                {
+//                    entry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(2);
+//                    return await context.TruckTrackers
+//                        .AsNoTracking()
+//                        .Select(t => new { t.TruckId, t.ProviderTruckId })
+//                        .ToListAsync(token);
+//                });
+
+//            if (trackers == null || !trackers.Any())
+//            {
+//                _logger.LogWarning("No trackers found.");
+//                return new List<TruckInfoUpdate>();
+//            }
+
+//            var providerIds = trackers
+//                .Where(t => !string.IsNullOrEmpty(t.ProviderTruckId))
+//                .Select(t => t.ProviderTruckId)
+//                .ToHashSet();
+
+//             Call external API
+//            var response = await _providerService.GetVehicleStatsFeedAsync();
+//            if (response?.Data == null)
+//            {
+//                _logger.LogWarning("External stats feed is null.");
+//                return new List<TruckInfoUpdate>();
+//            }
+
+//            var filtered = response.Data
+//                .Where(v => v.Id != null && (providerIds.Contains(v.Id) ||
+//                                              v.EngineStates?.Any(es => es.Value == "On") == true))
+//                .ToList();
+
+//            if (!filtered.Any())
+//            {
+//                _logger.LogInformation("No matching vehicle stats.");
+//                return new List<TruckInfoUpdate>();
+//            }
+
+//            var updates = filtered
+//                .Join(trackers,
+//                      vs => vs.Id,
+//                      t => t.ProviderTruckId,
+//                      (vs, t) =>
+//                      {
+//                          var gps = vs.Gps?.FirstOrDefault();
+//                          var fuel = vs.FuelPercents?.FirstOrDefault();
+//                          return new TruckInfoUpdate(
+//                              t.TruckId.ToString(),
+//                              vs.Name ?? "Unknown",
+//                              gps?.Longitude ?? 0,
+//                              gps?.Latitude ?? 0,
+//                              gps?.Time ?? DateTime.UtcNow.ToString("o"),
+//                              gps?.HeadingDegrees ?? 0,
+//                              fuel?.Value ?? 0,
+//                              gps?.ReverseGeo?.FormattedLocation ?? "Unknown",
+//                              vs.EngineStates?.FirstOrDefault());
+//                      })
+//                .ToList();
+
+//            _logger.LogInformation("Fetched {Count} updates.", updates.Count);
+
+//             Enqueue for database processing
+//            await _commandChannel.Writer.WriteAsync(
+//                new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates }, token);
+
+//            return updates;
+//        }
+
+//        private async Task BroadcastUpdatesAsync(
+//            List<TruckInfoUpdate> updates,
+//            CancellationToken token)
+//        {
+//            foreach (var u in updates)
+//            {
+//                try
+//                {
+//                    var group = u.TruckId.ToString();
+//                    await _hubContext.Clients.Group(group).ReceiveTruckLocationUpdate(
+//                        new TruckLocationUpdate(
+//                            u.TruckId,
+//                            u.TruckName,
+//                            u.Longitude,
+//                            u.Latitude,
+//                            u.Time,
+//                            u.HeadingDegrees));
+
+//                    await _hubContext.Clients.Group(group).ReceiveTruckFuelUpdate(
+//                        new TruckFuelUpdate(u.TruckId, u.fuelPercents));
+//                }
+//                catch (Exception ex)
+//                {
+//                    _logger.LogWarning(ex, "Failed to broadcast update for {TruckId}", u.TruckId);
+//                }
+//            }
+//        }
+
+//        private async Task ProcessCommandsAsync(CancellationToken token)
+//        {
+//            await foreach (var cmd in _commandChannel.Reader.ReadAllAsync(token))
+//            {
+//                try
+//                {
+//                    using var scope = _scopeFactory.CreateScope();
+//                    var sender = scope.ServiceProvider.GetRequiredService<ISender>();
+//                    await sender.Send(cmd, token);
+//                }
+//                catch (Exception ex)
+//                {
+//                    _logger.LogError(ex, "Error processing command");
+//                }
+//            }
+//        }
+
+//        public override async Task StopAsync(CancellationToken cancellationToken)
+//        {
+//            _commandChannel.Writer.Complete();
+//            if (_processorTask != null)
+//            {
+//                await _processorTask;
+//            }
+//            await base.StopAsync(cancellationToken);
+//        }
+
+//        private const string TrackersCacheKey = "TruckTrackersCache";
+//    }
+//}

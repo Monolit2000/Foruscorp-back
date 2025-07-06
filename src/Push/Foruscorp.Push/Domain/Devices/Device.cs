@@ -10,7 +10,7 @@ namespace Foruscorp.Push.Domain.Devices
         public ExpoPushToken Token { get; private set; }         
         public DateTime RegisteredAt { get; private set; }        
 
-        private Device() { } // Для ORM
+        private Device() { } 
 
         public Device(ExpoPushToken token, Guid? userId = null)
         {

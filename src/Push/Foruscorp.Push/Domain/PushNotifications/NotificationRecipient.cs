@@ -13,7 +13,7 @@ namespace Foruscorp.Push.Domain.PushNotifications
         public DateTime? DeliveredAt { get; private set; }
         public string FailureReason { get; private set; }
 
-        private NotificationRecipient() { } // Для ORM
+        private NotificationRecipient() { } // For EF Core  
 
         public NotificationRecipient(Notification notification, Device device)
         {

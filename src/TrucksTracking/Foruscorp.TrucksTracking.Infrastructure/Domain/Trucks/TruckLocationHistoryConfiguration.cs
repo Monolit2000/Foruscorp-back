@@ -53,6 +53,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
             // RecordedAt
             builder.Property(h => h.RecordedAt)
                    .IsRequired();
+
         }
     }
 }
