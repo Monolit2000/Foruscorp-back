@@ -17,6 +17,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
@@ -174,13 +175,18 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 
         private void EnqueueUpdates(List<TruckInfoUpdate> updates, CancellationToken token)
         {
-            foreach (var update in updates)
-            {
-                int shard = Math.Abs(update.TruckId.GetHashCode()) % WorkerCount;
-                _commandChannels[shard].Writer.WriteAsync(
-                    new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = new List<TruckInfoUpdate> { update } },
-                    token);
-            }
+
+            _commandChannels[0].Writer.WriteAsync(
+             new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = updates },
+             token);
+
+            //foreach (var update in updates)
+            //{
+            //    int shard = Math.Abs(update.TruckId.GetHashCode()) % WorkerCount;
+            //    _commandChannels[shard].Writer.WriteAsync(
+            //        new UpdateTruckTrackerIfChangedCommand { TruckStatsUpdates = new List<TruckInfoUpdate> { update } },
+            //        token);
+            //}
         }
 
         private async Task BroadcastUpdatesAsync(

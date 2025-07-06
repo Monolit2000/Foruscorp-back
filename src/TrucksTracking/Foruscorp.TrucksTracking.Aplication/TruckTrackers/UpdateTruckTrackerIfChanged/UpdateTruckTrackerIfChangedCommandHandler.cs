@@ -55,6 +55,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
             var trackers = await _context.TruckTrackers
                 .Where(tt => truckIds.Contains(tt.TruckId))
                 .Include(tt => tt.CurrentTruckLocation)
+                .Include(tt => tt.CurrentRoute)
                 .ToListAsync(cancellationToken);
 
             var statusCommands = new List<UpdateTruckStatusCommand>();
