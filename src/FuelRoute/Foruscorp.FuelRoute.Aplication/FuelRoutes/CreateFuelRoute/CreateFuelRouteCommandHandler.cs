@@ -35,6 +35,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             if (request.TruckId == default)
                 throw new ArgumentException("TruckId cannot be default value", nameof(request.TruckId));
 
+            if (request.ViaPoints != null && request.ViaPoints.Any())
+            {
+                request.ViaPoints = OrderViaPointsByLongitude(request.ViaPoints);
+            }
+
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
@@ -190,6 +195,16 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             }
 
             return routeInfos;
+        }
+
+        private static List<GeoPoint> OrderViaPointsByLongitude(IEnumerable<GeoPoint>? viaPoints)
+        {
+            if (viaPoints == null)
+                return new List<GeoPoint>();
+
+            return viaPoints
+                .OrderBy(p => p.Latitude)
+                .ToList();
         }
 
         private RouteInfo ExtractRouteSectionInfo(RouteSection section)

@@ -79,11 +79,21 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
+
+//app.MapGet("/", context =>
+//{
+//    context.Response.Redirect("/scalar/v1", permanent: false);
+//    return Task.CompletedTask;
+//});
+
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
     app.UseSwaggerUI();
+
+    //app.MapScalarApiReference();
 
     app.ApplyFuelRouteContextMigrations();
 }

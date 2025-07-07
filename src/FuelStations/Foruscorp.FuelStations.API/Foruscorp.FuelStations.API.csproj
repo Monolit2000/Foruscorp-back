@@ -12,6 +12,8 @@
 
   <ItemGroup>
 
+    <PackageReference Include="Scalar.AspNetCore" Version="2.5.3" />
+
     <PackageReference Include="Npgsql.OpenTelemetry" Version="9.0.3" />
 	  <PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.9.0" />
 	  <PackageReference Include="OpenTelemetry.Instrumentation.AspNetCore" Version="1.9.0" />
