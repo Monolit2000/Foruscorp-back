@@ -27,6 +27,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public double Weight { get; private set; }
 
+        public bool IsSended { get; private set; } 
+
         public bool IsAccepted { get; private set; }
         public byte[] RowVersion { get; set; }
 
@@ -46,10 +48,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             //DriverId = driverId;
             CreatedAt = DateTime.UtcNow;
             ChangedAt = DateTime.UtcNow;
-            IsAccepted = true;
+            IsAccepted = false;
             OriginLocation = originLocation;
             DestinationLocation = destinationLocation;
             Weight = weight;
+            IsSended = false;
 
             if (fuelPoints.Any())
             {
@@ -83,6 +86,17 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         // Business methods
 
    
+        public void MarkAsAccepted()
+        {
+            IsAccepted = true;
+            UpdateChangedAt();
+        }
+
+        public void MarkAsSended()
+        {
+            IsSended = true;
+            UpdateChangedAt();
+        }
 
 
         public void SetRouteSections(IEnumerable<FuelRouteSection> sections)

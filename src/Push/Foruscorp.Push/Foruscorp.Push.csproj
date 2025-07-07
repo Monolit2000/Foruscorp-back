@@ -27,4 +27,8 @@
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.5" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\Trucks\Foruscorp.Trucks.IntegrationEvents\Foruscorp.Trucks.IntegrationEvents.csproj" />
+  </ItemGroup>
+
 </Project>

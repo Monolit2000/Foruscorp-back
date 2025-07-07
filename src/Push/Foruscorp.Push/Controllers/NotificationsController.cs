@@ -1,4 +1,5 @@
 ﻿using Foruscorp.Push.Features.Notifications;
+using Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotification;
 using Foruscorp.Push.Features.Notifications.CreateNotification;
 using Foruscorp.Push.Features.Notifications.GetNotificationByUserId;
 using Foruscorp.Push.Features.Notifications.GetNotificationStatus;
@@ -42,6 +43,14 @@ namespace Foruscorp.Push.Controllers
             var q = new GetNotificationStatusQuery(notificationId);
             var dto = await mediator.Send(q);
             return Ok(dto);
+        }
+
+
+        [HttpGet("SendRouteOfferNotification")]
+        public async Task<ActionResult<NotificationDto>> CreateAndSendRouteOfferNotification(CreateAndSendRouteOfferNotificationCommand createAndSendRouteOfferNotificationCommand)
+        {
+            await mediator.Send(createAndSendRouteOfferNotificationCommand);
+            return Ok();
         }
     }
 }

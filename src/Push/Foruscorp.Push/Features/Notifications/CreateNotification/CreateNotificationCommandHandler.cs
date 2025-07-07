@@ -22,7 +22,6 @@ namespace Foruscorp.Push.Features.Notifications.CreateNotification
             var payload = new NotificationPayload(new Dictionary<string, object>(cmd.Payload));
             var notification = new Notification(content, payload);
 
-            // добавляем получателей
             var devices = await _db.Devices
                 .Where(d => cmd.DeviceIds.Contains(d.Id))
                 .ToListAsync(ct);

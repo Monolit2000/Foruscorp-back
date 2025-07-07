@@ -4,6 +4,7 @@ using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Aplication.Contruct;
 using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Users;
+using Foruscorp.Trucks.Domain.RouteOffers;
 
 namespace Foruscorp.Trucks.Infrastructure.Persistence
 {
@@ -19,6 +20,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
 
         public DbSet<User> Users { get; set; }   
 
+        public DbSet<RouteOffer> RouteOffers { get; set; }
 
         public TruckContext(DbContextOptions<TruckContext> options) : base(options)
         {

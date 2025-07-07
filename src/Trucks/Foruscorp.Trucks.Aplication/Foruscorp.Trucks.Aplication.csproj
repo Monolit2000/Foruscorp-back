@@ -15,6 +15,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Auth\Foruscorp.Users.IntegrationEvents\Foruscorp.Users.IntegrationEvents.csproj" />
+	  <ProjectReference Include="..\..\FuelRoute\Foruscorp.FuelRoutes.IntegrationEvents\Foruscorp.FuelRoutes.IntegrationEvents.csproj" />
 	  <ProjectReference Include="..\..\TrucksTracking\Foruscorp.TrucksTracking.IntegrationEvents\Foruscorp.TrucksTracking.IntegrationEvents.csproj" />
 	  <ProjectReference Include="..\Foruscorp.Trucks.Domain\Foruscorp.Trucks.Domain.csproj" />
 	  <ProjectReference Include="..\Foruscorp.Trucks.IntegrationEvents\Foruscorp.Trucks.IntegrationEvents.csproj" />

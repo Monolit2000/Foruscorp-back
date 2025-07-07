@@ -6,6 +6,8 @@ namespace Foruscorp.Trucks.Domain.RouteOffers
     public class RouteOffer : Entity
     {
         public Guid Id { get; private set; }
+        public Guid RouteId { get; private set; } 
+        public Guid? TruckId { get; private set; }
         public Guid DriverId { get; private set; }
         public Driver Driver { get; private set; }
         public string Description { get; private set; }
@@ -14,31 +16,24 @@ namespace Foruscorp.Trucks.Domain.RouteOffers
         public DateTime CreatedAt { get; private set; } 
         private RouteOffer() { }
 
-        private RouteOffer(Guid driverId, string description)   
+        private RouteOffer(Guid driverId, Guid routeId, string description = null)   
         {
             Id = Guid.NewGuid();
             DriverId = driverId;
             Description = description;
             Status = RouteOfferStatus.Pending;
             CreatedAt = DateTime.UtcNow;    
+            RouteId = routeId;
         }
 
-        public static RouteOffer CreateNew(Guid driverId, string description)
+        public static RouteOffer CreateNew(Guid driverId, Guid routeId, string description = null)
         {
-            if (driverId == Guid.Empty)
-                throw new ArgumentException("Driver identifier cannot be empty.", nameof(driverId));
-            if (string.IsNullOrWhiteSpace(description))
-                throw new ArgumentException("Description cannot be empty.", nameof(description));
 
-            return new RouteOffer(driverId, description);
+            return new RouteOffer(driverId, routeId, description);
         }
 
         public void CorrectOffer(string newDescription)
         {
-            if (Status != RouteOfferStatus.Pending)
-                throw new InvalidOperationException("Can only correct a pending route offer.");
-            if (string.IsNullOrWhiteSpace(newDescription))
-                throw new ArgumentException("New description cannot be empty.", nameof(newDescription));
 
             Description = newDescription;
         }

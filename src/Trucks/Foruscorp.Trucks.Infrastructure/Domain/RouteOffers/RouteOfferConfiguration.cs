@@ -17,8 +17,14 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.RouteOffers
                 .HasColumnName("RouteOfferId")
                 .ValueGeneratedOnAdd();
 
+            builder.Property(ro => ro.RouteId)
+                .IsRequired();
+
             builder.Property(ro => ro.DriverId)
                 .IsRequired();
+
+            builder.Property(ro => ro.TruckId)
+                .IsRequired(false);
 
             builder.Property(ro => ro.Description)
                 .IsRequired();

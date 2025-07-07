@@ -74,14 +74,14 @@ namespace Foruscorp.Trucks.Domain.Drivers
             Contact = Contact.Create(phoneNumber, email, telegramLink);
         }   
 
-        public RouteOffer ProposeRouteOffer(string description)
+        public RouteOffer ProposeRouteOffer(Guid routeId)
         {
             if (Status != DriverStatus.Active)
                 throw new InvalidOperationException("Only active drivers can create route offers.");
             if (!TruckId.HasValue)
                 throw new InvalidOperationException("Driver must be assigned to a truck to create a route offer.");
 
-            return RouteOffer.CreateNew(this.Id, description);
+            return RouteOffer.CreateNew(this.Id, routeId);
         }
 
   

@@ -3,6 +3,7 @@ using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations;
@@ -113,5 +114,18 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        [HttpPost("AssignRoute")]
+        public async Task<IActionResult> AssignRoute(AssignRouteCommand assignRouteCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(assignRouteCommand);
+
+            if (result.IsSuccess)
+                return Ok();
+
+            return BadRequest(result.Errors);
+        }
+
+
     }
 }
