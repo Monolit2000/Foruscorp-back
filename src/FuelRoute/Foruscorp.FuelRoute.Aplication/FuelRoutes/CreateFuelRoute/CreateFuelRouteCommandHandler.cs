@@ -37,7 +37,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             if (request.ViaPoints != null && request.ViaPoints.Any())
             {
-                request.ViaPoints = OrderViaPointsByLongitude(request.ViaPoints);
+                request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
             }
 
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
@@ -197,14 +197,28 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             return routeInfos;
         }
 
-        private static List<GeoPoint> OrderViaPointsByLongitude(IEnumerable<GeoPoint>? viaPoints)
+        private static List<GeoPoint> OrderViaPointsByLatitude(
+            IEnumerable<GeoPoint>? viaPoints,
+            GeoPoint origin,
+            GeoPoint destination)
         {
             if (viaPoints == null)
                 return new List<GeoPoint>();
 
-            return viaPoints
-                .OrderBy(p => p.Latitude)
-                .ToList();
+            bool ascending = origin.Latitude <= destination.Latitude;
+
+            var inRange = viaPoints.Where(p =>
+                ascending
+                    ? p.Latitude >= origin.Latitude && p.Latitude <= destination.Latitude
+                    : p.Latitude <= origin.Latitude && p.Latitude >= destination.Latitude
+            );
+
+            // Сортируем в нужном направлении
+            var sorted = ascending
+                ? inRange.OrderBy(p => p.Latitude)
+                : inRange.OrderByDescending(p => p.Latitude);
+
+            return sorted.ToList();
         }
 
         private RouteInfo ExtractRouteSectionInfo(RouteSection section)
