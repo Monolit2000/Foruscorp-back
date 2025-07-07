@@ -13,6 +13,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -126,6 +127,12 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
+        [HttpPost("get-fuel-route-byId")]
+        public async Task<IActionResult> GetByUser(GetFuelRouteQuery getFuelRouteQuery )
+        {
+            var list = await mediator.Send(getFuelRouteQuery);
+            return Ok(list);
+        }
 
     }
 }

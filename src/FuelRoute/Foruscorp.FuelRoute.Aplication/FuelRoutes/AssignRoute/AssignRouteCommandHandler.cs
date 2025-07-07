@@ -1,15 +1,8 @@
-﻿using FluentResults;
+﻿using MediatR;
+using MassTransit;
+using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.IntegrationEvents;
-using MassTransit;
-using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.WebSockets;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 {
@@ -32,7 +25,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 
             await context.SaveChangesAsync(cancellationToken);
 
-            await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(request.RouteId, request.TruckId));
+            await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, fuelRoute.TruckId));
 
             return Result.Ok().WithSuccess("Fuel route sent successfully.");    
         }
