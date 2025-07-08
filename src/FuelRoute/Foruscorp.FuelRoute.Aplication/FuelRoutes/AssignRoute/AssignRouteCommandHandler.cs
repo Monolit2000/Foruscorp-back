@@ -25,7 +25,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 
             await context.SaveChangesAsync(cancellationToken);
 
-            await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, fuelRoute.TruckId));
+            await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId));
 
             return Result.Ok().WithSuccess("Fuel route sent successfully.");    
         }

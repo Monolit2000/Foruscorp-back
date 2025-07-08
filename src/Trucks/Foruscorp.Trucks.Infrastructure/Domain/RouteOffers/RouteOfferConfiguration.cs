@@ -27,7 +27,7 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.RouteOffers
                 .IsRequired(false);
 
             builder.Property(ro => ro.Description)
-                .IsRequired();
+                .IsRequired(false);
 
             builder.Property(ro => ro.Status)
                 .IsRequired()
