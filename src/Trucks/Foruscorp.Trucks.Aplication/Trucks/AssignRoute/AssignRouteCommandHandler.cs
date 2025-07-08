@@ -22,8 +22,8 @@ namespace Foruscorp.Trucks.Aplication.Trucks.AssignRoute
                 throw new ArgumentException($"Truck with ID {request.TruckId} not found.");
 
             var routeOffer = RouteOffer.CreateNew(
-                request.RouteId,
-                request.TruckId);
+                truck.Driver.Id,
+                request.RouteId);
 
             await context.RouteOffers.AddAsync(routeOffer);
 
