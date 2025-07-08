@@ -106,7 +106,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 {
                     section.RouteSectionId = matchingRouteSection.Id.ToString();
 
-                    matchingRouteSection.SetRouteSectionInfo(
+                    routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId).SetRouteSectionInfo(
                         section.RouteInfo.Tolls,
                         section.RouteInfo.Gallons,
                         section.RouteInfo.Miles,
