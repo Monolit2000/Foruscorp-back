@@ -46,7 +46,7 @@ namespace Foruscorp.Push.Controllers
         }
 
 
-        [HttpGet("SendRouteOfferNotification")]
+        [HttpPost("SendRouteOfferNotification")]
         public async Task<ActionResult<NotificationDto>> CreateAndSendRouteOfferNotification(CreateAndSendRouteOfferNotificationCommand createAndSendRouteOfferNotificationCommand)
         {
             await mediator.Send(createAndSendRouteOfferNotificationCommand);
