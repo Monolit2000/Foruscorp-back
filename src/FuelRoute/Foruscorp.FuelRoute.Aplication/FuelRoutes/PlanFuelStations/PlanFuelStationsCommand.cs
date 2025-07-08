@@ -9,9 +9,9 @@ using System.Threading.Tasks;
 using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
 {
-    public class GetFuelStationsCommand : IRequest<Result<GetFuelStationsByRoadsResponce>>
+    public class PlanFuelStationsCommand : IRequest<Result<PlanFuelStationsByRoadsResponce>>
     { 
         public Guid RouteId { get; set; }
         public List<string> RouteSectionIds { get; set; }

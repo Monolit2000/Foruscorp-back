@@ -11,6 +11,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Scalar.AspNetCore;
 using System;
 using System.Threading.Tasks;
 
@@ -70,6 +71,7 @@ builder.Services.AddPersistenceServices(builder.Configuration);
 builder.Services.AddFuelStationServices(builder.Configuration);
 
 
+builder.Services.AddOpenApi("v1");
 
 var app = builder.Build();
 
@@ -78,7 +80,6 @@ app.MapGet("/", context =>
     context.Response.Redirect("/swagger/index.html", permanent: false);
     return Task.CompletedTask;
 });
-
 
 //app.MapGet("/", context =>
 //{
@@ -93,7 +94,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 
-    //app.MapScalarApiReference();
+    app.MapOpenApi();
+
+    app.MapScalarApiReference();
 
     app.ApplyFuelRouteContextMigrations();
 }

@@ -18,6 +18,25 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
         builder.Property(x => x.IsAssigned)
             .IsRequired();
 
+        builder.OwnsOne(x => x.RouteSectionInfo, info =>
+        {
+            info.Property(p => p.Tolls)
+                .HasColumnName(nameof(RouteSectionInfo.Tolls))
+                .IsRequired();
+
+            info.Property(p => p.Gallons)
+                .HasColumnName(nameof(RouteSectionInfo.Gallons))
+                .IsRequired();
+
+            info.Property(p => p.Miles)
+                .HasColumnName(nameof(RouteSectionInfo.Miles))
+                .IsRequired();
+
+            info.Property(p => p.DriveTime)
+                .HasColumnName(nameof(RouteSectionInfo.DriveTime))
+                .IsRequired();
+        });
+
         builder.HasOne<FuelRoute>()
                .WithMany(x => x.RouteSections)
                .HasForeignKey(x => x.RouteId);

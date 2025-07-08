@@ -63,6 +63,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                     RouteInfo = ExtractRouteSectionInfo(s)
                 }).ToList();
 
+
             var points = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
@@ -75,7 +76,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             //var sectionsInfo = ExtractRouteInfo(result.Routes.WaypointsAndShapes
             //   .Where(ws => ws != null && ws.Sections != null)
             //   .SelectMany(x => x.Sections));
-
 
 
             //var originPoint = LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude);
@@ -105,6 +105,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 if (matchingRouteSection != null)
                 {
                     section.RouteSectionId = matchingRouteSection.Id.ToString();
+
+                    matchingRouteSection.SetRouteSectionInfo(
+                        section.RouteInfo.Tolls,
+                        section.RouteInfo.Gallons,
+                        section.RouteInfo.Miles,
+                        section.RouteInfo.DriveTime);
                 }
             }
 
@@ -213,7 +219,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                     : p.Latitude <= origin.Latitude && p.Latitude >= destination.Latitude
             );
 
-            // Сортируем в нужном направлении
             var sorted = ascending
                 ? inRange.OrderBy(p => p.Latitude)
                 : inRange.OrderByDescending(p => p.Latitude);

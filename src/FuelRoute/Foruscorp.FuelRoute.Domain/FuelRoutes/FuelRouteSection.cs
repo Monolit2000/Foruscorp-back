@@ -13,6 +13,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid RouteId { get; private set; }
         public string EncodeRoute { get; private set; } // Base64 encoded route
 
+        public RouteSectionInfo RouteSectionInfo { get; private set; }
+
         public bool IsAssigned { get; private set; } 
 
         public List<FuelRouteStation> FuelRouteStations = [];
@@ -38,6 +40,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             RouteSectionResponceId = routeSectionResponceId;
         }
 
+        public RouteSectionInfo SetRouteSectionInfo(double Tolls, double Gallons, double Miles, int DriveTime)
+        {
+            var routeSectionInfo = new RouteSectionInfo(Tolls, Gallons, Miles, DriveTime);
+            RouteSectionInfo = routeSectionInfo;
+            return RouteSectionInfo;    
+        }
         public void MarkAsAssigned()
         {
             IsAssigned = true;

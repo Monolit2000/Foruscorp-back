@@ -4,7 +4,7 @@ using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoa
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
-    public class GetFuelStationsByRoadsQuery : IRequest<Result<GetFuelStationsByRoadsResponce>>
+    public class GetFuelStationsByRoadsQuery : IRequest<Result<PlanFuelStationsByRoadsResponce>>
     {
         public List<RoadSectionDto> Roads { get; set; } = new List<RoadSectionDto>();
 

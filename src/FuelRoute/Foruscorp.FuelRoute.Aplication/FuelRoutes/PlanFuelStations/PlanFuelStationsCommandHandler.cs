@@ -9,19 +9,13 @@ using Microsoft.EntityFrameworkCore;
 using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
 {
-
-    public class GetFuelStationsResponce
-    {
-
-    }
-
-    public class GetFuelStationsCommandHandler(
+    public class PlanFuelStationsCommandHandler(
         ISender sender,
-        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelStationsCommand, Result<GetFuelStationsByRoadsResponce>>
+        IFuelRouteContext fuelRouteContext) : IRequestHandler<PlanFuelStationsCommand, Result<PlanFuelStationsByRoadsResponce>>
     {
-        public async Task<Result<GetFuelStationsByRoadsResponce>> Handle(GetFuelStationsCommand request, CancellationToken cancellationToken)
+        public async Task<Result<PlanFuelStationsByRoadsResponce>> Handle(PlanFuelStationsCommand request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
                 .Include(x => x.FuelRouteStations)
@@ -71,13 +65,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GenerateFuelStations
                 .Select(dto => Guid.Parse(dto.RoadSectionId))
                 .ToHashSet();
 
-
             var oldStations = await fuelRouteContext.FuelRouteStation
                 .Where(x => x.FuelRouteId == fuelRoad.Id && sectionIds.Contains(x.RoadSectionId))
                 .ToListAsync(cancellationToken);
 
             fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
-
 
             await fuelRouteContext.FuelRouteStation.AddRangeAsync(fuelStations);
             await fuelRouteContext.SaveChangesAsync(cancellationToken);

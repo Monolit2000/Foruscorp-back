@@ -10,7 +10,7 @@ using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoa
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
 
-    public class GetFuelStationsByRoadsResponce
+    public class PlanFuelStationsByRoadsResponce
     {
         public List<FuelStationDto> FuelStations { get; set; } = new List<FuelStationDto>();
         public FinishInfo FinishInfo { get; set; } = new FinishInfo();  
@@ -18,7 +18,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
 
     public class GetFuelStationsByRoadsQueryHandler :
-        IRequestHandler<GetFuelStationsByRoadsQuery, Result<GetFuelStationsByRoadsResponce>>
+        IRequestHandler<GetFuelStationsByRoadsQuery, Result<PlanFuelStationsByRoadsResponce>>
     {
         // Радиус «коридора» вдоль маршрута (в км), в пределах которого принимаем станции
         private const double SearchRadiusKm = 9.0;
@@ -53,7 +53,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             this.truckProviderService = truckProviderService;
         }
 
-        public async Task<Result<GetFuelStationsByRoadsResponce>> Handle(
+        public async Task<Result<PlanFuelStationsByRoadsResponce>> Handle(
             GetFuelStationsByRoadsQuery request,
             CancellationToken cancellationToken)
         {
@@ -101,7 +101,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .ToListAsync(cancellationToken);
 
             if (!stations.Any())
-                return Result.Ok(new GetFuelStationsByRoadsResponce());
+                return Result.Ok(new PlanFuelStationsByRoadsResponce());
 
             var allStopPlans = new List<FuelStopPlan>();
             var allStationsWithoutAlgo = new List<FuelStationDto>();
@@ -121,7 +121,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             }
 
             if (!allStopPlans.Any())
-                return Result.Ok(new GetFuelStationsByRoadsResponce { FuelStations = RemoveDuplicatesByCoordinates(allStationsWithoutAlgo) });
+                return Result.Ok(new PlanFuelStationsByRoadsResponce { FuelStations = RemoveDuplicatesByCoordinates(allStationsWithoutAlgo) });
 
 
             var resultDto = MapStopPlansToDtos(allStopPlans);
@@ -130,7 +130,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var zipStations = ZipStations(allStationsWithoutAlgo, resultDto);
 
             //var updatedFuelStations = RemoveDuplicatesByCoordinates(zipStations);
-            return Result.Ok(new GetFuelStationsByRoadsResponce 
+            return Result.Ok(new PlanFuelStationsByRoadsResponce 
             { 
                 FuelStations = zipStations,
                 FinishInfo = finishInfo
