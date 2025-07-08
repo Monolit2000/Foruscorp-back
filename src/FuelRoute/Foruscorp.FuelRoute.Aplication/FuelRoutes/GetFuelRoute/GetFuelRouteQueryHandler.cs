@@ -17,7 +17,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
                 .Include(x => x.FuelRouteStations.Where(st => st.RoadSectionId == request.RouteSectionId))
-                .Include(x => x.RouteSections.Where(x => x.Id == request.RouteSectionId))
+                .Include(x => x.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true) /*.Where(x => x.Id == request.RouteSectionId)*/)
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)

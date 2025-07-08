@@ -13,6 +13,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid RouteId { get; private set; }
         public string EncodeRoute { get; private set; } // Base64 encoded route
 
+        public bool IsAssigned { get; private set; } 
+
         public List<FuelRouteStation> FuelRouteStations = [];
 
         [NotMapped]
@@ -24,7 +26,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             Id = Guid.NewGuid();
             RouteId = routeId; 
-            EncodeRoute = encodeRoute;  
+            EncodeRoute = encodeRoute;
+            IsAssigned = false; 
         }
 
         public FuelRouteSection(Guid routeId, string routeSectionResponceId, string encodeRoute)
@@ -35,6 +38,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             RouteSectionResponceId = routeSectionResponceId;
         }
 
-
+        public void MarkAsAssigned()
+        {
+            IsAssigned = true;
+        }
     }
 }

@@ -15,6 +15,9 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
         builder.Property(x => x.RouteId)
                .IsRequired();
 
+        builder.Property(x => x.IsAssigned)
+            .IsRequired();
+
         builder.HasOne<FuelRoute>()
                .WithMany(x => x.RouteSections)
                .HasForeignKey(x => x.RouteId);

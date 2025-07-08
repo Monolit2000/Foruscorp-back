@@ -92,8 +92,15 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             UpdateChangedAt();
         }
 
-        public void MarkAsSended()
+        public void MarkAsSended(Guid routeSectionId)
         {
+            var routeSectiuon = RouteSections.FirstOrDefault(rs => rs.Id == routeSectionId);
+            if (routeSectiuon == null)
+                throw new InvalidOperationException($"Route section with ID {routeSectionId} not found");
+
+            routeSectiuon.MarkAsAssigned();
+            IsAccepted = true;
+
             IsSended = true;
             UpdateChangedAt();
         }
