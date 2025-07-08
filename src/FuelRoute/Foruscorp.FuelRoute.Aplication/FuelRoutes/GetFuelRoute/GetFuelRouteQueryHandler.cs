@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 {
-    public record GetFuelRouteQuery(Guid RouteId, Guid RouteSectionId) : IRequest<FuelRouteDto>;
+    public record GetFuelRouteQuery(Guid RouteId) : IRequest<FuelRouteDto>;
 
     public class GetFuelRouteQueryHandler(
         IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelRouteQuery, FuelRouteDto>
