@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 {
-    public class GetRouteQuery : IRequest<RouteDto>
+    public class GetPassedRouteQuery : IRequest<RouteDto>
     {
         public Guid TruckId { get; set; }  
     }

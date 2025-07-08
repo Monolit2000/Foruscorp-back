@@ -12,6 +12,12 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct
         public bool IsRoute {get; set;}
         public GeoPoint CurrentLocation { get; set; }
         public Guid RouteId { get; set; }
-        public List<double[]> MapPoints { get; set; }
+        public List<CoordinateDto> MapPoints { get; set; }
+    }
+
+    public class CoordinateDto
+    {
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
     }
 }

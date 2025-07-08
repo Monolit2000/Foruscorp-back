@@ -10,6 +10,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MassTransit;
 using MassTransit.Transports;
 using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Caching.Memory;
 using System.Linq;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
@@ -77,7 +78,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             //   .Where(ws => ws != null && ws.Sections != null)
             //   .SelectMany(x => x.Sections));
 
-
             //var originPoint = LocationPoint.CreateNew("origin", request.Origin.Latitude, request.Origin.Longitude);
             //var destinationPoint = LocationPoint.CreateNew("destination", request.Destination.Latitude, request.Destination.Longitude);
 
@@ -104,9 +104,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 var matchingRouteSection = routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId);
                 if (matchingRouteSection != null)
                 {
+                    var oldRouteSectionId = section.RouteSectionId;
+
                     section.RouteSectionId = matchingRouteSection.Id.ToString();
 
-                    routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId).SetRouteSectionInfo(
+                    routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == oldRouteSectionId).SetRouteSectionInfo(
                         section.RouteInfo.Tolls,
                         section.RouteInfo.Gallons,
                         section.RouteInfo.Miles,

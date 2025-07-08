@@ -11,11 +11,11 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 {
-    public class GetRouteQueryHandler(
+    public class GetPassedRouteQueryHandler(
         ITuckTrackingContext tuckTrackingContext,
-        ILogger<GetRouteQueryHandler> logger) : IRequestHandler<GetRouteQuery, RouteDto>
+        ILogger<GetPassedRouteQueryHandler> logger) : IRequestHandler<GetPassedRouteQuery, RouteDto>
     {
-        public async Task<RouteDto> Handle(GetRouteQuery request, CancellationToken cancellationToken)
+        public async Task<RouteDto> Handle(GetPassedRouteQuery request, CancellationToken cancellationToken)
         {
             var truckTracker = tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.CurrentRoute)
@@ -30,7 +30,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
                 {
                     CurrentLocation = null,
                     RouteId = null,
-                    MapPoints = new List<double[]>()
+                    MapPoints = new List<CoordinateDto>()
                 };
             }
 
@@ -42,17 +42,17 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
                 {
                     CurrentLocation = truckTracker.CurrentTruckLocation?.Location,
                     RouteId = null,
-                    MapPoints = new List<double[]>()
+                    MapPoints = new List<CoordinateDto>()
                 };
             }
 
             var mapPoints = await tuckTrackingContext.TruckLocations
                 .Where(tl => tl.RouteId == route.RouteId)
                 .OrderBy(tl => tl.RecordedAt)
-                .Select(tl => new[]
+                .Select(tl => new CoordinateDto
                 {
-                    tl.Location.Latitude,
-                    tl.Location.Longitude
+                    Longitude = tl.Location.Longitude,
+                    Latitude = tl.Location.Latitude
                 })
                 .ToListAsync(cancellationToken);
 
@@ -69,6 +69,13 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
         public bool IsRoute { get; set; }
         public GeoPoint CurrentLocation { get; set; }
         public Guid? RouteId { get; set; }
-        public List<double[]> MapPoints { get; set; }
+        public List<CoordinateDto> MapPoints { get; set; }
     }
+
+    public class CoordinateDto
+    {
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
+    }
+
 }

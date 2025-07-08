@@ -71,7 +71,7 @@ namespace Foruscorp.TrucksTracking.API.Controllers
         }
 
         [HttpPost("get-route")]
-        public async Task<ActionResult> GetRoute(GetRouteQuery routeQuery)
+        public async Task<ActionResult> GetRoute(GetPassedRouteQuery routeQuery)
         {
             var result = await mediator.Send(routeQuery);
             return Ok(result);
@@ -94,7 +94,7 @@ namespace Foruscorp.TrucksTracking.API.Controllers
          CancellationToken cancellationToken)
         {
             // Собираем команду-Query
-            var query = new GetRouteQuery { TruckId = truckId };
+            var query = new GetPassedRouteQuery { TruckId = truckId };
 
             // Шлём через MediatR
             var route = await mediator.Send(query, cancellationToken);
@@ -105,8 +105,8 @@ namespace Foruscorp.TrucksTracking.API.Controllers
             return Ok(route);
         }
 
-        //[HttpPost("GetRouteQuery")]
-        //public async Task<ActionResult> GetRoute(GetRouteQuery routeQuery)
+        //[HttpPost("GetPassedRouteQuery")]
+        //public async Task<ActionResult> GetRoute(GetPassedRouteQuery routeQuery)
         //{
         //    var result = await mediator.Send(routeQuery);
         //    return Ok(result);
