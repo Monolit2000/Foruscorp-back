@@ -5,6 +5,7 @@ using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 {
@@ -16,15 +17,29 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public async Task<FuelRouteDto> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                .Include(x => x.FuelRouteStations.Where(st => st.RoadSectionId == request.RouteSectionId))
-                .Include(x => x.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true) /*.Where(x => x.Id == request.RouteSectionId)*/)
-                .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
+                  .Include(x => x.FuelRouteStations)
+                  .Include(x => x.RouteSections /*.Where(x => x.Id == request.RouteSectionId)*/)
+                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
+
+
+
+
+
+            //var fuelRoad = await fuelRouteContext.FuelRoutes
+            //    .Include(x => x.FuelRouteStations.Where(st => st.RoadSectionId == request.RouteSectionId))
+            //    .Include(x => x.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true) /*.Where(x => x.Id == request.RouteSectionId)*/)
+            //    .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)
                 return new FuelRouteDto();
 
-            var stations = fuelRoad.FuelRouteStations.Select(fs => MapToDto(fs)).ToList();
-            var routes = fuelRoad.RouteSections.Select(rs => new RouteDto
+            var sectionId = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true);
+
+            if (sectionId == null)
+                sectionId = fuelRoad.RouteSections.First();
+
+            var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == sectionId.Id).Select(fs => MapToDto(fs)).ToList();
+            var routes = fuelRoad.RouteSections.Where(rs => rs.Id == sectionId.Id).Select(rs => new RouteDto
             {
                 RouteSectionId = rs.Id.ToString(),
                 MapPoints = PolylineEncoder.DecodePolyline(rs.EncodeRoute)
