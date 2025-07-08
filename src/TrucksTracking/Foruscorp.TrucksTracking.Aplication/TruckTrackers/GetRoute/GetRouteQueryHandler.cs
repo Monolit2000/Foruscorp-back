@@ -48,7 +48,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 
             var mapPoints = await tuckTrackingContext.TruckLocations
                 .Where(tl => tl.RouteId == route.RouteId)
-                .OrderByDescending(tl => tl.RecordedAt)
+                .OrderBy(tl => tl.RecordedAt)
                 .Select(tl => new[]
                 {
                     tl.Location.Latitude,
