@@ -1,11 +1,11 @@
 ﻿using MediatR;
 using FluentResults;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
     public class AcceptFuelRouteCommand : IRequest<Result>
     {
-        public string Id { get; set; }  
-        public string RouteSectionId { get; set; }   
+        public Guid RourteId { get; set; }
     }
 }

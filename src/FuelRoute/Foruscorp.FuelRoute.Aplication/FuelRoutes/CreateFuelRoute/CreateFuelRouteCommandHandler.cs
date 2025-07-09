@@ -57,21 +57,27 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
                 .SelectMany(x => x.Sections)
-                .Select(s => new RouteDto
+                .Select(s => new
                 {
-                    RouteSectionId = s.Id,
-                    MapPoints = s.ShowShape,
-                    RouteInfo = ExtractRouteSectionInfo(s)
+                    FilteFilterPointsByDistance = GeoUtils.FilterPointsByDistance(s.ShowShape, POINT_RADIUS_KM),
+                    RouteDto = new RouteDto
+                    {
+                        RouteSectionId = s.Id,
+                        MapPoints = s.ShowShape,
+                        RouteInfo = ExtractRouteSectionInfo(s)
+                    }
                 }).ToList();
 
 
-            var points = result.Routes.WaypointsAndShapes
-                .Where(ws => ws != null && ws.Sections != null)
-                .SelectMany(x => x.Sections)
-                .Select(s => new RoutePoints(
-                    s.Id,
-                    GeoUtils.FilterPointsByDistance(s.ShowShape, POINT_RADIUS_KM)))
-                .ToList();
+            //var points = result.Routes.WaypointsAndShapes
+            //    .Where(ws => ws != null && ws.Sections != null)
+            //    .SelectMany(x => x.Sections)
+            //    .Select(s => new RoutePoints(
+            //        s.Id,
+            //        GeoUtils.FilterPointsByDistance(s.ShowShape, POINT_RADIUS_KM)))
+            //    .ToList();
+
+            
 
 
             //var sectionsInfo = ExtractRouteInfo(result.Routes.WaypointsAndShapes
@@ -90,29 +96,29 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 request.Weight);
 
 
-            var routeSections = points
+            var routeSections = sections
              .Select(x => new
              {
-                 RouteSectionId = x.RouteSectionId,
-                 EncodedRoute = PolylineEncoder.EncodePolyline(x.MapPoints)
+                 RouteSectionId = x.RouteDto.RouteSectionId,
+                 EncodedRoute = PolylineEncoder.EncodePolyline(x.RouteDto.MapPoints)
              })
              .Select(x => new FuelRouteSection(fuelRoute.Id, x.RouteSectionId, x.EncodedRoute)).ToList();
 
 
             foreach (var section in sections)
             {
-                var matchingRouteSection = routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteSectionId);
+                var matchingRouteSection = routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == section.RouteDto.RouteSectionId);
                 if (matchingRouteSection != null)
                 {
-                    var oldRouteSectionId = section.RouteSectionId;
+                    var oldRouteSectionId = section.RouteDto.RouteSectionId;
 
-                    section.RouteSectionId = matchingRouteSection.Id.ToString();
+                    section.RouteDto.RouteSectionId = matchingRouteSection.Id.ToString();
 
                     routeSections.FirstOrDefault(rs => rs.RouteSectionResponceId == oldRouteSectionId).SetRouteSectionInfo(
-                        section.RouteInfo.Tolls,
-                        section.RouteInfo.Gallons,
-                        section.RouteInfo.Miles,
-                        section.RouteInfo.DriveTime);
+                        section.RouteDto.RouteInfo.Tolls,
+                        section.RouteDto.RouteInfo.Gallons,
+                        section.RouteDto.RouteInfo.Miles,
+                        section.RouteDto.RouteInfo.DriveTime);
                 }
             }
 
@@ -138,7 +144,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             return new FuelRouteDto
             {
                 RouteId = fuelRoute.Id.ToString(),
-                RouteDtos = sections,
+                RouteDtos = sections.Select(s => s.RouteDto).ToList(),
                 //FuelStationDtos = fuelStopStationsList
             };
         }

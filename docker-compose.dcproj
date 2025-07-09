@@ -10,6 +10,7 @@
     <DockerServiceName>foruscorp.trucks.api</DockerServiceName>
   </PropertyGroup>
   <ItemGroup>
+    <None Include=".env" />
     <None Include="certs\certificate.pfx" />
     <None Include="certs\server.pfx" />
     <None Include="docker-compose.override.yml">

@@ -30,6 +30,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             //    .Include(x => x.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true) /*.Where(x => x.Id == request.RouteSectionId)*/)
             //    .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
+
             if (fuelRoad == null)
                 return new GetFuelRouteDto();
 
@@ -52,12 +53,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
             var fuelRoute = new GetFuelRouteDto
             {
-               OriginName = fuelRoad.OriginLocation.Name,
-               DestinationName = fuelRoad.DestinationLocation.Name,
-               RouteId = fuelRoad.Id.ToString(),
-               FuelStationDtos = stations,
-               RouteInfo = routes.FirstOrDefault().RouteInfo,
-               MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
+                Weight = fuelRoad.Weight,
+                OriginName = fuelRoad.OriginLocation.Name,
+                DestinationName = fuelRoad.DestinationLocation.Name,
+                RouteId = fuelRoad.Id.ToString(),
+                FuelStationDtos = stations,
+                RouteInfo = routes.FirstOrDefault().RouteInfo,
+                MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
             };
 
             return fuelRoute;
@@ -95,6 +97,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public string OriginName { get; set; } = "OriginName";  
 
         public string DestinationName { get; set; } = "DestinationName";
+
+        public double Weight { get; set; } = 0.0;   
 
         public RouteInfo RouteInfo { get; set; }
 
