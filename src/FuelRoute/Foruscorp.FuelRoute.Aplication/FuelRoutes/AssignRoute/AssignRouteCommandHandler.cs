@@ -1,9 +1,9 @@
-﻿using MediatR;
-using MassTransit;
-using FluentResults;
+﻿using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.IntegrationEvents;
-using System.Data.Entity;
+using MassTransit;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 {
@@ -16,9 +16,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
     {
         public async Task<Result> Handle(AssignRouteCommand request, CancellationToken cancellationToken)
         {
-            var fuelRoute = context.FuelRoutes
-                .Include(fr => fr.RouteSections)
-                .FirstOrDefault(x => x.Id == request.RouteId);
+            var fuelRoute = await context.FuelRoutes
+                  .Include(x => x.RouteSections)
+                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoute == null)
                 return Result.Fail("Fuel route not found.");
