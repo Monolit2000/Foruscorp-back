@@ -59,7 +59,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");
 
-            var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id));
+            var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id)).ToList();
+
 
             var sectionIds = roadSectionDtos
                 .Select(dto => Guid.Parse(dto.RoadSectionId))
@@ -72,6 +73,44 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
 
             await fuelRouteContext.FuelRouteStation.AddRangeAsync(fuelStations);
+
+            //var refillPerSection = fuelStations
+            //  .Where(x => x.IsAlgorithm)
+            //  .GroupBy(x => x.RoadSectionId)
+            //  .ToDictionary(
+            //      g => g.Key,
+            //      g => g.Sum(x => decimal.TryParse(x.Refill, out var refill) ? refill : 0m)
+            //  );
+
+            var refillPerSection = fuelStations
+                .Where(x => x.IsAlgorithm)
+                .Select(x => new {
+                    x.RoadSectionId,
+                    Refill = decimal.TryParse(x.Refill, out var refill) ? refill : (decimal?)null
+                })
+                .Where(x => x.Refill.HasValue)
+                .GroupBy(x => x.RoadSectionId)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Sum(x => x.Refill.Value)
+                );
+
+            foreach (var section in routeSections)
+            {
+                if (refillPerSection.TryGetValue(section.Id, out var totalRefill))
+                {
+                    section.FuelNeeded = totalRefill;
+                }
+                else
+                {
+                    section.FuelNeeded = 0.0m;
+                }
+            }
+
+
+            fuelRoad.RemainingFuel = fuelStationsResult.Value.FinishInfo.RemainingFuelLiters;
+
+
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
 

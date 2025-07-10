@@ -15,6 +15,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public RouteSectionInfo RouteSectionInfo { get; private set; }
 
+      
+        public decimal FuelNeeded { get; set; } = 0.0m;
+
         public bool IsAssigned { get; private set; } 
 
         public List<FuelRouteStation> FuelRouteStations = [];

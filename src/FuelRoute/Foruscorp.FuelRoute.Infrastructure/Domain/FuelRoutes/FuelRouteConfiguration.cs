@@ -33,6 +33,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .IsRowVersion()
                 .IsConcurrencyToken();
 
+            builder.Property(fr => fr.RemainingFuel)
+                .IsRequired();
+
 
             //builder.OwnsMany(fr => fr.RouteSections, routeSectionBuilder =>
             //{

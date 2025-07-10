@@ -53,6 +53,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
             var fuelRoute = new GetFuelRouteDto
             {
+                RemainingFuel = fuelRoad.RemainingFuel,
                 Weight = fuelRoad.Weight,
                 OriginName = fuelRoad.OriginLocation.Name,
                 DestinationName = fuelRoad.DestinationLocation.Name,
@@ -101,6 +102,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public double Weight { get; set; } = 0.0;   
 
         public RouteInfo RouteInfo { get; set; }
+        
+        public double RemainingFuel { get; set; }
 
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
 

@@ -1,6 +1,7 @@
 ﻿using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using System.Net.NetworkInformation;
 
 public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteSection>
 {
@@ -16,6 +17,9 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
                .IsRequired();
 
         builder.Property(x => x.IsAssigned)
+            .IsRequired();
+
+        builder.Property(fs => fs.FuelNeeded)
             .IsRequired();
 
         builder.OwnsOne(x => x.RouteSectionInfo, info =>

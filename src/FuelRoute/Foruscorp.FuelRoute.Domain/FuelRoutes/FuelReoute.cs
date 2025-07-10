@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
 
@@ -27,7 +28,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public double Weight { get; private set; }
 
-        public bool IsSended { get; private set; } 
+        public bool IsSended { get; private set; }
+
+        public double RemainingFuel { get; set; } = 0.0; 
 
         public bool IsAccepted { get; private set; }
         public byte[] RowVersion { get; set; }
