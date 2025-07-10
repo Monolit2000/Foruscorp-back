@@ -2,7 +2,8 @@ services:
 
   foruscorp.gateway:
     container_name: foruscorp-gateway
-    image: ${DOCKER_REGISTRY-}foruscorpgateway
+    # image: ${DOCKER_REGISTRY-}foruscorpgateway
+    image: futondoker/foruscorpgateway:v1
     build:
       context: .
       dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
@@ -26,7 +27,7 @@ services:
     
   foruscorp.auth:
     container_name: auth-api
-    image: ${DOCKER_REGISTRY-}foruscorpauth
+    image: futondoker/foruscorpauth:v1
     build:
       context: .
       dockerfile: src/Auth/Foruscorp.Auth/Dockerfile
@@ -51,7 +52,7 @@ services:
 
   foruscorp.push:
     container_name: push-api
-    image: ${DOCKER_REGISTRY-}foruscorppush
+    image: futondoker/foruscorppush:v1
     build:
       context: .
       dockerfile: src/Push/Foruscorp.Push/Dockerfile
@@ -72,7 +73,7 @@ services:
 
   foruscorp.truckstracking.api:
     container_name: truckstracking-api
-    image: ${DOCKER_REGISTRY-}foruscorptruckstrackingapi
+    image: futondoker/foruscorptruckstrackingapi:v1
     build:
       context: .
       dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
@@ -102,7 +103,7 @@ services:
 
   foruscorp.fuelstations.api:
     container_name: fuelstations-api
-    image: ${DOCKER_REGISTRY-}foruscorpfuelstationsapi
+    image: futondoker/foruscorpfuelstationsapi:v1
     build: 
       context: .
       dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
@@ -126,7 +127,7 @@ services:
 
   foruscorp.trucks.api:
     container_name: trucks-api
-    image: ${DOCKER_REGISTRY-}foruscorptrucksapi
+    image: futondoker/foruscorptrucksapi:v1
     build:
       context: .
       dockerfile: src/Trucks/Foruscorp.Trucks.API/Dockerfile
@@ -151,7 +152,7 @@ services:
 
   foruscorp.fuelroutes.api:
     container_name: fuelroutes-api
-    image: ${DOCKER_REGISTRY-}foruscorpfuelroutesapi
+    image: futondoker/foruscorpfuelroutesapi:v1
     build:
         context: .
         dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
