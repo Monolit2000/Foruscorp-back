@@ -30,7 +30,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
                 {
                     CurrentLocation = null,
                     RouteId = null,
-                    MapPoints = new List<CoordinateDto>()
+                    MapPoints = new List<CoordinateDto>(),
                 };
             }
 
@@ -42,7 +42,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
                 {
                     CurrentLocation = truckTracker.CurrentTruckLocation?.Location,
                     RouteId = null,
-                    MapPoints = new List<CoordinateDto>()
+                    MapPoints = new List<CoordinateDto>(),
+                    FormattedLocation = truckTracker.CurrentTruckLocation.FormattedLocation
                 };
             }
 
@@ -58,6 +59,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 
             return new RouteDto
             {
+                IsRoute = true,
                 RouteId = route.RouteId,
                 MapPoints = mapPoints
             };
@@ -70,6 +72,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
         public GeoPoint CurrentLocation { get; set; }
         public Guid? RouteId { get; set; }
         public List<CoordinateDto> MapPoints { get; set; }
+        public string FormattedLocation { get; set; } = string.Empty;   
     }
 
     public class CoordinateDto

@@ -20,7 +20,19 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 .Include(x => x.DestinationLocation)
                 .FirstOrDefaultAsync(x => x.Id == route.RouteId);
             if (fuelRoute == null)
-                return Result.Fail("Route not found");
+            {
+
+                return Result.Ok(new RoutInfoDto
+                {
+                    TruckId = request.TruckId,
+                    //OriginName = "Unknown",
+                    //DestinationName = "Unknown",
+                    //Origin = new GeoPoint(0, 0),
+                    //Destination = new GeoPoint(0, 0),
+                    routeDto = route,
+                    Weight = 0
+                });
+            }
 
             var fuelRouteDto = new RoutInfoDto
             {
