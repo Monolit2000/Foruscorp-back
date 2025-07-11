@@ -1,0 +1,6 @@
+@Foruscorp.TrucksTracking.Worker_HostAddress = http://localhost:5173
+
+GET {{Foruscorp.TrucksTracking.Worker_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

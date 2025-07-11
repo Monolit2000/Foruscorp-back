@@ -80,6 +80,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Push", "Push", "{676DE73E-4
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.Push", "src\Push\Foruscorp.Push\Foruscorp.Push.csproj", "{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.TrucksTracking.Worker", "src\TrucksTracking\Foruscorp.TrucksTracking.Worker\Foruscorp.TrucksTracking.Worker.csproj", "{60DC06E2-90C7-4DF4-9745-24D971155F9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -190,6 +192,10 @@ Global
 		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60DC06E2-90C7-4DF4-9745-24D971155F9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60DC06E2-90C7-4DF4-9745-24D971155F9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60DC06E2-90C7-4DF4-9745-24D971155F9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60DC06E2-90C7-4DF4-9745-24D971155F9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -229,6 +235,7 @@ Global
 		{3D8702D0-61F1-44DD-AC3D-25A1CC598D92} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
 		{676DE73E-4244-4A05-ACB8-297B6135F49A} = {CC87C304-2DA1-4C19-A7E3-A70B423D365D}
 		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E} = {676DE73E-4244-4A05-ACB8-297B6135F49A}
+		{60DC06E2-90C7-4DF4-9745-24D971155F9F} = {49C09F7C-C68E-4556-8CB9-80B2285B76AE}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2904CEA6-8C5E-4BE6-8C16-181313AB69B3}
