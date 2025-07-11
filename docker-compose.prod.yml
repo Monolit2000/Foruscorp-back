@@ -1,5 +1,6 @@
 services:
 
+
   foruscorp.gateway:
     container_name: foruscorp-gateway
     image: ${DOCKER_REGISTRY-}foruscorpgateway
