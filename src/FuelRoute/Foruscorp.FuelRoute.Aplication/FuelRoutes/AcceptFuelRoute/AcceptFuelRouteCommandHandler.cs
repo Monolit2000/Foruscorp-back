@@ -6,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
+using Microsoft.AspNetCore.Components.Forms;
+using System.Data.Entity;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
@@ -16,36 +18,15 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
     {
         public async Task<Result> Handle(AcceptFuelRouteCommand request, CancellationToken cancellationToken)
         {
-            //memoryCache.TryGetValue(FuelRoutesCachKeys.RouteById(request.Id), out DataObject routeDataValue);
-            //if (routeDataValue is null)
-            //    return Result.Fail("Route not found");
+            var reoute = await fuelRouteContext.FuelRoutes
+                .FirstOrDefaultAsync(r => r.Id == request.RouteId, cancellationToken);
 
-            //var section = routeDataValue.Routes.WaypointsAndShapes
-            //    .Where(ws => ws != null && ws.Sections != null)
-            //    .SelectMany(x => x.Sections)
-            //    .FirstOrDefault(section => section.Id == request.RouteSectionId);
+            if (reoute == null)
+                return Result.Fail("Route not found");
 
-            //var originPoint = LocationPoint.CreateNew("origin", 0.0, 0.0);
-            //var destinationPoint = LocationPoint.CreateNew("destination", 0.0, 0.0);
+            reoute.MarkAsAccepted();
 
-            //var fuelRoute = FuelRoute.CreateNew(
-            //    Guid.NewGuid(),
-            //    originPoint,
-            //    destinationPoint,
-            //    new List<FuelRouteStation>(),
-            //    new List<MapPoint>());
-
-            //var mupPoints = section.ShowShape
-            //    .Select(x => MapPoint.CreateNew(fuelRoute.Id, x));
-
-            //var encodedRoute = PolylineEncoder.EncodePolyline(section.ShowShape);
-            ////fuelRoute.AddEncodedRoute(encodedRoute);
-
-            //await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute, cancellationToken);
-            //await fuelRouteContext.SaveChangesAsync(cancellationToken);
-
-            ////await fuelRouteRopository.BulkInsertAsync(mupPoints);
-
+            await fuelRouteContext.SaveChangesAsync(cancellationToken);
             return Result.Ok();
         }
     }

@@ -6,6 +6,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
     public class AcceptFuelRouteCommand : IRequest<Result>
     {
-        public Guid RourteId { get; set; }
+        public Guid RouteId { get; set; }
     }
 }

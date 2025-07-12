@@ -88,6 +88,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         // Business methods
 
+        public void AcceptRoute()
+        {
+            IsSended = true;
+            UpdateChangedAt();
+        }
    
         public void MarkAsAccepted()
         {
