@@ -25,6 +25,20 @@ services:
     networks:
       - foruscorp-docker-network
     
+
+  foruscorp.truckstracking.worker:
+    container_name: foruscorp-truckstracking-worker
+    image: futondoker/foruscorptruckstrackingworker:v1
+    build:
+      context: .
+      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.Worker/Dockerfile
+    ports:
+      - "5013:5013" 
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_HTTP_PORTS=5013
+
+
   foruscorp.auth:
     container_name: auth-api
     image: futondoker/foruscorpauth:v1
@@ -201,6 +215,15 @@ services:
     networks:
       - foruscorp-docker-network
 
+  redis:
+    container_name: foruscorp-redis
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - foruscorp-docker-network
 
   rabbitmq:
     container_name: rabbitmq
@@ -258,18 +281,20 @@ services:
 
 
 
-
 networks:
   foruscorp-docker-network:
     driver: bridge
 
 volumes:
+  redis-data:
+    driver: local
   postgres-data:
     driver: local
   rabbitmq-data:
     driver: local
   seq-data:
     driver: local
+
 
 
 

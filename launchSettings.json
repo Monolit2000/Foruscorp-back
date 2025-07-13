@@ -12,7 +12,8 @@
         "foruscorp.gateway": "StartDebugging",
         "foruscorp.fuelroutes.auth": "StartDebugging",
         "foruscorp.auth": "StartDebugging",
-        "foruscorp.push": "StartDebugging"
+        "foruscorp.push": "StartDebugging",
+        "foruscorp.truckstracking.worker": "StartDebugging"
       }
     }
   }

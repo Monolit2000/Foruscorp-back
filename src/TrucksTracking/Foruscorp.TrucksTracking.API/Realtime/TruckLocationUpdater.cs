@@ -11,7 +11,7 @@ using System.Threading.Channels;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
-    internal sealed class TruckLocationUpdater : BackgroundService
+    public sealed class TruckLocationUpdater : BackgroundService
     {
         private readonly IHubContext<TruckHub, ITruckLocationUpdateClient> _hubContext;
         private readonly ILogger<TruckLocationUpdater> _logger;
