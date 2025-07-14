@@ -1,6 +1,9 @@
 ﻿using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Foruscorp.TrucksTracking.Worker.Infrastructure.Database;
+using Foruscorp.TrucksTracking.Worker.Realtime;
+using Foruscorp.TrucksTracking.Worker.Contauct;
+using Foruscorp.TrucksTracking.Worker.Services;
 
 namespace Foruscorp.TrucksTracking.Worker.Infrastructure
 {
@@ -8,13 +11,17 @@ namespace Foruscorp.TrucksTracking.Worker.Infrastructure
     {
         public static IServiceCollection AddTrucksTrackingWorkerServices(this IServiceCollection services, IConfiguration configuration)
         {
-            services.AddDbContext<TruckTrackerWorkerContext>((sp, options) =>
-            {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-            });
 
-            //services.AddScoped<ITuckTrackingContext, TuckTrackingContext>();
 
+
+            services.AddDbContext<TruckTrackerWorkerContext>(options =>
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+
+            services.AddScoped<ITruckProviderService, TruckProviderService>();
+
+            services.AddHostedService<TruckLocationUpdater>();
+
+            services.AddMemoryCache();
 
             services.AddMediatR(cfg =>
             {

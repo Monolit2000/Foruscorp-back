@@ -25,7 +25,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
             //       .HasForeignKey(h => h.RouteId)
             //       .OnDelete(DeleteBehavior.Cascade);
 
+            builder.HasMany<TruckTracker>()
+                .WithOne(x => x.CurrentTruckLocation)
+                .HasForeignKey(x => x.CurrentTruckLocationId);
+
             // Foreign Key to TruckTracker
+
             builder.Property(h => h.TruckId)
                    .IsRequired();
             builder.HasOne<TruckTracker>()

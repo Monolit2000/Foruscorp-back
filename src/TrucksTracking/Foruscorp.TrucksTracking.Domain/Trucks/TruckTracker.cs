@@ -27,6 +27,8 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
 
         public TruckTrackerStatus TruckTrackerStatus { get; private set; }
         public double FuelStatus { get; private set; }
+
+        public Guid? CurrentTruckLocationId { get; set; }
         public TruckLocation CurrentTruckLocation { get; set; }
 
         private TruckTracker(

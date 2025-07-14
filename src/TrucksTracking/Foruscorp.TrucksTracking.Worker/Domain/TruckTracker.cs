@@ -14,5 +14,11 @@
             TruckId = truckId;
             ProviderTruckId = providerTruckId;
         }
+
+        public void UpdateTruckTracker(Guid truckId, string providerTruckId)
+        {
+            TruckId = truckId;
+            ProviderTruckId = providerTruckId;
+        }
     }
 }

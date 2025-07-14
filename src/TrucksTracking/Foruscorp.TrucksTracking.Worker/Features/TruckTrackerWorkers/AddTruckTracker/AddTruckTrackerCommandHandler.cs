@@ -1,12 +1,10 @@
-﻿using Foruscorp.TrucksTracking.Worker.Domain;
-using Foruscorp.TrucksTracking.Worker.Infrastructure.Database;
-using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Foruscorp.TrucksTracking.Worker.Domain;
+using Foruscorp.TrucksTracking.Worker.Infrastructure.Database;
 
 namespace Foruscorp.TrucksTracking.Worker.Features.TruckTrackerWorkers.AddTruckTracker
 {
-
     public record AddTruckTrackerCommand(Guid TruckId, string ProviderTruckId) : IRequest;
 
     public class AddTruckTrackerCommandHandler(
@@ -14,14 +12,24 @@ namespace Foruscorp.TrucksTracking.Worker.Features.TruckTrackerWorkers.AddTruckT
     {
         public async Task Handle(AddTruckTrackerCommand request, CancellationToken cancellationToken)
         {
-            var IsTruckTracker = await truckTrackerWorkerContext.TruckTrackers
-                .AnyAsync(t => t.TruckId == request.TruckId, cancellationToken);
+            var truckTracker = await truckTrackerWorkerContext.TruckTrackers
+                .FirstOrDefaultAsync(tt => tt.TruckId == request.TruckId || tt.ProviderTruckId == request.ProviderTruckId, cancellationToken);
 
-            if (IsTruckTracker)
-                return;
+            if (truckTracker != null)
+            {
+                await UpdateActiveTruckAsync(request, truckTracker, cancellationToken);
+                return; 
+            }
 
-            var truckTracker = new TruckTracker(request.TruckId, request.ProviderTruckId);
-            await truckTrackerWorkerContext.TruckTrackers.AddAsync(truckTracker, cancellationToken);
+            var newTruckTracker = new TruckTracker(request.TruckId, request.ProviderTruckId);
+            await truckTrackerWorkerContext.TruckTrackers.AddAsync(newTruckTracker, cancellationToken);
+            await truckTrackerWorkerContext.SaveChangesAsync(cancellationToken);
+        }
+
+        private async Task UpdateActiveTruckAsync(AddTruckTrackerCommand request, TruckTracker truckTracker, CancellationToken cancellationToken)
+        {
+            truckTracker.UpdateTruckTracker(request.TruckId, request.ProviderTruckId);
+            truckTrackerWorkerContext.TruckTrackers.Update(truckTracker);
             await truckTrackerWorkerContext.SaveChangesAsync(cancellationToken);
         }
     }

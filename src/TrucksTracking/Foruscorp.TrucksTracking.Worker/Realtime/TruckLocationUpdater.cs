@@ -1,7 +1,9 @@
 ﻿using Foruscorp.TrucksTracking.Worker.Contauct;
 using Foruscorp.TrucksTracking.Worker.Infrastructure.Database;
+using Foruscorp.TrucksTracking.Worker.IntegrationEvents;
 using MassTransit;
 using MediatR;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
@@ -140,28 +142,59 @@ namespace Foruscorp.TrucksTracking.Worker.Realtime
             List<TruckInfoUpdate> updates,
             CancellationToken token)
         {
-            foreach (var u in updates)
-            {
-                try
-                {
-                    //var group = u.TruckId.ToString();
-                    //await _hubContext.Clients.Group(group).ReceiveTruckLocationUpdate(
-                    //    new TruckLocationUpdate(
-                    //        u.TruckId,
-                    //        u.TruckName,
-                    //        u.Longitude,
-                    //        u.Latitude,
-                    //        u.Time,
-                    //        u.HeadingDegrees));
+            var tUpdates = updates.Select(u => new TruckInfoUpdatedIntegrationEvent(
+                u.TruckId,
+                u.TruckName,
+                u.Longitude,
+                u.Latitude,
+                u.Time,
+                u.HeadingDegrees,
+                u.fuelPercents,
+                u.formattedLocation,
+                u.engineStateData.Time,
+                u.engineStateData.Value));
 
-                    //await _hubContext.Clients.Group(group).ReceiveTruckFuelUpdate(
-                    //    new TruckFuelUpdate(u.TruckId, u.fuelPercents));
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogWarning(ex, "Failed to broadcast update for {TruckId}", u.TruckId);
-                }
-            }
+            var truckInfoUpdatedIntegrationEvents = new TruckInfoUpdatedIntegrationEvents(tUpdates.ToList());
+
+            await _publishEndpoint.Publish(truckInfoUpdatedIntegrationEvents);
+
+            //foreach (var u in updates)
+            //{
+            //    try
+            //    {
+
+
+
+            //        await _publishEndpoint.Publish(new TruckInfoUpdatedIntegrationEvent(
+            //            u.TruckId,
+            //            u.TruckName,
+            //            u.Longitude,
+            //            u.Latitude,
+            //            u.Time,
+            //            u.HeadingDegrees,
+            //            u.fuelPercents,
+            //            u.formattedLocation,
+            //            u.engineStateData.Time,
+            //            u.engineStateData.Value), token);
+
+            //        //var group = u.TruckId.ToString();
+            //        //await _hubContext.Clients.Group(group).ReceiveTruckLocationUpdate(
+            //        //    new TruckLocationUpdate(
+            //        //        u.TruckId,
+            //        //        u.TruckName,
+            //        //        u.Longitude,
+            //        //        u.Latitude,
+            //        //        u.Time,
+            //        //        u.HeadingDegrees));
+
+            //        //await _hubContext.Clients.Group(group).ReceiveTruckFuelUpdate(
+            //        //    new TruckFuelUpdate(u.TruckId, u.fuelPercents));
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        _logger.LogWarning(ex, "Failed to broadcast update for {TruckId}", u.TruckId);
+            //    }
+            //}
         }
 
         public override async Task StopAsync(CancellationToken cancellationToken)

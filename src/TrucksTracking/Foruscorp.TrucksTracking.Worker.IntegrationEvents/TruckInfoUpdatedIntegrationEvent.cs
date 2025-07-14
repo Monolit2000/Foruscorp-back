@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Worker.IntegrationEvents
 {
-    public sealed record TruckInfoUpdateedIntegrationEvent(
+    public sealed record TruckInfoUpdatedIntegrationEvent(
     string TruckId,
     string TruckName,
     double Longitude,
@@ -14,6 +14,10 @@ namespace Foruscorp.TrucksTracking.Worker.IntegrationEvents
     string Time,
     double HeadingDegrees,
     double fuelPercents,
-    string formattedLocation
-    /*EngineStateData engineStateData*/);
+    string formattedLocation,
+    string engineStateTime,
+    string engineStateValue);
+
+
+    public sealed record TruckInfoUpdatedIntegrationEvents(List<TruckInfoUpdatedIntegrationEvent> truckInfoUpdatedIntegrationEvents);
 }

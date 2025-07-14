@@ -3,6 +3,7 @@ using System;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    partial class TuckTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250713231957_UpdateCurrentTruchLocation")]
+    partial class UpdateCurrentTruchLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -22,47 +25,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
-
-            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.FuelStationPlans.NearFuelStationPlan", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("FuelStationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsNear")
-                        .HasColumnType("boolean");
-
-                    b.Property<double>("Latitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("Longitude")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("NearDistance")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid?>("RecordedOnLocationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TruckId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuelStationId");
-
-                    b.HasIndex("RecordedOnLocationId");
-
-                    b.HasIndex("TruckId");
-
-                    b.ToTable("NearFuelStationPlans", "TuckTracking");
-                });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
@@ -199,16 +161,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.HasIndex("TruckId");
 
                     b.ToTable("TruckTrackers", "TuckTracking");
-                });
-
-            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.FuelStationPlans.NearFuelStationPlan", b =>
-                {
-                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "RecordedOnLocation")
-                        .WithMany()
-                        .HasForeignKey("RecordedOnLocationId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("RecordedOnLocation");
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>

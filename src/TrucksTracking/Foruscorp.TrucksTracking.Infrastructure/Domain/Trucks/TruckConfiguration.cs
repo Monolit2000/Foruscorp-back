@@ -31,10 +31,13 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
                 .IsRequired()
                 .HasConversion<int>();
 
-            builder.HasOne(t => t.CurrentTruckLocation)
-                   .WithOne()
-                   .HasForeignKey<TruckLocation>(tt => tt.CurrentTruckTrackerId)
-                   .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(t => t.CurrentTruckLocationId)
+                .IsRequired(false);
+
+            //builder.HasOne(t => t.CurrentTruckLocation)
+            //       .WithOne()
+            //       .HasForeignKey<TruckLocation>(tt => tt.CurrentTruckTrackerId)
+            //       .OnDelete(DeleteBehavior.Cascade);
 
             builder.HasMany(t => t.TruckLocationHistory)
                    .WithOne()

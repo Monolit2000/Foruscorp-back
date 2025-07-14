@@ -76,7 +76,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                     if (updates.Any())
                     {
                         await BroadcastUpdatesAsync(updates, token);
-                        EnqueueUpdates(updates, token);
+                        //EnqueueUpdates(updates, token);
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(2), token);
