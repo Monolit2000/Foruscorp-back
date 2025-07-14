@@ -1,4 +1,5 @@
 using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.FuelStations;
 using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
@@ -30,6 +31,13 @@ namespace Foruscorp.TrucksTracking.API.Controllers
         {
             var result = await mediator.Send(activateTruckTrackerCommand, cancellationToken);
             return Ok(result);
+        }
+
+        [HttpPost("CheckNearFuelStationCommandTest")]
+        public async Task<ActionResult> CheckNearFuelStationCommandTest(CheckNearFuelStationCommandTest checkNearFuelStationCommandTest, CancellationToken cancellationToken)
+        {
+            await mediator.Send(checkNearFuelStationCommandTest, cancellationToken);
+            return Ok();
         }
 
 

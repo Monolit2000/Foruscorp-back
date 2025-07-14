@@ -22,7 +22,7 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
             foreach(var fuelStationPlan in fuelStationPlans)
             {
                 if(GeoUtils.CalculateDistance(
-                    fuelStationPlan.Latitude, fuelStationPlan.Longitude, request.TruckLatitude, request.TruckLongitude) > 15.0 )
+                    fuelStationPlan.Latitude, fuelStationPlan.Longitude, request.TruckLatitude, request.TruckLongitude) > fuelStationPlan.NearDistance)
                     return;
 
                 var truckTracker = await truckTrackingContext.TruckTrackers
@@ -33,6 +33,13 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
                 truckTrackingContext.NearFuelStationPlans.Update(fuelStationPlan);  
 
                 await truckTrackingContext.SaveChangesAsync(cancellationToken); 
+
+                await PublishEvent(
+                    request.TruckId, 
+                    fuelStationPlan.FuelStationId, 
+                    fuelStationPlan.Longitude, 
+                    fuelStationPlan.Latitude, 
+                    fuelStationPlan.NearDistance);
             }
         }
 

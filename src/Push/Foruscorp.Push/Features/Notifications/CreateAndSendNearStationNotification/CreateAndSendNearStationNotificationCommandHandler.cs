@@ -1,8 +1,8 @@
-﻿using Foruscorp.Push.Contruct;
-using Foruscorp.Push.Domain.PushNotifications;
-using Foruscorp.Push.Infrastructure.Database;
-using MediatR;
+﻿using MediatR;
+using Foruscorp.Push.Contruct;
 using Microsoft.EntityFrameworkCore;
+using Foruscorp.Push.Infrastructure.Database;
+using Foruscorp.Push.Domain.PushNotifications;
 
 namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotification
 {
@@ -17,7 +17,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
         public async Task Handle(CreateAndSendNearStationNotificationCommand request, CancellationToken cancellationToken)
         {
 
-            var content = new NotificationContent("Meneger route", $"You have a new route suggestion.");
+            var content = new NotificationContent("Fuel station", $"Refuel in {Math.Round(request.DistanceKm * KmToMiles, 2)} miles");
             var payloadData = new Dictionary<string, object>
             {
                 ["StationId"] = request.StationId,

@@ -15,7 +15,7 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.PlanNearFuelStation
         public async Task Consume(ConsumeContext<FuelStationPlanAssignedIntegrationEvent> context)
         {
             await sender.Send(new PlanNearFuelStationCommand(
-                context.Message.FuelStationId, context.Message.RouteId, context.Message.TruckId, context.Message.Longitude, context.Message.Latitude));
+                context.Message.FuelStationId, context.Message.RouteId, context.Message.TruckId, context.Message.NearDistance, context.Message.Longitude, context.Message.Latitude));
         }
     }
 }

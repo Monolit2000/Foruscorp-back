@@ -1,4 +1,5 @@
 ﻿using Foruscorp.Trucks.Aplication.Contruct;
+using Foruscorp.Trucks.IntegrationEvents;
 using MassTransit;
 using MediatR;
 using Microsoft.Extensions.Logging;
@@ -28,9 +29,8 @@ namespace Foruscorp.Trucks.Aplication.Trucks.NotifiDriverAboutNearStation
                 return;            
             }
 
+            await publishEndpoint.Publish(new DriverNearFuelStationIntegrationEvent(driver.UserId.Value, request.FuelStationId, request.DistanceKm));
 
-
-            throw new NotImplementedException();
         }
     }
 }

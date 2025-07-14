@@ -33,11 +33,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
             await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId));
 
             var fuelRouteStations = fuelRoute.FuelRouteStations
-                .Where(fs => fs.RoadSectionId == request.RouteSectionId)
+                .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
                 .Select(fs => new FuelRouteStationPlan(
                     fs.FuelStationId,
                     fs.FuelRouteId,
-                    fuelRoute.TruckId,
+                    request.TruckId,
+                    16.0,
                     double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
                     double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
                 .ToList();
@@ -55,11 +56,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                     planedStation.FuelStationId,
                     planedStation.RouteId,
                     planedStation.TruckId,
+                    planedStation.nearDistance, 
                     planedStation.Longitude,
                     planedStation.Latitude));
             }
         }
 
-        public record FuelRouteStationPlan(Guid FuelStationId, Guid RouteId, Guid TruckId, double Longitude, double Latitude);
+        public record FuelRouteStationPlan(Guid FuelStationId, Guid RouteId, Guid TruckId, double nearDistance, double Longitude, double Latitude);
     }
 }
