@@ -88,6 +88,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         // Business methods
 
+        public void AcceptRoute()
+        {
+            IsSended = true;
+            UpdateChangedAt();
+        }
    
         public void MarkAsAccepted()
         {
@@ -102,7 +107,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 throw new InvalidOperationException($"Route section with ID {routeSectionId} not found");
 
             routeSectiuon.MarkAsAssigned();
-            IsAccepted = true;
 
             IsSended = true;
             UpdateChangedAt();

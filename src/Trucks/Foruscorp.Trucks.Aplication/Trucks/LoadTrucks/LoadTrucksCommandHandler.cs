@@ -78,7 +78,6 @@ namespace Foruscorp.Trucks.Aplication.Trucks.LoadTrucks
                     ProviderTruckId = truck.ProviderTruckId,    
                 });
             }
-          
         }
     }
 }

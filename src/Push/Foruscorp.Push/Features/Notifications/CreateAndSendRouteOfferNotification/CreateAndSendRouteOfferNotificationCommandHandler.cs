@@ -40,9 +40,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotificat
 
             await context.SaveChangesAsync(cancellationToken);
 
-
             await context.SaveChangesAsync(cancellationToken);
-
         }
 
         private async Task SendToPendingRecipientsAsync(Notification notification, CancellationToken ct)

@@ -11,7 +11,7 @@ using System.Threading.Channels;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
-    internal sealed class TruckLocationUpdater : BackgroundService
+    public sealed class TruckLocationUpdater : BackgroundService
     {
         private readonly IHubContext<TruckHub, ITruckLocationUpdateClient> _hubContext;
         private readonly ILogger<TruckLocationUpdater> _logger;
@@ -76,7 +76,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                     if (updates.Any())
                     {
                         await BroadcastUpdatesAsync(updates, token);
-                        EnqueueUpdates(updates, token);
+                        //EnqueueUpdates(updates, token);
                     }
 
                     await Task.Delay(TimeSpan.FromSeconds(2), token);
@@ -96,7 +96,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+            var context = scope.ServiceProvider.GetRequiredService<ITruckTrackingContext>();
 
             var trackers = await _memoryCache.GetOrCreateAsync(
                 TrackersCacheKey,
@@ -340,7 +340,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 //        private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
 //        {
 //            using var scope = _scopeFactory.CreateScope();
-//            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+//            var context = scope.ServiceProvider.GetRequiredService<ITruckTrackingContext>();
 
 //             Load trackers from cache or DB
 //            var trackers = await _memoryCache.GetOrCreateAsync(

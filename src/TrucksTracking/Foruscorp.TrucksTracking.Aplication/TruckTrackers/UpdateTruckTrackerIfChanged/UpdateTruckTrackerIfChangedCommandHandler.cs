@@ -1,5 +1,6 @@
 ﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.Contruct.RealTimeTruckModels;
+using Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using Foruscorp.TrucksTracking.Domain.Trucks;
@@ -18,13 +19,13 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
 {
     public class UpdateTruckTrackerIfChangedCommandHandler : IRequestHandler<UpdateTruckTrackerIfChangedCommand>
     {
-        private readonly ITuckTrackingContext _context;
+        private readonly ITruckTrackingContext _context;
         private readonly ILogger<UpdateTruckTrackerIfChangedCommandHandler> _logger;
         private readonly TruckInfoManager _truckInfoManager;
         private readonly ISender _sender;
 
         public UpdateTruckTrackerIfChangedCommandHandler(
-            ITuckTrackingContext context,
+            ITruckTrackingContext context,
             ILogger<UpdateTruckTrackerIfChangedCommandHandler> logger,
             TruckInfoManager truckInfoManager,
             ISender sender)
@@ -48,10 +49,9 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                 return;
             }
 
-            // Группируем все TruckIds
             var truckIds = updates.Select(u => Guid.Parse(u.TruckId)).ToList();
 
-            // Загружаем все трекеры одним запросом
+     
             var trackers = await _context.TruckTrackers
                 .Where(tt => truckIds.Contains(tt.TruckId))
                 .Include(tt => tt.CurrentTruckLocation)
@@ -73,6 +73,10 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                     tracker.UpdateCurrentTruckLocation(
                         new GeoPoint(updateModel.Latitude, updateModel.Longitude),
                         updateModel.formattedLocation);
+                    await _sender.Send(new CheckNearFuelStationCommand(
+                        tracker.TruckId, 
+                        tracker.CurrentTruckLocation.Location.Longitude, 
+                        tracker.CurrentTruckLocation.Location.Latitude));
                     _logger.LogInformation("TruckId: {TruckId}, Location changed", tracker.TruckId);
                 }
 

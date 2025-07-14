@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute
 {
     public class SetCurrentRouteCommandHandler(
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<UpdateTruckTrackerCommandHandler> logger) : IRequestHandler<SetCurrentRouteCommand>
     {
         public async Task Handle(SetCurrentRouteCommand request, CancellationToken cancellationToken)

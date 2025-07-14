@@ -9,7 +9,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTrack
 {
     public class DeactivateTruckTrackerCommandHandler(
         ActiveTruckManager activeTruckManager,
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<CreateTruckTrackerCommandHandler> logger) : IRequestHandler<DeactivateTruckTrackerCommand, Result>
     {
         public async Task<Result> Handle(DeactivateTruckTrackerCommand request, CancellationToken cancellationToken)

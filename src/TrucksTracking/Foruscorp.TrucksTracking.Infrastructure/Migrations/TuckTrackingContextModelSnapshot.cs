@@ -23,6 +23,53 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.FuelStationPlans.NearFuelStationPlan", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("FuelStationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsNear")
+                        .HasColumnType("boolean");
+
+                    b.Property<bool>("IsProcessed")
+                        .HasColumnType("boolean");
+
+                    b.Property<double>("Latitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("Longitude")
+                        .HasColumnType("double precision");
+
+                    b.Property<double>("NearDistance")
+                        .HasColumnType("double precision");
+
+                    b.Property<Guid?>("RecordedOnLocationId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("RouteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("TruckId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("FuelStationId");
+
+                    b.HasIndex("RecordedOnLocationId");
+
+                    b.HasIndex("TruckId");
+
+                    b.ToTable("NearFuelStationPlans", "TuckTracking");
+                });
+
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
                     b.Property<Guid>("Id")
@@ -111,9 +158,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CurrentTruckTrackerId")
-                        .IsUnique();
-
                     b.HasIndex("TruckTrackerId");
 
                     b.ToTable("TruckLocationHistory", "TuckTracking");
@@ -127,6 +171,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasColumnName("Id");
 
                     b.Property<Guid?>("CurrentRouteId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid?>("CurrentTruckLocationId")
                         .HasColumnType("uuid");
 
                     b.Property<double>("FuelStatus")
@@ -153,9 +200,21 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.HasIndex("CurrentRouteId")
                         .IsUnique();
 
+                    b.HasIndex("CurrentTruckLocationId");
+
                     b.HasIndex("TruckId");
 
                     b.ToTable("TruckTrackers", "TuckTracking");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.FuelStationPlans.NearFuelStationPlan", b =>
+                {
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "RecordedOnLocation")
+                        .WithMany()
+                        .HasForeignKey("RecordedOnLocationId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("RecordedOnLocation");
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
@@ -185,11 +244,6 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", b =>
                 {
-                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", null)
-                        .WithOne("CurrentTruckLocation")
-                        .HasForeignKey("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "CurrentTruckTrackerId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
                     b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", null)
                         .WithMany("TruckLocationHistory")
                         .HasForeignKey("TruckTrackerId")
@@ -227,13 +281,17 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasForeignKey("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", "CurrentRouteId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckLocation", "CurrentTruckLocation")
+                        .WithMany()
+                        .HasForeignKey("CurrentTruckLocationId");
+
                     b.Navigation("CurrentRoute");
+
+                    b.Navigation("CurrentTruckLocation");
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>
                 {
-                    b.Navigation("CurrentTruckLocation");
-
                     b.Navigation("FuelHistory");
 
                     b.Navigation("Routes");
