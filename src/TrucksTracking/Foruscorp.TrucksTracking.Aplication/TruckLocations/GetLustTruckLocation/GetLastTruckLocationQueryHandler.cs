@@ -11,7 +11,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocatio
 {
     public record GetLastTruckLocationsQuery(Guid TruckId) : IRequest<List<TruckLocationDto>>;
     public class GetLastTruckLocationQueryHandler(
-        ITuckTrackingContext _context) : IRequestHandler<GetLastTruckLocationsQuery, List<TruckLocationDto>>
+        ITruckTrackingContext _context) : IRequestHandler<GetLastTruckLocationsQuery, List<TruckLocationDto>>
     {
         public async Task<List<TruckLocationDto>> Handle(GetLastTruckLocationsQuery request, CancellationToken cancellationToken)
         {

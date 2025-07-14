@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers
 {
     public class GetAllTruckTrackersQueryHandler(
-        ITuckTrackingContext tuckTrackingContext) : IRequestHandler<GetAllTruckTrackersQuery, List<TruckTrackerDto>>
+        ITruckTrackingContext tuckTrackingContext) : IRequestHandler<GetAllTruckTrackersQuery, List<TruckTrackerDto>>
     {
         public Task<List<TruckTrackerDto>> Handle(GetAllTruckTrackersQuery request, CancellationToken cancellationToken)
         {

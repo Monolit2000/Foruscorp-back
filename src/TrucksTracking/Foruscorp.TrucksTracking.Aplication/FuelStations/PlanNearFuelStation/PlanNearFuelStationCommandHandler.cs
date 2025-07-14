@@ -5,9 +5,9 @@ using Foruscorp.TrucksTracking.Domain.FuelStationPlans;
 
 namespace Foruscorp.TrucksTracking.Aplication.FuelStations.PlanNearFuelStation
 {
-    public record PlanNearFuelStationCommand(Guid FuelStationId, Guid TruckId, double Longitude, double Latitude) : IRequest;
+    public record PlanNearFuelStationCommand(Guid FuelStationId, Guid RouteId, Guid TruckId, double Longitude, double Latitude) : IRequest;
     public class PlanNearFuelStationCommandHandler(
-        ITuckTrackingContext tuckTrackingContext) : IRequestHandler<PlanNearFuelStationCommand>
+        ITruckTrackingContext tuckTrackingContext) : IRequestHandler<PlanNearFuelStationCommand>
     {
         public async Task Handle(PlanNearFuelStationCommand request, CancellationToken cancellationToken)
         {
@@ -18,12 +18,11 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.PlanNearFuelStation
                 return;
 
             var fuelStationPlan = NearFuelStationPlan.Create(
-                request.FuelStationId, truckTracker.Id, request.Longitude, request.Latitude);
+                request.FuelStationId, truckTracker.TruckId, request.RouteId, request.Longitude, request.Latitude);
 
             await tuckTrackingContext.NearFuelStationPlans.AddAsync(fuelStationPlan, cancellationToken);
 
             await tuckTrackingContext.SaveChangesAsync(cancellationToken);  
-
         }
     }
 }

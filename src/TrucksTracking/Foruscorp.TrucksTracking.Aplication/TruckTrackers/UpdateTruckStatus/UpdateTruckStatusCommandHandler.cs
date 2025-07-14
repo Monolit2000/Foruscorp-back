@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckStatus
 {
     public class UpdateTruckStatusCommandHandler(
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<UpdateTruckStatusCommandHandler> logger,
         ISignalRNotificationSender signalRNotificationSender,
         IPublishEndpoint publishEndpoint) : IRequestHandler<UpdateTruckStatusCommand>

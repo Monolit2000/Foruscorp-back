@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
 {
     public class UpdateTruckTrackerCommandHandler(
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<UpdateTruckTrackerCommandHandler> logger) : IRequestHandler<UpdateTruckTrackerCommand>
     {
         public async Task Handle(UpdateTruckTrackerCommand request, CancellationToken cancellationToken)

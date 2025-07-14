@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
 {
-    public class TuckTrackingContext : DbContext, ITuckTrackingContext
+    public class TuckTrackingContext : DbContext, ITruckTrackingContext
     {
 
         public DbSet<TruckTracker> TruckTrackers { get; set; }

@@ -26,6 +26,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.FuelStationPlans
             builder.Property(x => x.FuelStationId)
                    .IsRequired();
 
+            builder.Property(x => x.RouteId)
+                .IsRequired();
+
             builder.Property(x => x.Longitude)
                    .HasColumnType("double precision")
                    .IsRequired();
@@ -38,6 +41,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.FuelStationPlans
                    .HasColumnType("double precision");
 
             builder.Property(x => x.IsNear);
+
+            builder.Property(x => x.IsProcessed);
 
             builder.Property(x => x.CreatedAt);
 

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.TrucksTracking.Aplication.Contruct
 {
-    public interface ITuckTrackingContext
+    public interface ITruckTrackingContext
     {
         DbSet<Route> Routes { get; set; }
         DbSet<TruckTracker> TruckTrackers { get; set; }

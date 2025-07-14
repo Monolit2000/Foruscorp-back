@@ -111,7 +111,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+                var context = scope.ServiceProvider.GetRequiredService<ITruckTrackingContext>();
 
                 var truckIds = await context.TruckTrackers
                     .Select(tt => tt.TruckId.ToString())

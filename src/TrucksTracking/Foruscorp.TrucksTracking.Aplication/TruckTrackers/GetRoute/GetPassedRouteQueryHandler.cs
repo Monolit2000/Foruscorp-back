@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 {
     public class GetPassedRouteQueryHandler(
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<GetPassedRouteQueryHandler> logger) : IRequestHandler<GetPassedRouteQuery, RouteDto>
     {
         public async Task<RouteDto> Handle(GetPassedRouteQuery request, CancellationToken cancellationToken)

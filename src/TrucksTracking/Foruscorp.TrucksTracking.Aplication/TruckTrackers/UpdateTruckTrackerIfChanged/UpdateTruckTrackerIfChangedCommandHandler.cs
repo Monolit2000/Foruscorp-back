@@ -19,13 +19,13 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
 {
     public class UpdateTruckTrackerIfChangedCommandHandler : IRequestHandler<UpdateTruckTrackerIfChangedCommand>
     {
-        private readonly ITuckTrackingContext _context;
+        private readonly ITruckTrackingContext _context;
         private readonly ILogger<UpdateTruckTrackerIfChangedCommandHandler> _logger;
         private readonly TruckInfoManager _truckInfoManager;
         private readonly ISender _sender;
 
         public UpdateTruckTrackerIfChangedCommandHandler(
-            ITuckTrackingContext context,
+            ITruckTrackingContext context,
             ILogger<UpdateTruckTrackerIfChangedCommandHandler> logger,
             TruckInfoManager truckInfoManager,
             ISender sender)

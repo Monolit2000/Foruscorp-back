@@ -4,22 +4,25 @@ using Foruscorp.Push.Infrastructure.Database;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 
-namespace Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotification
+namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotification
 {
 
-    public record CreateAndSendRouteOfferNotificationCommand(Guid UserId, Guid RouteId) : IRequest;
+    public record CreateAndSendNearStationNotificationCommand(Guid UserId, Guid StationId, double DistanceKm) : IRequest;
 
-    public class CreateAndSendRouteOfferNotificationCommandHandler(
-        PushNotificationsContext context,
-        IExpoPushService pushService) : IRequestHandler<CreateAndSendRouteOfferNotificationCommand>
+    public class CreateAndSendNearStationNotificationCommandHandler(
+        IExpoPushService pushService,
+        PushNotificationsContext context): IRequestHandler<CreateAndSendNearStationNotificationCommand>
     {
-        public async Task Handle(CreateAndSendRouteOfferNotificationCommand request, CancellationToken cancellationToken)
+        const double KmToMiles = 0.621371;
+        public async Task Handle(CreateAndSendNearStationNotificationCommand request, CancellationToken cancellationToken)
         {
+
             var content = new NotificationContent("Meneger route", $"You have a new route suggestion.");
             var payloadData = new Dictionary<string, object>
             {
-                ["RouteId"] = request.RouteId,
-                ["NotificationType"] = "RouteOffer",
+                ["StationId"] = request.StationId,
+                ["NotificationType"] = "NearFuelStation",
+                ["DistanceMiles"] = Math.Round(request.DistanceKm * KmToMiles, 2),
                 ["CreatedAtUtc"] = DateTime.UtcNow,
             };
 

@@ -14,7 +14,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.CreateTruckTracker
     public class CreateTruckTrackerCommandHandler(
         IPublishEndpoint publishEndpoint,
         ActiveTruckManager activeTruckManager,
-        ITuckTrackingContext tuckTrackingContext,
+        ITruckTrackingContext tuckTrackingContext,
         ILogger<CreateTruckTrackerCommandHandler> logger) : IRequestHandler<CreateTruckTrackerCommand>
     {
         public async Task Handle(CreateTruckTrackerCommand request, CancellationToken cancellationToken)

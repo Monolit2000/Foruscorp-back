@@ -19,7 +19,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
 
-            services.AddScoped<ITuckTrackingContext, TuckTrackingContext>();
+            services.AddScoped<ITruckTrackingContext, TuckTrackingContext>();
 
 
             services.AddMediatR(cfg =>

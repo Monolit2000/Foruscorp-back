@@ -96,7 +96,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
         {
             using var scope = _scopeFactory.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+            var context = scope.ServiceProvider.GetRequiredService<ITruckTrackingContext>();
 
             var trackers = await _memoryCache.GetOrCreateAsync(
                 TrackersCacheKey,
@@ -340,7 +340,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
 //        private async Task<List<TruckInfoUpdate>> FetchUpdatesAsync(CancellationToken token)
 //        {
 //            using var scope = _scopeFactory.CreateScope();
-//            var context = scope.ServiceProvider.GetRequiredService<ITuckTrackingContext>();
+//            var context = scope.ServiceProvider.GetRequiredService<ITruckTrackingContext>();
 
 //             Load trackers from cache or DB
 //            var trackers = await _memoryCache.GetOrCreateAsync(

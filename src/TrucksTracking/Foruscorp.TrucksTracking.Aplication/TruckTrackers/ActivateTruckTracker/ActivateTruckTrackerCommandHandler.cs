@@ -10,7 +10,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker
 {
     public class ActivateTruckTrackerCommandHandler(
         ActiveTruckManager activeTruckManager,
-        ITuckTrackingContext tuckTrackingContext) : IRequestHandler<ActivateTruckTrackerCommand, Result<TruckTrackerDto>>
+        ITruckTrackingContext tuckTrackingContext) : IRequestHandler<ActivateTruckTrackerCommand, Result<TruckTrackerDto>>
     {
         public async Task<Result<TruckTrackerDto>> Handle(ActivateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
