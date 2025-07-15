@@ -70,17 +70,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
                 .Where(x => x.FuelRouteId == fuelRoad.Id && sectionIds.Contains(x.RoadSectionId))
                 .ToListAsync(cancellationToken);
 
-            fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
+            //Mark old stations as old
+            foreach (var station in oldStations)
+                station.MurkAsOld();
+
+            fuelRouteContext.FuelRouteStation.UpdateRange(oldStations);
+
+            //Add new stations with route version
+            foreach (var station in fuelStations)
+                station.RouteVersion = fuelRoad.RouteVersion;
 
             await fuelRouteContext.FuelRouteStation.AddRangeAsync(fuelStations);
-
-            //var refillPerSection = fuelStations
-            //  .Where(x => x.IsAlgorithm)
-            //  .GroupBy(x => x.RoadSectionId)
-            //  .ToDictionary(
-            //      g => g.Key,
-            //      g => g.Sum(x => decimal.TryParse(x.Refill, out var refill) ? refill : 0m)
-            //  );
 
             var refillPerSection = fuelStations
                 .Where(x => x.IsAlgorithm)

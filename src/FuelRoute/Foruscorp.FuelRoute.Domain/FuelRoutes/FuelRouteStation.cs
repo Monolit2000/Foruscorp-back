@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MediatR.NotificationPublishers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -15,6 +16,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid FuelStationId { get; set; }
 
         public DateTime ScheduledTime { get; set; }
+
+        public bool IsOld { get; set; } = false;
+        public int RouteVersion { get; set; } = 0; 
 
         public decimal Price { get; set; } 
         public decimal Discount { get; set; }
@@ -43,6 +47,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             FuelStationId = Guid.NewGuid();
 
         } // For EF Core 
+
+
+        public void MurkAsOld()
+        {
+            IsOld = true;
+        }
 
         //private FuelRouteStations(
         //    GeoPoint location, 

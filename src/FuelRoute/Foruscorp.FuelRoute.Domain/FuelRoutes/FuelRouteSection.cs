@@ -12,10 +12,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid Id { get; private set; }
         public Guid RouteId { get; private set; }
         public string EncodeRoute { get; private set; } // Base64 encoded route
-
         public RouteSectionInfo RouteSectionInfo { get; private set; }
 
-      
+        public int RouteVersion { get; set; } = 0; 
+
         public decimal FuelNeeded { get; set; } = 0.0m;
 
         public bool IsAssigned { get; private set; } 

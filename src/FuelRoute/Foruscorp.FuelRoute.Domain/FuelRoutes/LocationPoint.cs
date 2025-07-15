@@ -9,6 +9,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public string Name { get; private set; } 
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
+
+        public int RouteVersion { get; set; } = 0; 
         private LocationPoint() { } // For EF Core
         private LocationPoint(
             string name, 

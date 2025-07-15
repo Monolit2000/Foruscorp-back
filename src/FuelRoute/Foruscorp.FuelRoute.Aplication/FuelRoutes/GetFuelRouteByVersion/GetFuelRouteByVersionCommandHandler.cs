@@ -1,29 +1,29 @@
-﻿using Foruscorp.FuelRoutes.Aplication.Contruct;
+﻿using FluentResults;
+using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using System.Globalization;
-using System.Linq;
 using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute.CreateFuelRouteCommandHandler;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRouteByVersion
 {
-    public record GetFuelRouteQuery(Guid RouteId) : IRequest<GetFuelRouteDto>;
-
-    public class GetFuelRouteQueryHandler(
-        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelRouteQuery, GetFuelRouteDto>
+    public record GetFuelRouteByVersionCommand(Guid RouteId, int Version) : IRequest<Result<FuelRouteDto>>;
+    public class GetFuelRouteByVersionCommandHandler(
+        IFuelRouteContext fuelRouteContext) : IRequestHandler<GetFuelRouteByVersionCommand, Result<FuelRouteDto>>
     {
-        public async Task<GetFuelRouteDto> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
+        public async Task<Result<FuelRouteDto>> Handle(GetFuelRouteByVersionCommand request, CancellationToken cancellationToken)
         {
+
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
-                  .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
-                  .Include(x => x.RouteSections /*.Where(x => x.Id == request.RouteSectionId)*/)
-                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
+              .Include(x => x.OriginLocation)
+              .Include(x => x.DestinationLocation)
+              .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
+              .Include(x => x.RouteSections /*.Where(x => x.Id == request.RouteSectionId)*/)
+              .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             //var fuelRoad = await fuelRouteContext.FuelRoutes
             //    .Include(x => x.FuelRouteStations.Where(st => st.RoadSectionId == request.RouteSectionId))
@@ -31,7 +31,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             //    .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)
-                return new GetFuelRouteDto();
+                return new Result<FuelRouteDto>();
 
             var section = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true);
 
@@ -62,7 +62,15 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
             };
 
+
+            var responce  = new FuelRouteDto
+            {
+             
+            };
+
+
             return fuelRoute;
+
         }
 
         public static FuelStationDto MapToDto(FuelRouteStation station)
@@ -89,32 +97,4 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             };
         }
     }
-
-    public class GetFuelRouteDto
-    {
-        public string RouteId { get; set; }
-
-        public string OriginName { get; set; } = "OriginName";  
-
-        public string DestinationName { get; set; } = "DestinationName";
-
-        public double Weight { get; set; } = 0.0;   
-
-        public RouteInfo RouteInfo { get; set; }
-        
-        public double RemainingFuel { get; set; }
-
-        public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
-
-        public List<FuelStationDto> FuelStationDtos { get; set; } = new List<FuelStationDto>();
-    }
-
-    //public class GertRouteDto
-    //{
-    //    public string RouteSectionId { get; set; }
-
-    //    public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
-
-    //    public RouteInfo RouteInfo { get; set; }
-    //}
 }

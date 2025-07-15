@@ -1,67 +1,71 @@
 ﻿using FluentResults;
-using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 using Foruscorp.FuelRoutes.Aplication.Configuration.GeoTools;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.IntegrationEvents;
-using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MassTransit;
-using MassTransit.Transports;
 using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
-using System.Linq;
-using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
+using System.Text.Json.Serialization;
+using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute.CreateFuelRouteCommandHandler;
 
-namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
+namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
 {
-    public class CreateFuelRouteCommandHandler(
+    public class EditFuelRouteCommand() : IRequest<Result<FuelRouteDto>>
+    {
+        public Guid RouteId { get; set; }
+        public string OriginName { get; set; } = "OriginName";
+        public string DestinationName { get; set; } = "DestinationName";
+        public GeoPoint Origin { get; set; }
+        public GeoPoint Destination { get; set; }
+
+        public double Weight { get; set; } = 40000.0; // in Paunds
+
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public List<GeoPoint> ViaPoints { get; set; }
+
+    }
+
+    public class EditFuelRouteCommandHandler(
         IFuelRouteContext fuelRouteContext,
         ITruckerPathApi truckerPathApi,
         IMemoryCache memoryCache,
         ISender sender,
-        IPublishEndpoint publishEndpoint) : IRequestHandler<CreateFuelRouteCommand, Result<FuelRouteDto>>
+        IPublishEndpoint publishEndpoint) : IRequestHandler<EditFuelRouteCommand, Result<FuelRouteDto>>
     {
-        private record RoutePoints(string RouteSectionId, List<List<double>> MapPoints);
-
-        public record RouteInfo(double Tolls, double Gallons, double Miles, int DriveTime);
 
         public double POINT_RADIUS_KM = 8.0;
 
-        public async Task<Result<FuelRouteDto>> Handle(CreateFuelRouteCommand request, CancellationToken cancellationToken)
+        public async Task<Result<FuelRouteDto>> Handle(EditFuelRouteCommand request, CancellationToken cancellationToken)
         {
+            var fuelRoute = await fuelRouteContext.FuelRoutes
+                  .Include(x => x.OriginLocation)
+                  .Include(x => x.DestinationLocation)
+                  //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
+                  .Include(x => x.RouteSections)
+                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
-            if (request.TruckId == default)
-                throw new ArgumentException("TruckId cannot be default value", nameof(request.TruckId));
 
             if (request.ViaPoints != null && request.ViaPoints.Any())
             {
                 request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
             }
 
-            DataObject result = null;
+            var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
+            var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
 
-            if (request.Origin != null || request.Destination != null || (request.ViaPoints != null && request.ViaPoints.First().Latitude != 0))
-            {
-                var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
-                var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);
+            if (request.ViaPoints != null && request.ViaPoints.First().Latitude == 0)
+                request.ViaPoints = null;
 
-                if (request.ViaPoints != null && request.ViaPoints.First().Latitude == 0)
-                    request.ViaPoints = null;
+            var result = await truckerPathApi.PlanRouteAsync(origin, destinations, request.ViaPoints, cancellationToken: cancellationToken);
 
-                result = await truckerPathApi.PlanRouteAsync(origin, destinations, request.ViaPoints, cancellationToken: cancellationToken);
+            if (result == null)
+                return Result.Fail("ivalid route");
 
-                if (result == null)
-                    return Result.Fail("ivalid route");
-            }
-            else
-            {
-                return Result.Fail("Origin and Destination cannot be null or empty.");
-            }
-
-                //memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
+            //memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
@@ -77,13 +81,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                     }
                 }).ToList();
 
-            var fuelRoute = FuelRoute.CreateNew(
-                request.TruckId, 
-                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude),
-                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude),
-                new List<FuelRouteStation>(),
-                new List<MapPoint>(),
-                request.Weight);
+            //var fuelRoute = FuelRoute.CreateNew(
+            //    request.TruckId,
+            //    LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude),
+            //    LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude),
+            //    new List<FuelRouteStation>(),
+            //    new List<MapPoint>(),
+            //    request.Weight);
 
 
             var routeSections = sections
@@ -112,20 +116,19 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 }
             }
 
+            fuelRoute.EditRoute(routeSections);
 
-            fuelRoute.SetRouteSections(routeSections);
-
-            fuelRouteContext.FuelRoutes.Add(fuelRoute); 
+            fuelRouteContext.FuelRoutes.Add(fuelRoute);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
-  
 
-            await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
-            {
-                TruckId = request.TruckId,
-                RouteId = fuelRoute.Id
-            });
+
+            //await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
+            //{
+            //    TruckId = request.TruckId,
+            //    RouteId = fuelRoute.Id
+            //});
 
 
 
@@ -134,6 +137,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 RouteId = fuelRoute.Id.ToString(),
                 RouteDtos = sections.Select(s => s.RouteDto).ToList(),
             };
+
         }
 
         public static List<GeoPoint> OrderViaPointsByLatitude(
@@ -163,7 +167,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
         {
             if (section == null)
                 return null;
-           
+
             double miles = section.Summary?.Length ?? 0;
             int driveTime = section.Summary?.Duration ?? 0;
 
@@ -173,6 +177,5 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             return routeInfo;
         }
-
     }
 }

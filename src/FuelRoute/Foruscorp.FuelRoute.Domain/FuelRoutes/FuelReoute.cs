@@ -6,6 +6,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Diagnostics.SymbolStore;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
@@ -25,6 +26,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
+
+        public int RouteVersion { get; private set; } = 1;
+        public int CurrentVersion { get; private set; } = 1;
+        public int TotalCountRoutVersions { get; private set; } = 1;
 
         public double Weight { get; private set; }
 
@@ -52,6 +57,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             CreatedAt = DateTime.UtcNow;
             ChangedAt = DateTime.UtcNow;
             IsAccepted = false;
+
+            originLocation.RouteVersion = RouteVersion;
+            destinationLocation.RouteVersion = RouteVersion;
+
             OriginLocation = originLocation;
             DestinationLocation = destinationLocation;
             Weight = weight;
@@ -69,7 +78,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public static FuelRoute CreateNew(
             Guid truckId,
-            //Guid driverId,
             LocationPoint originLocation,
             LocationPoint destinationLocation,
             List<FuelRouteStation> fuelPoints,
@@ -78,7 +86,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             return new FuelRoute(
                 truckId,
-                //driverId,
                 originLocation,
                 destinationLocation,
                 fuelPoints,
@@ -86,11 +93,39 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 weight);
         }
 
-        // Business methods
+        public void EditRoute(
+            IEnumerable<FuelRouteSection> sections, 
+            LocationPoint NewOriginLocation = null,
+            LocationPoint NewDestinationLocation = null)
+        {
+            RouteVersion++;
+            CurrentVersion++;
+            TotalCountRoutVersions++;
+
+            if (NewOriginLocation != null)
+            {
+                NewOriginLocation.RouteVersion = RouteVersion;
+                OriginLocation = NewOriginLocation;
+            }
+
+            if (NewDestinationLocation != null)
+            {
+                NewDestinationLocation.RouteVersion = RouteVersion;
+                DestinationLocation = NewDestinationLocation;
+            }
+
+            foreach (var section in sections)
+                section.RouteVersion = RouteVersion;
+
+            RouteSections.AddRange(sections);
+            UpdateChangedAt();
+        }
+
 
         public void AcceptRoute()
         {
             IsSended = true;
+            IsAccepted = true;
             UpdateChangedAt();
         }
    
@@ -117,6 +152,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             if (sections == null || !sections.Any())
                 throw new ArgumentException("Sections cannot be null or empty", nameof(sections));
+
+            foreach (var section in sections)
+                section.RouteVersion = RouteVersion;
+
             RouteSections.AddRange(sections);
             UpdateChangedAt();
         }   
@@ -126,7 +165,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             if (fuelPoint == null)
                 throw new ArgumentNullException(nameof(fuelPoint));
 
-            ValidateFuelPoint(fuelPoint);
+
             FuelRouteStations.Add(fuelPoint);
             UpdateChangedAt();
         }

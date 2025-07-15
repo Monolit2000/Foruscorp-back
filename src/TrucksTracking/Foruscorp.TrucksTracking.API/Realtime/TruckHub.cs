@@ -1,9 +1,9 @@
-﻿using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
-using Foruscorp.TrucksTracking.Aplication.TruckLocations;
-using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
-using MediatR;
+﻿using MediatR;
 using Microsoft.AspNetCore.SignalR;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TruckLocations;
+using Foruscorp.TrucksTracking.Aplication.Contruct.RealTime;
+using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
 
 namespace Foruscorp.TrucksTracking.API.Realtime
 {
