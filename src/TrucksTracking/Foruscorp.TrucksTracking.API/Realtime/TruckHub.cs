@@ -31,6 +31,13 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             return result;
         }
 
+        public async Task LeaveTruckGroup(string truckId)
+        {
+            var connectionId = Context.ConnectionId;
+
+            await Groups.RemoveFromGroupAsync(connectionId, truckId);
+        }
+
         public override async Task OnDisconnectedAsync(Exception? exception)
         {
             truckGroupSubscriptionManager.RemoveConnection(Context.ConnectionId);
