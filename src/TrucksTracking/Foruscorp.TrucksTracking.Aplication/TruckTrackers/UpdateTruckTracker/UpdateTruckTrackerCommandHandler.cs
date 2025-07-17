@@ -12,7 +12,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
     {
         public async Task Handle(UpdateTruckTrackerCommand request, CancellationToken cancellationToken)
         {
-            var truckId = Guid.Parse(request.TruckStatsUpdate.TruckId);
+            var truckId = Guid.Parse(request.TruckInfoStatsUpdate.TruckId);
 
             var truckTracker = await tuckTrackingContext.TruckTrackers
                 .Include(tt => tt.CurrentTruckLocation)
@@ -26,9 +26,9 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
             }
 
             truckTracker.UpdateTruckTracker(
-                new GeoPoint(request.TruckStatsUpdate.Latitude, request.TruckStatsUpdate.Longitude),
-                request.TruckStatsUpdate.formattedLocation, 
-                request.TruckStatsUpdate.fuelPercents);
+                new GeoPoint(request.TruckInfoStatsUpdate.Latitude, request.TruckInfoStatsUpdate.Longitude),
+                request.TruckInfoStatsUpdate.formattedLocation, 
+                request.TruckInfoStatsUpdate.fuelPercents);
 
             await tuckTrackingContext.SaveChangesAsync(cancellationToken);  
         }

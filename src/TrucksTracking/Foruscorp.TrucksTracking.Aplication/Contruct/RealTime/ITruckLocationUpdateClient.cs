@@ -9,6 +9,7 @@ namespace Foruscorp.TrucksTracking.Aplication.Contruct.RealTime
 {
     public interface ITruckLocationUpdateClient
     {
+        Task ReceiveTruckStatsUpdate(TruckStatsUpdate truckLocationUpdate);
         Task ReceiveTruckLocationUpdate(TruckLocationUpdate truckLocationUpdate);
         Task ReceiveTruckFuelUpdate(TruckFuelUpdate truckLocationUpdate);
         Task ReceiveTruckStatusUpdate(TruckStausUpdate truckLocationUpdate);

@@ -9,6 +9,6 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker
     {
         //public Guid TruckId { get; set; }
 
-        public TruckInfoUpdate TruckStatsUpdate { get; set; }
+        public TruckInfoUpdate TruckInfoStatsUpdate { get; set; }
     }
 }

@@ -185,20 +185,38 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         {
             foreach (var u in updates)
             {
+                var group = u.TruckId.ToString();
+
+                var statsTask = _hubContext.Clients
+                    .Group(group)
+                    .ReceiveTruckStatsUpdate(new TruckStatsUpdate(
+                        u.TruckId,
+                        u.TruckName,
+                        u.Longitude,
+                        u.Latitude,
+                        u.Time,
+                        u.HeadingDegrees,
+                        u.fuelPercents));
+
+                var locationTask = _hubContext.Clients
+                    .Group(group)
+                    .ReceiveTruckLocationUpdate(new TruckLocationUpdate(
+                        u.TruckId,
+                        u.TruckName,
+                        u.Longitude,
+                        u.Latitude,
+                        u.Time,
+                        u.HeadingDegrees));
+
+                var fuelTask = _hubContext.Clients
+                    .Group(group)
+                    .ReceiveTruckFuelUpdate(new TruckFuelUpdate(
+                        u.TruckId,
+                        u.fuelPercents));
+
                 try
                 {
-                    var group = u.TruckId.ToString();
-                    await _hubContext.Clients.Group(group).ReceiveTruckLocationUpdate(
-                        new TruckLocationUpdate(
-                            u.TruckId,
-                            u.TruckName,
-                            u.Longitude,
-                            u.Latitude,
-                            u.Time,
-                            u.HeadingDegrees));
-
-                    await _hubContext.Clients.Group(group).ReceiveTruckFuelUpdate(
-                        new TruckFuelUpdate(u.TruckId, u.fuelPercents));
+                    await Task.WhenAny(statsTask, locationTask, fuelTask);
                 }
                 catch (Exception ex)
                 {
