@@ -65,7 +65,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                 var updateModel = updates.First(u => Guid.Parse(u.TruckId) == tracker.TruckId);
 
                 bool locationChanged = _truckInfoManager.UpdateTruckLocationInfoIfChanged(updateModel);
-                bool fuelChanged = _truckInfoManager.UpdateTruckIFuelnfoIfChanged(updateModel);
+                bool fuelChanged = tracker.FuelStatus != updateModel.fuelPercents; //_truckInfoManager.UpdateTruckIFuelnfoIfChanged(updateModel);
                 bool engineChanged = _truckInfoManager.UpdateTruckEngineInfoIfChanged(updateModel);
 
                 if (locationChanged)
