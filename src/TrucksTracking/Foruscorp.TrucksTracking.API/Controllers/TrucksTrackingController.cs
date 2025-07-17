@@ -4,7 +4,7 @@ using Foruscorp.TrucksTracking.Aplication.TruckLocations.GetLustTruckLocation;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.ActivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.DeactivateTruckTracker;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetAllTruckTrackers;
-using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute;
+using Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetPassedRoute;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTracker;
 using MediatR;
@@ -114,7 +114,7 @@ namespace Foruscorp.TrucksTracking.API.Controllers
         }
 
         //[HttpPost("GetPassedRouteQuery")]
-        //public async Task<ActionResult> GetRoute(GetPassedRouteQuery routeQuery)
+        //public async Task<ActionResult> GetPassedRoute(GetPassedRouteQuery routeQuery)
         //{
         //    var result = await mediator.Send(routeQuery);
         //    return Ok(result);

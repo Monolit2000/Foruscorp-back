@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
+namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetPassedRoute
 {
     public class GetPassedRouteQuery : IRequest<RouteDto>
     {

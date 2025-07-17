@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
+namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetPassedRoute
 {
     public class GetPassedRouteQueryHandler(
         ITruckTrackingContext tuckTrackingContext,
@@ -59,6 +59,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetRoute
 
             return new RouteDto
             {
+                CurrentLocation = truckTracker.CurrentTruckLocation?.Location,
+                FormattedLocation = truckTracker.CurrentTruckLocation.FormattedLocation,
                 IsRoute = true,
                 RouteId = route.RouteId,
                 MapPoints = mapPoints
