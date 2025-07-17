@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.SetCurrentRoute
 {
     public class NewRouteCreatedEventHandler(
-          ISender sender) : IConsumer<RouteCreatedIntegretionEvent>
+          ISender sender) : IConsumer<RouteAssignedIntegrationEvent>
     {
-        public async Task Consume(ConsumeContext<RouteCreatedIntegretionEvent> context)
+        public async Task Consume(ConsumeContext<RouteAssignedIntegrationEvent> context)
         {
             await sender.Send(new SetCurrentRouteCommand()
             {

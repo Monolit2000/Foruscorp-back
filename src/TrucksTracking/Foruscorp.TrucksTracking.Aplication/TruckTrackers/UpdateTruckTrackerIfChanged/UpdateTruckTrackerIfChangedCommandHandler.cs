@@ -97,10 +97,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                 }
             }
 
-            // Сохраняем все изменения разом
             await _context.SaveChangesAsync(cancellationToken);
 
-            // Отправляем команды обновления статуса двигателя
             foreach (var cmd in statusCommands)
             {
                 await _sender.Send(cmd, cancellationToken);
