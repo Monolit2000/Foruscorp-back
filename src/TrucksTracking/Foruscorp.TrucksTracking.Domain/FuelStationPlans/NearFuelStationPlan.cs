@@ -19,7 +19,13 @@ namespace Foruscorp.TrucksTracking.Domain.FuelStationPlans
 
         public NearFuelStationPlan() { }
 
-        private NearFuelStationPlan(Guid fuelStationId, Guid truckId, Guid routeId, double longitude, double latitude, double nearDistance = 10.0)
+        private NearFuelStationPlan(
+            Guid fuelStationId,
+            Guid truckId, 
+            Guid routeId, 
+            double longitude, 
+            double latitude, 
+            double nearDistance = 10.0)
         {
             TruckId = truckId;
             FuelStationId = fuelStationId;
@@ -38,6 +44,7 @@ namespace Foruscorp.TrucksTracking.Domain.FuelStationPlans
         {
             IsNear = true;
             RecordedOnLocation = recordedOnLocation;
+            IsProcessed = true; 
         }
     }
 }
