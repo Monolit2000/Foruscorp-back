@@ -56,6 +56,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 Weight = fuelRoad.Weight,
                 OriginName = fuelRoad.OriginLocation.Name,
                 DestinationName = fuelRoad.DestinationLocation.Name,
+                Origin = new GeoPoint(fuelRoad.OriginLocation.Latitude, fuelRoad.OriginLocation.Longitude),
+                Destination = new GeoPoint(fuelRoad.DestinationLocation.Latitude, fuelRoad.DestinationLocation.Longitude),
                 RouteId = fuelRoad.Id.ToString(),
                 FuelStationDtos = stations,
                 RouteInfo = routes.FirstOrDefault().RouteInfo,
@@ -97,6 +99,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public string OriginName { get; set; } = "OriginName";  
 
         public string DestinationName { get; set; } = "DestinationName";
+
+        public GeoPoint Origin { get; set; }
+        public GeoPoint Destination { get; set; }
 
         public double Weight { get; set; } = 0.0;   
 

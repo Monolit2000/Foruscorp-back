@@ -118,19 +118,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
 
             fuelRoute.EditRoute(routeSections);
 
-            fuelRouteContext.FuelRoutes.Add(fuelRoute);
-
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
-
-
-
-            //await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
-            //{
-            //    TruckId = request.TruckId,
-            //    RouteId = fuelRoute.Id
-            //});
-
-
 
             return new FuelRouteDto
             {
