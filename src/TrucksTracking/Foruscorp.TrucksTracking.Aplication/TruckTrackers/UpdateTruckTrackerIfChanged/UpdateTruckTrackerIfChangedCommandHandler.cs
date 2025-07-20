@@ -55,6 +55,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
             var trackers = await _context.TruckTrackers
                 .Where(tt => truckIds.Contains(tt.TruckId))
                 .Include(tt => tt.CurrentTruckLocation)
+                    .ThenInclude(cl => cl.Location)
                 .Include(tt => tt.CurrentRoute)
                 .ToListAsync(cancellationToken);
 
@@ -64,7 +65,10 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
             {
                 var updateModel = updates.First(u => Guid.Parse(u.TruckId) == tracker.TruckId);
 
-                bool locationChanged = tracker.CurrentTruckLocation.Location.Latitude != updateModel.Latitude || tracker.CurrentTruckLocation.Location.Longitude != updateModel.Longitude /*_truckInfoManager.UpdateTruckLocationInfoIfChanged(updateModel)*/;
+                double latitude = Math.Round((double)updateModel.Latitude, 6);
+                double longitude = Math.Round((double)updateModel.Longitude, 6);
+
+                bool locationChanged = tracker.CurrentTruckLocation.Location.Latitude != latitude || tracker.CurrentTruckLocation.Location.Longitude != longitude /*_truckInfoManager.UpdateTruckLocationInfoIfChanged(updateModel)*/;
                 bool fuelChanged = tracker.FuelStatus != updateModel.fuelPercents; //_truckInfoManager.UpdateTruckIFuelnfoIfChanged(updateModel);
                 bool engineChanged = _truckInfoManager.UpdateTruckEngineInfoIfChanged(updateModel);
 
