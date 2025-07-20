@@ -1,12 +1,10 @@
-﻿using Foruscorp.FuelRoutes.Aplication.Contruct;
-using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
-using Foruscorp.FuelRoutes.Domain.FuelRoutes;
-using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
-using MediatR;
-using Microsoft.AspNetCore.Components.Forms;
-using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
 using System.Globalization;
-using System.Linq;
+using Microsoft.EntityFrameworkCore;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Aplication.Contruct;
+using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute.CreateFuelRouteCommandHandler;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
@@ -22,13 +20,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                   .Include(x => x.OriginLocation)
                   .Include(x => x.DestinationLocation)
                   .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
-                  .Include(x => x.RouteSections /*.Where(x => x.Id == request.RouteSectionId)*/)
+                  .Include(x => x.RouteSections)
                   .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
-
-            //var fuelRoad = await fuelRouteContext.FuelRoutes
-            //    .Include(x => x.FuelRouteStations.Where(st => st.RoadSectionId == request.RouteSectionId))
-            //    .Include(x => x.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true) /*.Where(x => x.Id == request.RouteSectionId)*/)
-            //    .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)
                 return new GetFuelRouteDto();

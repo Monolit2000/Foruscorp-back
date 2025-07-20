@@ -61,7 +61,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 return Result.Fail("Origin and Destination cannot be null or empty.");
             }
 
-                //memoryCache.Set(FuelRoutesCachKeys.RouteById(result.Id), result, TimeSpan.FromHours(2));
 
             var sections = result.Routes.WaypointsAndShapes
                 .Where(ws => ws != null && ws.Sections != null)
@@ -112,22 +111,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 }
             }
 
-
             fuelRoute.SetRouteSections(routeSections);
 
             fuelRouteContext.FuelRoutes.Add(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
-  
-
             await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
             {
                 TruckId = request.TruckId,
                 RouteId = fuelRoute.Id
             });
-
-
 
             return new FuelRouteDto
             {
