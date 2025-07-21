@@ -1,15 +1,10 @@
-﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
-using MediatR;
+﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 
 namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetCurrentFuel
 {
-    public record GetCurrentFuelDto(Guid TruckId, decimal CurrentFuelAmount);
+    public record GetCurrentFuelDto(Guid TruckId, double CurrentFuelAmount);
     public record GetCurrentFuelCommand(Guid TruckId) : IRequest<GetCurrentFuelDto>;
     public class GetCurrentFuelCommandHandler(
         ITruckTrackingContext truckTrackingContext) : IRequestHandler<GetCurrentFuelCommand, GetCurrentFuelDto>
@@ -22,9 +17,9 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetCurrentFuel
             if (truckTracker == null)
                 throw new ArgumentException($"Truck with ID {request.TruckId} not found.", nameof(request.TruckId));
 
-            //var currentFuelAmount = truckTracker.CurrentFuelAmount;
+            var fuelPercentage = new GetCurrentFuelDto(truckTracker.TruckId, truckTracker.FuelStatus);
 
-            throw new NotImplementedException();
+            return fuelPercentage;
         }
     }
 }
