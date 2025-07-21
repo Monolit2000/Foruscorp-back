@@ -37,7 +37,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public FuelRouteSection(Guid routeId, string routeSectionResponceId, string encodeRoute)
         {
-            //Id = Guid.NewGuid();
+            Id = Guid.NewGuid();
             RouteId = routeId;
             EncodeRoute = encodeRoute;
             RouteSectionResponceId = routeSectionResponceId;
