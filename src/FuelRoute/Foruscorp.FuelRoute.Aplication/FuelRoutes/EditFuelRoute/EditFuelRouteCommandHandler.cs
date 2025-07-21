@@ -16,7 +16,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
 {
     public class EditFuelRouteCommand() : IRequest<Result<FuelRouteDto>>
     {
-        public Guid RouteId { get; set; }
+        public Guid TruckId { get; set; }
         public string OriginName { get; set; } = "OriginName";
         public string DestinationName { get; set; } = "DestinationName";
         public GeoPoint Origin { get; set; }
@@ -34,19 +34,25 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
         ITruckerPathApi truckerPathApi,
         IMemoryCache memoryCache,
         ISender sender,
-        IPublishEndpoint publishEndpoint) : IRequestHandler<EditFuelRouteCommand, Result<FuelRouteDto>>
+        IPublishEndpoint publishEndpoint,
+        ITruckTrackingService truckClient) : IRequestHandler<EditFuelRouteCommand, Result<FuelRouteDto>>
     {
 
         public double POINT_RADIUS_KM = 8.0;
 
         public async Task<Result<FuelRouteDto>> Handle(EditFuelRouteCommand request, CancellationToken cancellationToken)
         {
+            var route = await truckClient.GetRouteAsync(request.TruckId);
+
+            if (route == null)
+                return Result.Fail("Truck route not found.");
+
             var fuelRoute = await fuelRouteContext.FuelRoutes
                   .Include(x => x.OriginLocation)
                   .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections)
-                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
+                  .FirstOrDefaultAsync(x => x.Id == route.RouteId, cancellationToken);
 
 
             if (request.ViaPoints != null && request.ViaPoints.Any())
