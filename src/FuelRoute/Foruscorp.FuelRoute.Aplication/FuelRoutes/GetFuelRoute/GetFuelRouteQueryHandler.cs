@@ -34,7 +34,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
             var routes = fuelRoad.RouteSections.Where(rs => rs.Id == section.Id).Select(rs => new RouteDto
             {
-                RouteSectionId = rs.Id.ToString(),
+
+                RouteSectionId = section.Id.ToString(),
                 MapPoints = PolylineEncoder.DecodePolyline(rs.EncodeRoute),
                 RouteInfo = new RouteInfo(
                     rs.RouteSectionInfo.Tolls,
@@ -53,6 +54,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 Destination = new GeoPoint(fuelRoad.DestinationLocation.Latitude, fuelRoad.DestinationLocation.Longitude),
                 RouteId = fuelRoad.Id.ToString(),
                 FuelStationDtos = stations,
+
+                SectionId = section.Id.ToString(),
+
                 RouteInfo = routes.FirstOrDefault().RouteInfo,
                 MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
             };
@@ -101,7 +105,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public RouteInfo RouteInfo { get; set; }
         
         public double RemainingFuel { get; set; }
-
+        public string SectionId { get; set; }
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
 
         public List<FuelStationDto> FuelStationDtos { get; set; } = new List<FuelStationDto>();
