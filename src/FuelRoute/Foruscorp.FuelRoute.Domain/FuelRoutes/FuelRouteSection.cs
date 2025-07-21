@@ -53,5 +53,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             IsAssigned = true;
         }
+        public void MarkAsUnassigned()
+        {
+            IsAssigned = false;
+        }
     }
 }

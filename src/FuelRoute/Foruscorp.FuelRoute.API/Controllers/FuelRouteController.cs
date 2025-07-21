@@ -143,7 +143,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             var result = await mediator.Send(editFuelRouteCommand);
 
             if (result.IsSuccess)
-                return Ok();
+                return Ok(result.Value);
 
             return BadRequest(result.Errors);
         }

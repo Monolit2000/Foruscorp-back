@@ -141,6 +141,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             if (routeSectiuon == null)
                 throw new InvalidOperationException($"Route section with ID {routeSectionId} not found");
 
+            var oldAssindedRouteSectiuon = RouteSections.FirstOrDefault(rs => rs.IsAssigned == true);
+            if(oldAssindedRouteSectiuon != null)
+                oldAssindedRouteSectiuon.MarkAsUnassigned();
+
             routeSectiuon.MarkAsAssigned();
 
             IsSended = true;
