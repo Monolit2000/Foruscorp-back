@@ -122,7 +122,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 }
             }
 
-            fuelRoute.EditRoute(routeSections);
+            var newOrigin = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude);
+            var newDestination = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude);
+
+            fuelRoute.EditRoute(routeSections,
+                newOrigin, 
+                newDestination);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 

@@ -102,13 +102,17 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             CurrentVersion++;
             TotalCountRoutVersions++;
 
-            if (NewOriginLocation != null)
+            if (NewOriginLocation != null && OriginLocation.Name != NewOriginLocation.Name && 
+                OriginLocation.Latitude != NewOriginLocation.Latitude &&
+                OriginLocation.Longitude != NewOriginLocation.Latitude)
             {
                 NewOriginLocation.RouteVersion = RouteVersion;
                 OriginLocation = NewOriginLocation;
             }
 
-            if (NewDestinationLocation != null)
+            if (NewDestinationLocation != null && DestinationLocation.Name != NewDestinationLocation.Name &&
+                DestinationLocation.Latitude != NewDestinationLocation.Latitude &&
+                DestinationLocation.Longitude != NewDestinationLocation.Latitude)
             {
                 NewDestinationLocation.RouteVersion = RouteVersion;
                 DestinationLocation = NewDestinationLocation;
