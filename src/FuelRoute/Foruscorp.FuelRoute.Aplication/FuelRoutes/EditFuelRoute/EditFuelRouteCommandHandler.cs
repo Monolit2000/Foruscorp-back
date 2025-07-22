@@ -55,10 +55,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                   .FirstOrDefaultAsync(x => x.Id == route.RouteId, cancellationToken);
 
 
-            if (request.ViaPoints != null && request.ViaPoints.Any())
-            {
-                request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
-            }
+            //if (request.ViaPoints != null && request.ViaPoints.Any())
+            //{
+            //    request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
+            //}
 
             var origin = new GeoPoint(request.Origin.Latitude, request.Origin.Longitude);
             var destinations = new GeoPoint(request.Destination.Latitude, request.Destination.Longitude);

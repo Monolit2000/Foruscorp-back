@@ -36,10 +36,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             if (request.TruckId == default)
                 throw new ArgumentException("TruckId cannot be default value", nameof(request.TruckId));
 
-            if (request.ViaPoints != null && request.ViaPoints.Any())
-            {
-                request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
-            }
+            //if (request.ViaPoints != null && request.ViaPoints.Any())
+            //{
+            //    request.ViaPoints = OrderViaPointsByLatitude(request.ViaPoints, request.Origin, request.Destination);
+            //}
 
             DataObject result = null;
 
