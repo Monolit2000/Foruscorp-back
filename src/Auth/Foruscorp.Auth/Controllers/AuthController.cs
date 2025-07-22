@@ -30,11 +30,22 @@ namespace Foruscorp.Auth.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginDto request)
         {
-            var responce = await authService.LoginAsync(request); 
-            if (string.IsNullOrEmpty(responce.Token))
-                return Unauthorized("Invalid credentials");
+            try
+            {
+                var responce = await authService.LoginAsync(request);
+                if (string.IsNullOrEmpty(responce.Token))
+                    return Unauthorized("Invalid credentials");
 
-            return Ok(responce);   
+                return Ok(responce);
+            }
+            catch (KeyNotFoundException)
+            {
+                return Unauthorized("User not found");
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return Unauthorized("Invalid password");
+            }
 
         }
 

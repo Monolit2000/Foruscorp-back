@@ -391,7 +391,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + (targetKm == totalRouteDistanceKm ? finishFuel : 0);
 
                 double extraRange = (tankCapacity - 40.0) / fuelConsumptionPerKm;
-                double normalRange = tankCapacity / fuelConsumptionPerKm;
+                //double normalRange = tankCapacity / fuelConsumptionPerKm;
 
                 while (remainingFuel < neededFuel)
                 {

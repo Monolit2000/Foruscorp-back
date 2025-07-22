@@ -13,6 +13,7 @@ using Foruscorp.Trucks.Aplication.Trucks.AttachDriver;
 using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
 using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
+using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
 using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -51,7 +52,7 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result.Value);
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<Result>))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FluentResults.Result>))]
         [HttpPost("attach-driver")]
         public async Task<ActionResult> AttachDriver(AttachDriverCommand attachDriverCommand, CancellationToken cancellationToken)
         {
@@ -166,6 +167,22 @@ namespace Foruscorp.Trucks.API.Controllers
 
             return Ok();
         }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(TruckDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpGet("user/{userId:guid}")]
+        public async Task<ActionResult<TruckDto>> GetByUserId(
+            [FromRoute] Guid userId,
+            CancellationToken cancellationToken = default)
+        {
+            var result = await mediator.Send(new GetTruckByUserIdQuery(userId), cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
+        }
+
 
 
     }

@@ -67,12 +67,13 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
     app.UseSwagger();
     app.UseSwaggerUI();
     app.ApplyTuckTrackingMigrations();
+
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
 }
 
 //app.UseAuthorization();

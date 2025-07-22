@@ -67,13 +67,13 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+    app.ApplyFuelRouteContextMigrations();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
-    app.MapScalarApiReference();
-    app.ApplyFuelRouteContextMigrations();
 }
 
 app.UseAuthentication();
