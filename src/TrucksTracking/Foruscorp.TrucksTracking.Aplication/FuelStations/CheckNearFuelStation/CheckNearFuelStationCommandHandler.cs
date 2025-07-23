@@ -32,7 +32,9 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
 
                 truckTrackingContext.NearFuelStationPlans.Update(fuelStationPlan);  
 
-                await truckTrackingContext.SaveChangesAsync(cancellationToken); 
+                await truckTrackingContext.SaveChangesAsync(cancellationToken);
+
+                fuelStationPlan.Address ??= "N/A";
 
                 await PublishEvent(
                     request.TruckId, 
