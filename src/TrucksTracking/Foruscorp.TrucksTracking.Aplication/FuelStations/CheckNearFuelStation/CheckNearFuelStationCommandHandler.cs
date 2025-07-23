@@ -4,10 +4,11 @@ using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System.Runtime.CompilerServices;
+using static System.Net.WebRequestMethods;
 
 namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
 {
-    public record CheckNearFuelStationCommand(Guid TruckId, double TruckLongitude, double TruckLatitude) : IRequest;
+    public record CheckNearFuelStationCommand(Guid TruckId, double TruckLongitude, double TruckLatitude, Guid? RouteId) : IRequest;
 
     public class CheckNearFuelStationCommandHandler(
         IPublishEndpoint publishEndpoint,
@@ -15,13 +16,16 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
     {
         public async Task Handle(CheckNearFuelStationCommand request, CancellationToken cancellationToken)
         {
+            if (!request.RouteId.HasValue)
+                return;
+
             var fuelStationPlans = await truckTrackingContext.NearFuelStationPlans
-                .Where(fsp => fsp.TruckId == request.TruckId && !fsp.IsProcessed)
+                .Where(fsp => fsp.TruckId == request.TruckId && !fsp.IsProcessed && fsp.RouteId == request.RouteId)
                 .ToListAsync(cancellationToken);
 
-            foreach(var fuelStationPlan in fuelStationPlans)
+            foreach (var fuelStationPlan in fuelStationPlans)
             {
-                if(GeoUtils.CalculateDistance(
+                if (GeoUtils.CalculateDistance(
                     fuelStationPlan.Latitude, fuelStationPlan.Longitude, request.TruckLatitude, request.TruckLongitude) > fuelStationPlan.NearDistance)
                     return;
 
@@ -30,18 +34,18 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
 
                 fuelStationPlan.MarkIsNear(truckTracker.CurrentTruckLocation);
 
-                truckTrackingContext.NearFuelStationPlans.Update(fuelStationPlan);  
+                truckTrackingContext.NearFuelStationPlans.Update(fuelStationPlan);
 
                 await truckTrackingContext.SaveChangesAsync(cancellationToken);
 
                 fuelStationPlan.Address ??= "N/A";
 
                 await PublishEvent(
-                    request.TruckId, 
+                    request.TruckId,
                     fuelStationPlan.FuelStationId,
-                    fuelStationPlan.Address,    
-                    fuelStationPlan.Longitude, 
-                    fuelStationPlan.Latitude, 
+                    fuelStationPlan.Address,
+                    fuelStationPlan.Longitude,
+                    fuelStationPlan.Latitude,
                     fuelStationPlan.NearDistance);
             }
         }

@@ -80,7 +80,8 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.UpdateTruckTrackerIf
                     await _sender.Send(new CheckNearFuelStationCommand(
                         tracker.TruckId, 
                         tracker.CurrentTruckLocation.Location.Longitude, 
-                        tracker.CurrentTruckLocation.Location.Latitude));
+                        tracker.CurrentTruckLocation.Location.Latitude,
+                        tracker.CurrentRouteId));
                     _logger.LogInformation("TruckId: {TruckId}, Location changed", tracker.TruckId);
                 }
 

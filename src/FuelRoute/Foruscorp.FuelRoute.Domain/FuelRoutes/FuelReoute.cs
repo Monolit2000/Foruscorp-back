@@ -31,7 +31,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public int CurrentVersion { get; private set; } = 1;
         public int TotalCountRoutVersions { get; private set; } = 1;
 
-        public double Weight { get; private set; }
+        public double Weight { get; set; }
 
         public bool IsSended { get; private set; }
 

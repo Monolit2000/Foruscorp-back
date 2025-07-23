@@ -50,6 +50,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
                 roadSectionDtos.Add(roadSectionDto);
             }
 
+            fuelRoad.Weight = request.Weight;   
 
             var requiredStationDtos = new List<RequiredStationDto>(request.RequiredFuelStations);
 

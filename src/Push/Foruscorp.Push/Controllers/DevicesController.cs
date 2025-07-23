@@ -20,8 +20,9 @@ namespace Foruscorp.Push.Controllers
         public async Task<ActionResult<Guid>> Register([FromBody] RegisterDeviceCommand cmd)
         {
             var result = await _mediator.Send(cmd);
-            if(result.IsFailed)
-                return BadRequest(result.Errors.FirstOrDefault()?.Message ?? "Failed to register device.");
+            if (result.IsFailed)
+                return Ok();
+                //return BadRequest(result.Errors.FirstOrDefault()?.Message ?? "Failed to register device.");
 
             return CreatedAtAction(nameof(Register), new { id = result.Value}, result.Value);
         }
