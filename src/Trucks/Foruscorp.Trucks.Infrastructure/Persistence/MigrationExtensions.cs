@@ -6,7 +6,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
 {
     public static class MigrationExtensions
     {
-        public static void ApplyTuckTrackingMigrations(this IApplicationBuilder app)
+        public static void ApplyTuckMigrations(this IApplicationBuilder app)
         {
             using IServiceScope scope = app.ApplicationServices.CreateScope();
 

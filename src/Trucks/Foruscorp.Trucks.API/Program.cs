@@ -10,6 +10,7 @@ using OpenTelemetry.Logs;
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
+using Scalar.AspNetCore;
 using StackExchange.Redis;
 using System;
 using System.Threading.Tasks;
@@ -61,15 +62,24 @@ builder.Services.AddTrucksServices(builder.Configuration);
 
 var app = builder.Build();
 
+//app.MapGet("/", context =>
+//{
+//    context.Response.Redirect("/swagger/index.html", permanent: false);
+//    return Task.CompletedTask;
+//});
+
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/swagger/index.html", permanent: false);
+    context.Response.Redirect("/scalar/v1", permanent: false);
     return Task.CompletedTask;
 });
 
-    app.UseSwagger();
+
+app.MapOpenApi();
+app.MapScalarApiReference();
+app.UseSwagger();
     app.UseSwaggerUI();
-    app.ApplyTuckTrackingMigrations();
+    app.ApplyTuckMigrations();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
