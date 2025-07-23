@@ -16,6 +16,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.NotifiDriverAboutNearStation
             await sender.Send(new NotifyDriverAboutNearStationCommand(
                     context.Message.TruckId, 
                     context.Message.FuelStationId, 
+                    context.Message.Address,
                     context.Message.Longitude,
                     context.Message.Latitude, 
                     context.Message.DistanceKm));

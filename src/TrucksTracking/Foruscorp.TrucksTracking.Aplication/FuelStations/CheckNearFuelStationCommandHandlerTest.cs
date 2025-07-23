@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.TrucksTracking.Aplication.FuelStations
 {
-    public record CheckNearFuelStationCommandTest(Guid truckId, Guid fuelStationId, double longitude, double latitude, double distanceKm) : IRequest;
+    public record CheckNearFuelStationCommandTest(Guid truckId, Guid fuelStationId, string address, double longitude, double latitude, double distanceKm) : IRequest;
     public class CheckNearFuelStationCommandHandlerTest(IPublishEndpoint publishEndpoint) : IRequestHandler<CheckNearFuelStationCommandTest>
     {
         public async Task Handle(CheckNearFuelStationCommandTest request, CancellationToken cancellationToken)
         {
-            await publishEndpoint.Publish(new FuelStationPlanMarkedAsNearIntegretionEvent(request.truckId, request.fuelStationId, request.longitude, request.latitude, request.distanceKm));
+            await publishEndpoint.Publish(new FuelStationPlanMarkedAsNearIntegretionEvent(request.truckId, request.fuelStationId, request.address, request.longitude, request.latitude, request.distanceKm));
         }
     }
 }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.NotifiDriverAboutNearStation
 {
-    public record NotifyDriverAboutNearStationCommand(Guid TruckId, Guid FuelStationId, double Longitude, double Latitude, double DistanceKm) : IRequest;
+    public record NotifyDriverAboutNearStationCommand(Guid TruckId, Guid FuelStationId, string address, double Longitude, double Latitude, double DistanceKm) : IRequest;
     public class NotifyDriverAboutNearStationCommandHandler(
         ITruckContext truckContext,
         IPublishEndpoint publishEndpoint,
@@ -29,7 +29,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.NotifiDriverAboutNearStation
                 return;            
             }
 
-            await publishEndpoint.Publish(new DriverNearFuelStationIntegrationEvent(driver.UserId.Value, request.FuelStationId, request.DistanceKm));
+            await publishEndpoint.Publish(new DriverNearFuelStationIntegrationEvent(driver.UserId.Value, request.FuelStationId, request.address, request.DistanceKm));
 
         }
     }

@@ -12,6 +12,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
             await sender.Send(new CreateAndSendNearStationNotificationCommand(
                 context.Message.UserId, 
                 context.Message.FuelStationId, 
+                context.Message.Address,
                 context.Message.DistanceKm));
         }
     }

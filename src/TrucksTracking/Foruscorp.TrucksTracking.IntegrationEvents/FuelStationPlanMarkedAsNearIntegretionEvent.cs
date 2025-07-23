@@ -7,6 +7,6 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.IntegrationEvents
 {
     //NearFuelStationFoundIntegrationEvent
-    public record FuelStationPlanMarkedAsNearIntegretionEvent(Guid TruckId, Guid FuelStationId, double Longitude, double Latitude, double DistanceKm);
+    public record FuelStationPlanMarkedAsNearIntegretionEvent(Guid TruckId, Guid FuelStationId, string Address, double Longitude, double Latitude, double DistanceKm);
    
 }

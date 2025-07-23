@@ -42,6 +42,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.FuelStationPlans
 
             builder.Property(x => x.IsNear);
 
+            builder.Property(x => x.Address)
+                     .IsRequired(false);
+
             builder.Property(x => x.IsProcessed);
 
             builder.Property(x => x.CreatedAt);

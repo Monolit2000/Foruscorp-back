@@ -36,16 +36,17 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.CheckNearFuelStation
 
                 await PublishEvent(
                     request.TruckId, 
-                    fuelStationPlan.FuelStationId, 
+                    fuelStationPlan.FuelStationId,
+                    fuelStationPlan.Address,    
                     fuelStationPlan.Longitude, 
                     fuelStationPlan.Latitude, 
                     fuelStationPlan.NearDistance);
             }
         }
 
-        public async Task PublishEvent(Guid truckId, Guid fuelStationId, double longitude, double latitude, double distanceKm)
+        public async Task PublishEvent(Guid truckId, Guid fuelStationId, string address, double longitude, double latitude, double distanceKm)
         {
-            await publishEndpoint.Publish(new FuelStationPlanMarkedAsNearIntegretionEvent(truckId, fuelStationId, longitude, latitude, distanceKm));
+            await publishEndpoint.Publish(new FuelStationPlanMarkedAsNearIntegretionEvent(truckId, fuelStationId, address, longitude, latitude, distanceKm));
         }
     }
 

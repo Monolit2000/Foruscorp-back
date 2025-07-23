@@ -7,7 +7,7 @@ using Foruscorp.Push.Domain.PushNotifications;
 namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotification
 {
 
-    public record CreateAndSendNearStationNotificationCommand(Guid UserId, Guid StationId, double DistanceKm) : IRequest;
+    public record CreateAndSendNearStationNotificationCommand(Guid UserId, Guid StationId, string Address, double DistanceKm) : IRequest;
 
     public class CreateAndSendNearStationNotificationCommandHandler(
         IExpoPushService pushService,
@@ -20,6 +20,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
             var content = new NotificationContent("Fuel station", $"Refuel in {Math.Round(request.DistanceKm * KmToMiles, 2)} miles");
             var payloadData = new Dictionary<string, object>
             {
+                ["Address"] = request.Address,
                 ["StationId"] = request.StationId,
                 ["NotificationType"] = "NearFuelStation",
                 ["DistanceMiles"] = Math.Round(request.DistanceKm * KmToMiles, 2),

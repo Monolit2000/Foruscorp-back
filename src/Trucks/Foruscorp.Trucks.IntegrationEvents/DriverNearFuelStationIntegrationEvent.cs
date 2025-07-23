@@ -6,5 +6,5 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.IntegrationEvents
 {
-    public record DriverNearFuelStationIntegrationEvent(Guid UserId, Guid FuelStationId, double DistanceKm);
+    public record DriverNearFuelStationIntegrationEvent(Guid UserId, Guid FuelStationId, string Address, double DistanceKm);
 }
