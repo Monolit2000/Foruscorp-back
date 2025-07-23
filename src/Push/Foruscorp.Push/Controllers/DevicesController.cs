@@ -19,8 +19,11 @@ namespace Foruscorp.Push.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<Guid>> Register([FromBody] RegisterDeviceCommand cmd)
         {
-            var deviceId = await _mediator.Send(cmd);
-            return CreatedAtAction(nameof(Register), new { id = deviceId }, deviceId);
+            var result = await _mediator.Send(cmd);
+            if(result.IsFailed)
+                return BadRequest(result.Errors.FirstOrDefault()?.Message ?? "Failed to register device.");
+
+            return CreatedAtAction(nameof(Register), new { id = result.Value}, result.Value);
         }
 
         [HttpPut("update-token")]

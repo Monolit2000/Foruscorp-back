@@ -11,6 +11,8 @@
 
   <ItemGroup>
 
+    <PackageReference Include="FluentResults" Version="3.16.0" />
+    
     <PackageReference Include="Community.Expo.Server.SDK" Version="1.2.3" />
     <PackageReference Include="MassTransit" Version="8.4.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />

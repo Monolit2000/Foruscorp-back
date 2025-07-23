@@ -28,6 +28,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 
             fuelRoute.MarkAsSended(request.RouteSectionId);
 
+            fuelRoute.MarkAsAccepted();
+
             await context.SaveChangesAsync(cancellationToken);
 
             await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId));
