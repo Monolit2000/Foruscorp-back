@@ -22,8 +22,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     {
         // Радиус «коридора» вдоль маршрута (в км), в пределах которого принимаем станции
         private const double SearchRadiusKm = 9.0;
+        private static double TankRestrictions = 40.0;
 
-
+        
         //// Расход топлива: 0.3 л/км (30 л/100 км)
         //private const double TruckFuelConsumptionLPerKm = 0.3;
 
@@ -38,7 +39,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private const double TruckFuelConsumptionLPerKm = 0.10;
 
         // Ёмкость бака: 200 галлонов
-        private double TruckTankCapacityL = 200.0 - 40.0;
+        private double TruckTankCapacityL = 200.0 - TankRestrictions;
 
         // Начальный объём топлива: 60 галлонов
         private  double InitialFuelLiters = 20.0;
@@ -59,11 +60,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
 
 
-            TruckTankCapacityL = TruckTankCapacityL + 40.0;
+            TruckTankCapacityL = TruckTankCapacityL + TankRestrictions;
 
             InitialFuelLiters = TruckTankCapacityL * (request.CurrentFuel / 100.0);
 
-            TruckTankCapacityL = TruckTankCapacityL - 40.0;
+            TruckTankCapacityL = TruckTankCapacityL - TankRestrictions;
             //var providerTruckId = GetProviderTruckId(Guid.Parse("5f0d3007-707e-4e5f-b46b-ebe4b50b9395"));
 
             //var currentFuelSams = truckProviderService.GetVehicleStatsFeedAsync(providerTruckId);
@@ -390,7 +391,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 // Сколько топлива надо, чтобы доехать от prevKm до targetKm, с учётом finishFuel для финального сегмента
                 double neededFuel = (targetKm - prevKm) * fuelConsumptionPerKm + (targetKm == totalRouteDistanceKm ? finishFuel : 0);
 
-                double extraRange = (tankCapacity - 40.0) / fuelConsumptionPerKm;
+                double extraRange = (tankCapacity - TankRestrictions) / fuelConsumptionPerKm;
                 //double normalRange = tankCapacity / fuelConsumptionPerKm;
 
                 while (remainingFuel < neededFuel)
@@ -476,15 +477,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     bool isLastRefuel = best.ForwardDistanceKm + extraRange >= totalRouteDistanceKm;
 
                     //double effectiveCapacity = isFirstStop
-                    //   ? tankCapacity + 40.0
+                    //   ? tankCapacity + TankRestrictions
                     //   : tankCapacity;
 
-                    if(isLastRefuel)
+                    if (isLastRefuel)
                         Console.WriteLine(      );
 
 
                     double effectiveCapacity = (isFirstStop || isLastRefuel)
-                       ? tankCapacity + 40.0
+                       ? tankCapacity + TankRestrictions
                        : tankCapacity;
 
                     // Дозаправка: для последнего сегмента учитываем finishFuel
@@ -552,8 +553,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 // Дозаправки между prevKm и обязательной (игнорируем MinStopDistance)
                 PlanTill(kmReq);
 
-          //      double toRefill = Math.Min(req.RefillLiters,
-          //(isFirstStop ? tankCapacity + 40.0 : tankCapacity) - remainingFuel);
+                //      double toRefill = Math.Min(req.RefillLiters,
+                //(isFirstStop ? tankCapacity + TankRestrictions : tankCapacity) - remainingFuel);
 
                 // Теперь делаем саму обязательную дозаправку ровно req.RefillLiters
                 double allowed = Math.Min(req.RefillLiters, tankCapacity - remainingFuel);
