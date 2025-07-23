@@ -7,7 +7,7 @@ using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Aplication.Configuration.CaheKeys;
 using Microsoft.AspNetCore.Components.Forms;
-using System.Data.Entity;
+using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
 {
