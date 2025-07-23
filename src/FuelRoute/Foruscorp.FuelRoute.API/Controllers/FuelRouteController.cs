@@ -9,6 +9,7 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
@@ -126,6 +127,20 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
+
+        [HttpPost("selfAssignRoute")]
+        public async Task<IActionResult> SelfAssignRouteCommand(SelfAssignRouteCommand selfAssignRouteCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(selfAssignRouteCommand);
+
+            if (result.IsSuccess)
+                return Ok();
+
+            return BadRequest(result.Errors);
+        }
+
+
+
 
         [HttpPost("get-fuel-route-byId")]
         public async Task<IActionResult> GetByUser(GetFuelRouteQuery getFuelRouteQuery )

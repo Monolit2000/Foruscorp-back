@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.AssignRoute
 {
-    public record AssignRouteCommand(Guid RouteId, Guid TruckId) : IRequest;
+    public record AssignRouteCommand(Guid RouteId, Guid TruckId, bool IsSelfAssign) : IRequest;
     public class AssignRouteCommandHandler(
         ITruckContext context,
         IPublishEndpoint publishEndpoint,
@@ -37,7 +37,8 @@ namespace Foruscorp.Trucks.Aplication.Trucks.AssignRoute
 
             await context.SaveChangesAsync(cancellationToken);
 
-            await publishEndpoint.Publish(new RouteOfferedIntegrationEvent(truck.Driver.UserId.Value, request.RouteId));
+            if(!request.IsSelfAssign)
+                await publishEndpoint.Publish(new RouteOfferedIntegrationEvent(truck.Driver.UserId.Value, request.RouteId));
         }
     }
 }

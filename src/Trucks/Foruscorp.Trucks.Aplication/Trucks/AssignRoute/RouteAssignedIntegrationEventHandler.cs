@@ -11,7 +11,8 @@ namespace Foruscorp.Trucks.Aplication.Trucks.AssignRoute
         {
             await sender.Send(new AssignRouteCommand(
                 context.Message.RouteId, 
-                context.Message.TruckId), 
+                context.Message.TruckId,
+                context.Message.IsSelfAssign), 
                 context.CancellationToken);
         }
     }
