@@ -13,7 +13,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
         TruckGroupSubscriptionManager truckGroupSubscriptionManager,
         ISender sender) : Hub<ITruckLocationUpdateClient>
     {
-        public async Task<List<TruckLocationDto>> JoinTruckGroup(string truckId)
+        public async Task JoinTruckGroup(string truckId)
         {
             var result = new List<TruckLocationDto>();
             var connectionId = Context.ConnectionId;
@@ -21,14 +21,14 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             activeTruckManager.AddTruck(truckId);
             await Groups.AddToGroupAsync(connectionId, truckId);
 
-            if (Guid.TryParse(truckId, out var truckGuid))
-            {
-                result = await sender.Send(
-                    new GetLastTruckLocationsQuery(truckGuid),
-                    CancellationToken.None);
-            }
+            //if (Guid.TryParse(truckId, out var truckGuid))
+            //{
+            //    result = await sender.Send(
+            //        new GetLastTruckLocationsQuery(truckGuid),
+            //        CancellationToken.None);
+            //}
 
-            return result;
+            //return result;
         }
 
         public async Task LeaveTruckGroup(string truckId)
