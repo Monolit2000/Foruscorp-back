@@ -54,7 +54,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             var requiredStationDtos = new List<RequiredStationDto>(request.RequiredFuelStations);
 
 
-            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos, FinishFuel = request.FinishFuel, FuelProviderNameList = request.FuelProviderNameList, CurrentFuel = request.CurrentFuel }, cancellationToken);
+            var fuelStationsResult = await sender.Send(new GetFuelStationsByRoadsQuery {Weight = request.Weight, Roads = roadSectionDtos, RequiredFuelStations = requiredStationDtos, FinishFuel = request.FinishFuel, FuelProviderNameList = request.FuelProviderNameList, CurrentFuel = request.CurrentFuel }, cancellationToken);
 
             if (fuelStationsResult.IsFailed)
                 return Result.Fail(fuelStationsResult.Errors.FirstOrDefault()?.Message ?? "Failed to retrieve fuel stations.");

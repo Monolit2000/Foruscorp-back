@@ -26,27 +26,31 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
         
         //// Расход топлива: 0.3 л/км (30 л/100 км)
-        //private const double TruckFuelConsumptionLPerKm = 0.3;
+        //private const double TruckFuelConsumptionGPerKm = 0.3;
 
         //// Ёмкость бака в галонах
-        //private const double TruckTankCapacityL = 200.0;
+        //private const double TruckTankCapacityG = 200.0;
 
         //// Начальный объём топлива в галонах (можно брать из запроса, здесь для примера)
-        //private const double InitialFuelLiters = 60.0;
-
-
-
-        private const double TruckFuelConsumptionLPerKm = 0.10;
-
-        // Ёмкость бака: 200 галлонов
-        private double TruckTankCapacityL = 200.0 - TankRestrictions;
-
-        // Начальный объём топлива: 60 галлонов
-        private  double InitialFuelLiters = 20.0;
+        //private const double InitialFuelPercent = 60.0;
 
         private readonly IFuelStationContext fuelStationContext;
 
         private readonly ITruckProviderService truckProviderService;
+
+        private const double ReferenceWeightLb = 40000.0;
+        private const double ReferenceConsumptionGPerKm = 0.089;
+
+        // Расход топлива: 0.10 g/км (10 g/100 км)
+        private double TruckFuelConsumptionGPerKm = 0.10;
+
+        // Ёмкость бака: 200 галлонов
+        private double TruckTankCapacityG = 200.0 - TankRestrictions;
+
+        // Начальный объём топлива: 60 галлонов
+        private  double InitialFuelPercent = 20.0;
+
+
 
         public GetFuelStationsByRoadsQueryHandler(IFuelStationContext fuelStationContext, ITruckProviderService truckProviderService)
         {
@@ -60,14 +64,17 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
 
 
-            TruckTankCapacityL = TruckTankCapacityL + TankRestrictions;
+            TruckTankCapacityG = TruckTankCapacityG + TankRestrictions;
 
-            InitialFuelLiters = TruckTankCapacityL * (request.CurrentFuel / 100.0);
+            InitialFuelPercent = TruckTankCapacityG * (request.CurrentFuel / 100.0);
 
-            TruckTankCapacityL = TruckTankCapacityL - TankRestrictions;
+            TruckTankCapacityG = TruckTankCapacityG - TankRestrictions;
             //var providerTruckId = GetProviderTruckId(Guid.Parse("5f0d3007-707e-4e5f-b46b-ebe4b50b9395"));
 
             //var currentFuelSams = truckProviderService.GetVehicleStatsFeedAsync(providerTruckId);
+
+
+            TruckFuelConsumptionGPerKm = CalculateConsumptionGPerKm(request.Weight);
 
 
             // 1. Проверка входных данных
@@ -232,9 +239,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 routePoints,
                 stationsAlongRoute,
                 totalRouteDistanceKm,
-                TruckFuelConsumptionLPerKm,
-                InitialFuelLiters,
-                TruckTankCapacityL,
+                TruckFuelConsumptionGPerKm,
+                InitialFuelPercent,
+                TruckTankCapacityG,
                 requiredStationDtos,
                 finishFuel,
                 road.RoadSectionId);
@@ -601,6 +608,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             };
 
             return new StopPlanInfo { StopPlan = result, Finish = finishInfo };
+        }
+
+        private static double CalculateConsumptionGPerKm(double weightLb)
+        {
+            return ReferenceConsumptionGPerKm * (weightLb / ReferenceWeightLb);
         }
 
         private double GetForwardDistanceAlongRoute(List<GeoPoint> route, GeoPoint stationCoords)
