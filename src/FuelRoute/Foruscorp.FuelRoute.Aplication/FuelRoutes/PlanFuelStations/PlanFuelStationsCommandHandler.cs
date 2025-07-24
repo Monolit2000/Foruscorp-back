@@ -6,7 +6,6 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System.Linq;
 using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
@@ -19,7 +18,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
         public async Task<Result<PlanFuelStationsByRoadsResponce>> Handle(PlanFuelStationsCommand request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
+                //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                 .Include(x => x.RouteSections.Where(rs => request.RouteSectionIds.Count > 0 && request.RouteSectionIds.Contains(rs.Id.ToString())))
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
