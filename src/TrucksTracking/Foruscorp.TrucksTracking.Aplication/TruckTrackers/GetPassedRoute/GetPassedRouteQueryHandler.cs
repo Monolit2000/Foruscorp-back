@@ -50,6 +50,7 @@ namespace Foruscorp.TrucksTracking.Aplication.TruckTrackers.GetPassedRoute
             var mapPoints = await tuckTrackingContext.TruckLocations
                 .Where(tl => tl.RouteId == route.RouteId)
                 .OrderBy(tl => tl.RecordedAt)
+                .AsNoTracking()
                 .Select(tl => new CoordinateDto
                 {
                     Longitude = tl.Location.Longitude,

@@ -6,6 +6,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 using FuelStationDto = Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.FuelStationDto;
 
@@ -18,11 +19,31 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
         public async Task<Result<PlanFuelStationsByRoadsResponce>> Handle(PlanFuelStationsCommand request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                .Include(x => x.FuelRouteStations)
-                .Include(x => x.RouteSections)
+                .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
+                .Include(x => x.RouteSections.Where(rs => request.RouteSectionIds.Count > 0 && request.RouteSectionIds.Contains(rs.Id.ToString())))
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
-            if(fuelRoad == null)
+
+            //var sectionGuids = request.RouteSectionIds
+            //    .Where(s => !string.IsNullOrWhiteSpace(s))
+            //    .Select(Guid.Parse)
+            //    .ToList();
+
+            //IQueryable<FuelRoute> query = fuelRouteContext.FuelRoutes
+            //    .Include(r => r.FuelRouteStations.Where(st => st.IsOld));
+
+            //if (sectionGuids.Any())
+            //{
+            //    // Only add the filtered Include if there are section IDs
+            //    query = query.Include(r =>
+            //        r.RouteSections.Where(sec => sectionGuids.Contains(sec.Id))
+            //    );
+            //}
+
+            //var fuelRoad = await query
+            //    .FirstOrDefaultAsync(r => r.Id == request.RouteId, cancellationToken);
+
+            if (fuelRoad == null)
                 return Result.Fail($"Fuel route with id:{request.RouteId} not found.");    
 
 
@@ -68,7 +89,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
                 .ToHashSet();
 
             var oldStations = await fuelRouteContext.FuelRouteStation
-                .Where(x => x.FuelRouteId == fuelRoad.Id && sectionIds.Contains(x.RoadSectionId))
+                .Where(x => x.FuelRouteId == fuelRoad.Id && !x.IsOld)
                 .ToListAsync(cancellationToken);
 
             //Mark old stations as old
