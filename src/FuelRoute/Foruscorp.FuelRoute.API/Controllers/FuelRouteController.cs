@@ -7,6 +7,7 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute;
@@ -149,6 +150,15 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return Ok(list);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAasignedRouteByTruckIdResponce))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("get-assigned-route-by-truck-Id")]
+        public async Task<IActionResult> GetAasignedRouteByTruckIdQuery(GetAasignedRouteByTruckIdQuery getAasignedRouteByTruckIdQuery )
+        {
+            var result = await mediator.Send(getAasignedRouteByTruckIdQuery);
+            return Ok(result.Value);
+        }
+
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(FuelRouteDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
@@ -162,6 +172,9 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
+
+
+
 
     }
 }
