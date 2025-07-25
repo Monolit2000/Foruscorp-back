@@ -14,9 +14,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
 
     public class AssignedWithPassedRouteByTruckIdDto
     {
+        public CurrentLocation CurrentLocation { get; set; }
         public AssignedRoute AssignedRoute { get; set; }
-        public TrackedRouteDto routeDto { get; set; }
+        public TrackedRouteDto PassedRoute { get; set; }
     }
+
+    public class CurrentLocation
+    {
+        public string FormattedLocation { get; set; }
+        public GeoPoint Location { get; set; }
+    }
+
 
     public class AssignedRoute 
     {
@@ -50,15 +58,27 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
         {
             var passedRoute = await truckClient.GetRouteAsync(request.TruckId);
 
-            if (passedRoute == null)
+            if (passedRoute.CurrentLocation == null)
                 return Result.Fail("Route not found for the given TruckId.");
+
+            var currentLocation = new CurrentLocation
+            {
+                FormattedLocation = passedRoute.FormattedLocation,
+                Location = new GeoPoint(passedRoute.CurrentLocation.Latitude, passedRoute.CurrentLocation.Longitude)
+            };
+
 
             if (!passedRoute.RouteId.HasValue || !passedRoute.IsRoute)
             {
                 return new GetAasignedRouteByTruckIdResponce
                 {
                     HasAssigned = false,
-                    AssignedWithPassedRoute = null
+                    AssignedWithPassedRoute = new AssignedWithPassedRouteByTruckIdDto
+                    {
+                        CurrentLocation = currentLocation,
+                        AssignedRoute = null,
+                        PassedRoute = null
+                    }
                 };
             }
 
@@ -112,8 +132,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
 
             var assignedWithPassedRoute = new AssignedWithPassedRouteByTruckIdDto
             {
+                CurrentLocation = currentLocation,
                 AssignedRoute = assignedRoute,
-                routeDto = passedRoute,
+                PassedRoute = passedRoute,
             };
 
             return new GetAasignedRouteByTruckIdResponce
@@ -135,14 +156,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
                 Price = station.Price.ToString(CultureInfo.InvariantCulture),
                 Discount = station.Discount.ToString(CultureInfo.InvariantCulture),
                 PriceAfterDiscount = station.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
-
                 IsAlgorithm = station.IsAlgorithm,
                 Refill = station.Refill,
                 StopOrder = station.StopOrder,
                 NextDistanceKm = station.NextDistanceKm,
-
                 RoadSectionId = station.RoadSectionId.ToString(),
-
                 CurrentFuel = station.CurrentFuel
             };
         }

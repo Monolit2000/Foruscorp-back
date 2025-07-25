@@ -140,9 +140,6 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
-
-
-
         [HttpPost("get-fuel-route-byId")]
         public async Task<IActionResult> GetByUser(GetFuelRouteQuery getFuelRouteQuery )
         {
@@ -172,8 +169,6 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
-
-
 
 
     }
