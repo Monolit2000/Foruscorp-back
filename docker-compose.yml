@@ -1,47 +1,41 @@
-services:
+x-db: &db-env
+  # ConnectionStrings__DefaultConnection: "Host=host.docker.internal;Port=5432;Database=ForuscorpDB;Username=postgres;Password=postgres"
+  ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
 
+x-mq: &mq-env
+  MessageBroker__HostName: "rabbitmq://rabbitmq"
+  MessageBroker__Username: "guest"
+  MessageBroker__Password: "guest"
+
+x-otel: &otel-env
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
+
+x-common: &common-env
+  ASPNETCORE_ENVIRONMENT: "Production"
+
+services:
   foruscorp.gateway:
     container_name: foruscorp-gateway
-    # image: ${DOCKER_REGISTRY-}foruscorpgateway
     image: futondoker/foruscorpgateway:v1
     build:
       context: .
       dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
     volumes:
-      # - ./appsettings.json:/etc/yarp.config
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
-      - "5000:5000" 
-      - "5011:5011" 
+      - "5000:5000"
+      - "5011:5011"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ASPNETCORE_Kestrel__Certificates__Default__Path=/etc/certs/certificate.pfx
-      - ASPNETCORE_Kestrel__Certificates__Default__Password=foruscorp
-      - ASPNETCORE_HTTP_PORTS=5000
-      - ASPNETCORE_HTTPS_PORTS=5011
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+      ASPNETCORE_ENVIRONMENT: "Production"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      ASPNETCORE_HTTP_PORTS: "5000"
+      ASPNETCORE_HTTPS_PORTS: "5011"
+      <<: *otel-env
     networks:
       - foruscorp-docker-network
-    
-
-  # foruscorp.truckstracking.worker:
-  #   container_name: foruscorp-truckstracking-worker
-  #   image: futondoker/foruscorptruckstrackingworker:v1
-  #   build:
-  #     context: .
-  #     dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.Worker/Dockerfile
-  #   ports:
-  #     - "5013:5013" 
-  #   environment:
-  #     - ASPNETCORE_ENVIRONMENT=Production
-  #     - ASPNETCORE_HTTP_PORTS=5013
-  #     - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
-  #     - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-  #   networks:
-  #     - foruscorp-docker-network
-
 
   foruscorp.auth:
     container_name: auth-api
@@ -50,23 +44,15 @@ services:
       context: .
       dockerfile: src/Auth/Foruscorp.Auth/Dockerfile
     ports:
-      - 5007:5007
+      - "5007:5007"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-      - ASPNETCORE_HTTP_PORTS=5007
-      - DOTNET_ENVIRONMENT=Development
+      <<: [*db-env, *mq-env, *common-env]
     depends_on:
-      - foruscorp.db
       - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - foruscorp-docker-network
-
-
-    
 
   foruscorp.push:
     container_name: push-api
@@ -75,71 +61,33 @@ services:
       context: .
       dockerfile: src/Push/Foruscorp.Push/Dockerfile
     ports:
-      - 5010:5010
+      - "5010:5010"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
     depends_on:
-      - foruscorp.db
       - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - foruscorp-docker-network
-
-
-  foruscorp.truckstracking.api:
-    container_name: truckstracking-api
-    image: futondoker/foruscorptruckstrackingapi:v1
-    build:
-      context: .
-      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
-    ports:
-      - 5001:5001
-    environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
-      - Serilog__WriteTo__1__Args__serverUrl=http://seq:5341 # Add Seq URL for Serilog
-      # - OTEL_EXPORTER_OTLP_ENDPOINT=http://aspire-dashboard:18889 # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
-    depends_on:
-      - foruscorp.db
-      - rabbitmq
-      # - seq # Add dependency on Seq
-    networks:
-      - foruscorp-docker-network
-    restart: unless-stopped
-
 
   foruscorp.fuelstations.api:
     container_name: fuelstations-api
     image: futondoker/foruscorpfuelstationsapi:v1
-    build: 
+    build:
       context: .
       dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
     ports:
-      - 5002:5002
+      - "5002:5002"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
     depends_on:
-      - foruscorp.db
       - rabbitmq
+      - redis
+      - foruscorp.db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - foruscorp-docker-network
 
@@ -150,70 +98,97 @@ services:
       context: .
       dockerfile: src/Trucks/Foruscorp.Trucks.API/Dockerfile
     ports:
-      - 5003:5003
+      - "5003:5003"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - SamsaraApi__ApiToken=${SAMSARA_API_TOKEN}
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
     depends_on:
-      - foruscorp.db
       - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - foruscorp-docker-network
+
+  foruscorp.truckstracking.api:
+    container_name: truckstracking-api
+    image: futondoker/foruscorptruckstrackingapi:v1
+    build:
+      context: .
+      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+    restart: unless-stopped
 
   foruscorp.fuelroutes.api:
     container_name: fuelroutes-api
     image: futondoker/foruscorpfuelroutesapi:v1
     build:
-        context: .
-        dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+      context: .
+      dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
     ports:
-      - 5004:5004
+      - "5004:5004"
     environment:
-      - ASPNETCORE_ENVIRONMENT=Production
-      - ConnectionStrings__DefaultConnection=Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password
-      - ASPNETCORE_ENVIRONMENT=Development
-      - MessageBroker__HostName=rabbitmq://rabbitmq
-      - MessageBroker__Username=guest
-      - MessageBroker__Password=guest
-      - OTEL_EXPORTER_OTLP_ENDPOINT=https://otlp-gateway-prod-us-west-0.grafana.net/otlp # OpenTelemetry endpoint for metrics and traces
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_EXPORTER_OTLP_HEADERS=Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ==
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
     depends_on:
-      - foruscorp.db
       - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     networks:
       - foruscorp-docker-network
 
+  aspire-dashboard:
+    container_name: aspire-dashboard
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    ports:
+      - "18888:18888"
+      - "4317:4317"
+    environment:
+      DOTNET_ENVIRONMENT: "Development"
+      Dashboard__Otlp__EndpointUrl: "http://aspire-dashboard:4317"
+      Dashboard__Frontend__AuthMode: "Unsecured"
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    networks:
+      - foruscorp-docker-network
+    depends_on:
+      - rabbitmq
+      - foruscorp.truckstracking.api
+      - foruscorp.fuelstations.api
+      - foruscorp.trucks.api
+      - foruscorp.fuelroutes.api
 
-  # gateway.api:
-  #   container_name: gateway-api
-  #   image: mcr.microsoft.com/dotnet/nightly/yarp:latest
-  #   volumes:
-  #     - ./appsettings.json:/etc/yarp.config
-  #     - ./certs/certificate.pfx:/etc/certs/certificate.pfx
-  #   ports:
-  #     - "5011:5011" 
-  #     - "5000:5000" 
-  #   networks:
-  #     - foruscorp-docker-network
+  rabbitmq:
+    container_name: rabbitmq
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    networks:
+      - foruscorp-docker-network
 
   foruscorp.db:
     container_name: foruscorp-postgres
     image: postgres:latest
     ports:
-      - 5435:5432
+      - "5435:5432"
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=your_secure_password
-      - POSTGRES_DB=ForuscorpDB
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "your_secure_password"
+      POSTGRES_DB: "ForuscorpDB"
     volumes:
       - postgres-data:/var/lib/postgresql/data
     networks:
@@ -229,61 +204,19 @@ services:
     networks:
       - foruscorp-docker-network
 
-  rabbitmq:
-    container_name: rabbitmq
-    image: rabbitmq:3-management
-    ports:
-      - 5672:5672 
-      - 15672:15672 
-    environment:
-      - RABBITMQ_DEFAULT_USER=guest
-      - RABBITMQ_DEFAULT_PASS=guest
-    volumes:
-      - rabbitmq-data:/var/lib/rabbitmq
-    networks:
-      - foruscorp-docker-network
-
-
-  aspire-dashboard:
-    container_name: aspire-dashboard
-    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
-    ports:
-      - 18888:18888
-      - 4317:4317 # OpenTelemetry gRPC port for metrics and traces
-    environment:
-      - DOTNET_ENVIRONMENT=Development
-      - Dashboard__Otlp__EndpointUrl=http://aspire-dashboard:4317
-      - Dashboard__Frontend__AuthMode=Unsecured # Set to 'BrowserToken' for secured mode
-      # - Dashboard__Frontend__BrowserToken=your_secure_browser_token # Uncomment for secured 
-      - DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS=true # Allow anonymous access for development 
-    networks:
-      - foruscorp-docker-network
-    depends_on:
-      - foruscorp.db
-      - rabbitmq
-      - foruscorp.truckstracking.api
-      - foruscorp.fuelstations.api
-      - foruscorp.trucks.api
-      - foruscorp.fuelroutes.api
-
-
   # seq:
   #   container_name: seq
   #   image: datalust/seq:latest
   #   ports:
-  #     - 5341:80
-  #     - 5342:5341
+  #     - "5341:80"
+  #     - "5342:5341"
   #   environment:
-  #     - ACCEPT_EULA=Y
-  #     # - SEQ_RETENTIONDAYS=2
-  #     # - SEQ_FIRSTRUN_ADMINPASSWORD=YourStr0ngP@ssw0rd
+  #     ACCEPT_EULA: "Y"
   #   volumes:
   #     - seq-data:/data
   #   networks:
   #     - foruscorp-docker-network
   #   restart: unless-stopped
-
-
 
 networks:
   foruscorp-docker-network:
@@ -296,11 +229,3 @@ volumes:
     driver: local
   rabbitmq-data:
     driver: local
-  seq-data:
-    driver: local
-
-
-
-
-
-
