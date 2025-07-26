@@ -42,6 +42,9 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
                     .HasColumnName("Longitude")
                     .IsRequired();
 
+                coordBuilder.HasIndex(c => c.Latitude);
+
+                coordBuilder.HasIndex(c => c.Longitude);
             });
 
             builder.OwnsMany(fs => fs.FuelPrices, priceBuilder =>

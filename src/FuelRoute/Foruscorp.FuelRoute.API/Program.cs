@@ -75,17 +75,17 @@ builder.Services.AddOpenApi("v1");
 
 var app = builder.Build();
 
-app.MapGet("/", context =>
-{
-    context.Response.Redirect("/swagger/index.html", permanent: false);
-    return Task.CompletedTask;
-});
-
 //app.MapGet("/", context =>
 //{
-//    context.Response.Redirect("/scalar/v1", permanent: false);
+//    context.Response.Redirect("/swagger/index.html", permanent: false);
 //    return Task.CompletedTask;
 //});
+
+app.MapGet("/", context =>
+{
+    context.Response.Redirect("/scalar/v1", permanent: false);
+    return Task.CompletedTask;
+});
 
 
 // Configure the HTTP request pipeline.

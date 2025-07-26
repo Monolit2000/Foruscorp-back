@@ -59,6 +59,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Trucks
             builder.Property(h => h.RecordedAt)
                    .IsRequired();
 
+
+
+            //builder.HasIndex(t => new { t.TruckId, t.RecordedAt });
+            builder.HasIndex(t => new { t.TruckId, t.RecordedAt })
+                 .IsDescending(false, true);
+              
         }
     }
 }
