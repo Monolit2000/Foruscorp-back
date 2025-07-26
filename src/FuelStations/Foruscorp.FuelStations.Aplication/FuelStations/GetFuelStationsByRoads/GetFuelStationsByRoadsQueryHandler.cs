@@ -118,13 +118,24 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             FinishInfo finishInfo = new FinishInfo();
 
-            foreach (var road in request.Roads)
-            {
-                var routeStopsForRoadInfo = PlanRouteStopsForRoad(road, stations, request.RequiredFuelStations, request.FuelProviderNameList, request.FinishFuel);
+            var tasks = request.Roads.Select(road =>
+                Task.Run(() =>
+                {
+                    return PlanRouteStopsForRoad(
+                        road,
+                        stations,
+                        request.RequiredFuelStations,
+                        request.FuelProviderNameList,
+                        request.FinishFuel);
+                })
+            ).ToList();
 
+            var results = await Task.WhenAll(tasks);
+
+            foreach (var routeStopsForRoadInfo in results)
+            {
                 allStopPlans.AddRange(routeStopsForRoadInfo.StopPlan);
                 allStationsWithoutAlgo.AddRange(routeStopsForRoadInfo.StationsWithoutAlgorithm);
-
                 finishInfo = routeStopsForRoadInfo.Finish;
             }
 
