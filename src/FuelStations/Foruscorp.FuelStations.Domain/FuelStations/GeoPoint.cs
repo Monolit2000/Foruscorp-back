@@ -1,6 +1,9 @@
-﻿using System;
+﻿using NetTopologySuite.Geometries;
+using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -8,8 +11,12 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 {
     public class GeoPoint
     {
-        public double Latitude { get; private set; }
-        public double Longitude { get; private set; }
+        [NotMapped]
+        public double Latitude => Coordinates?.Y ?? 0.0;
+
+        [NotMapped]
+        public double Longitude => Coordinates?.X ?? 0.0;
+        public Point Coordinates { get; private set; }
 
         private GeoPoint() { }
 
@@ -20,8 +27,10 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             if (longitude < -180 || longitude > 180)
                 throw new ArgumentException("Longitude must be between -180 and 180", nameof(longitude));
 
-            Latitude = latitude;
-            Longitude = longitude;
+            Coordinates = new Point(longitude, latitude) { SRID = 4326 };
+
+            //Latitude = latitude;
+            //Longitude = longitude;
         }
     }
 }

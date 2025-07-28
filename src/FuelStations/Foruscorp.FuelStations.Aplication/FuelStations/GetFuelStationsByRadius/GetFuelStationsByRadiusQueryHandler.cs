@@ -1,4 +1,33 @@
-﻿//using MediatR;
+﻿
+using Foruscorp.FuelStations.Aplication.Contructs;
+using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
+using Foruscorp.FuelStations.Domain.FuelStations;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
+
+namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius
+{
+    public class GetFuelStationsByRadiusQueryHandler(
+        IMemoryCache memoryCache,
+        IFuelStationContext fuelStationContext,
+        IFuelStationsService fuelStationsService) : IRequestHandler<GetFuelStationsByRadiusQuery, IEnumerable<FuelStation>>
+    {
+        public async Task<IEnumerable<FuelStation>> Handle(GetFuelStationsByRadiusQuery request, CancellationToken cancellationToken)
+        {
+
+            var firstStation = await fuelStationContext.FuelStations.ToListAsync();
+
+            return firstStation;
+
+        }
+    }
+}
+
+
+
+
+//using MediatR;
 //using Foruscorp.FuelStations.Aplication.Contructs;
 //using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 //using Microsoft.Extensions.Caching.Memory;
@@ -22,10 +51,10 @@
 //            if (!stations.Any() || stations.FirstOrDefault() == null)
 //                return Enumerable.Empty<FuelStationDto>();
 
-//            return stations.Select(stationResponce => ToFuelStationDto(stationResponce));         
-//        }    
-        
-        
+//            return stations.Select(stationResponce => ToFuelStationDto(stationResponce));
+//        }
+
+
 //        public FuelStationDto ToFuelStationDto(FuelStationResponce fuelStationResponce)
 //        {
 //            return new FuelStationDto
@@ -41,7 +70,7 @@
 //                PriceAfterDiscount = fuelStationResponce.PriceAfterDiscount,
 //                DistanceToLocation = fuelStationResponce.GetDistanceToLocationAsString(),
 //                Route = fuelStationResponce.Route
-//            };  
+//            };
 //        }
 //    }
 //}

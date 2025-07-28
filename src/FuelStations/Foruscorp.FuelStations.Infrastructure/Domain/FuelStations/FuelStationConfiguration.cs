@@ -34,18 +34,32 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
             builder.OwnsOne(fs => fs.Coordinates, coordBuilder =>
             {
-                coordBuilder.Property(c => c.Latitude)
-                    .HasColumnName("Latitude")
+                //coordBuilder.Property(c => c.Latitude)
+                //    .HasColumnName("Latitude")
+                //    .IsRequired();
+
+                //coordBuilder.Property(c => c.Longitude)
+                //    .HasColumnName("Longitude")
+                //    .IsRequired();
+
+                coordBuilder.Property(fs => fs.Coordinates)
+                    .HasColumnType("geography(Point, 4326)")
+                    .HasColumnName(nameof(GeoPoint.Coordinates))
                     .IsRequired();
 
-                coordBuilder.Property(c => c.Longitude)
-                    .HasColumnName("Longitude")
-                    .IsRequired();
+                coordBuilder.HasIndex(fs => fs.Coordinates)
+                     .HasMethod("GIST"); 
 
-                coordBuilder.HasIndex(c => c.Latitude);
+                //coordBuilder.HasIndex(c => c.Latitude);
 
-                coordBuilder.HasIndex(c => c.Longitude);
+                //coordBuilder.HasIndex(c => c.Longitude);
             });
+
+
+            // Конфигурация для NetTopologySuite Point (SRID = 4326)
+            //builder.Property(fs => fs.GeoCoordinates)
+            //    .HasColumnType("geography(Point, 4326)")
+            //    .IsRequired();
 
             builder.OwnsMany(fs => fs.FuelPrices, priceBuilder =>
             {

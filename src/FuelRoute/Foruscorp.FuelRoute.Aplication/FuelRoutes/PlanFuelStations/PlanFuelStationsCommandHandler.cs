@@ -95,6 +95,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             foreach (var station in oldStations)
                 station.MurkAsOld();
 
+            Console.WriteLine(  );
             fuelRouteContext.FuelRouteStation.UpdateRange(oldStations);
 
             //Add new stations with route version

@@ -17,7 +17,8 @@ namespace Foruscorp.FuelStations.Infrastructure
         {
             services.AddDbContext<FuelStationContext>((sp, options) =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                options.UseNpgsql("Host=foruscorp.postgis.db;Port=5432;Database=ForuscorpDB-PostGIS;Username=postgres;Password=postgres" /*"Host=localhost;Port=5436;Database=ForuscorpDB-PostGIS;Username=postgres;Password=postgres"*/ /*configuration.GetConnectionString("DefaultConnection")*/);
+                options.UseNpgsql(o => o.UseNetTopologySuite());
             });
 
             services.AddScoped<IFuelStationsService, FuelStationsService>();

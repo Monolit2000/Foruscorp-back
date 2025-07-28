@@ -1,6 +1,7 @@
 ﻿
 
 using Foruscorp.BuildingBlocks.Domain;
+using NetTopologySuite.Geometries;
 
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
@@ -13,6 +14,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public string Address { get; private set; }
         public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }
+        //public Point GeoCoordinates { get; private set; }
         public DateTime LastUpdated { get; private set; }
 
         private FuelStation() { }
@@ -120,6 +122,17 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         {
             if (radiusKm <= 0)
                 throw new ArgumentException("Radius must be positive", nameof(radiusKm));
+
+            double DegToRad = Math.PI / 180.0;
+
+            double maxDeltaLat = radiusKm / 111.0;
+            double maxDeltaLon = radiusKm / (111.0 * Math.Cos(center.Latitude * DegToRad));
+            if (Math.Abs(center.Latitude - point.Latitude) > maxDeltaLat ||
+                Math.Abs(center.Longitude - point.Longitude) > maxDeltaLon)
+            {
+                return false;
+            }
+
 
             return CalculateHaversineDistance(center, point) <= radiusKm;
         }

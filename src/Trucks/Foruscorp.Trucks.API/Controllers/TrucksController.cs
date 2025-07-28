@@ -16,6 +16,7 @@ using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
 using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -60,6 +61,7 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckDto>))]
         [HttpGet("get-truck-list")]
         public async Task<ActionResult> GetTruckList( CancellationToken cancellationToken)

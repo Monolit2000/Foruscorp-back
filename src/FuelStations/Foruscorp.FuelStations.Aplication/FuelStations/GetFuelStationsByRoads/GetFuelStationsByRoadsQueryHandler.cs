@@ -3,8 +3,12 @@ using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Domain.FuelStations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage.Json;
+using Microsoft.Extensions.DependencyInjection;
+using NetTopologySuite;
+using NetTopologySuite.Geometries;
+using Npgsql.EntityFrameworkCore.PostgreSQL;
 using System.Collections.Generic;
+using System.Linq;
 using static Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads.GetFuelStationsByRoadsQueryHandler;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
@@ -38,6 +42,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
         private readonly ITruckProviderService truckProviderService;
 
+        private readonly IServiceProvider serviceProvider;
+
         private const double ReferenceWeightLb = 40000.0;
         private const double ReferenceConsumptionGPerKm = 0.089;
 
@@ -52,10 +58,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
 
 
-        public GetFuelStationsByRoadsQueryHandler(IFuelStationContext fuelStationContext, ITruckProviderService truckProviderService)
+        public GetFuelStationsByRoadsQueryHandler(IFuelStationContext fuelStationContext, ITruckProviderService truckProviderService, IServiceProvider serviceProvider)
         {
             this.fuelStationContext = fuelStationContext;
             this.truckProviderService = truckProviderService;
+            this.serviceProvider = serviceProvider;
         }
 
         public async Task<Result<PlanFuelStationsByRoadsResponce>> Handle(
@@ -97,19 +104,19 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var minLon = routePoints.Min(pt => pt.Longitude) - (SearchRadiusKm / (111.0 * Math.Cos(avgLatRadians)));
             var maxLon = routePoints.Max(pt => pt.Longitude) + (SearchRadiusKm / (111.0 * Math.Cos(avgLatRadians)));
 
-            // 4. Загружаем станции внутри bounding-box
-            var stations = await fuelStationContext.FuelStations
-                .Include(s => s.FuelPrices)
-                .AsNoTracking()
-                .Where(s =>
-                    s.Coordinates.Latitude >= minLat &&
-                    s.Coordinates.Latitude <= maxLat &&
-                    s.Coordinates.Longitude >= minLon &&
-                    s.Coordinates.Longitude <= maxLon)
-                .ToListAsync(cancellationToken);
+            //4.Загружаем станции внутри bounding - box
+            //var stations = await fuelStationContext.FuelStations
+            //    .Include(s => s.FuelPrices)
+            //    .AsNoTracking()
+            //    .Where(s =>
+            //        s.Coordinates.Coordinates.Y >= minLat &&
+            //        s.Coordinates.Coordinates.Y <= maxLat &&
+            //        s.Coordinates.Coordinates.X >= minLon &&
+            //        s.Coordinates.Coordinates.X <= maxLon)
+            //    .ToListAsync(cancellationToken);
 
-            if (!stations.Any())
-                return Result.Ok(new PlanFuelStationsByRoadsResponce());
+            //if (!stations.Any())
+            //    return Result.Ok(new PlanFuelStationsByRoadsResponce());
 
             var allStopPlans = new List<FuelStopPlan>();
             var allStationsWithoutAlgo = new List<FuelStationDto>();
@@ -123,7 +130,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 {
                     return PlanRouteStopsForRoad(
                         road,
-                        stations,
+                        new List<FuelStation>(),
                         request.RequiredFuelStations,
                         request.FuelProviderNameList,
                         request.FinishFuel);
@@ -197,7 +204,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
 
-        private RouteStopsForRoadInfo PlanRouteStopsForRoad(
+        private async Task< RouteStopsForRoadInfo> PlanRouteStopsForRoad(
             RoadSectionDto road,
             List<FuelStation> allStations,
             List<RequiredStationDto> requiredStationDtos,
@@ -221,15 +228,29 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .Select(p => p.ToLowerInvariant())
                 .ToList();
 
+            var routePointTest = routePoints
+                .Select(p => new Point(p.Longitude, p.Latitude) { SRID = 4326 })
+                .ToArray();
+
+            //var context = serviceProvider.GetService<IFuelStationContext>();
+
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<IFuelStationContext>();
+
+            var multiPoint = new MultiPoint(routePointTest) { SRID = 4326 };
+            var stationsAlongRoute = await context.FuelStations
+                .Where(fs => EF.Functions.IsWithinDistance(fs.Coordinates.Coordinates, multiPoint, SearchRadiusKm*1000, true))
+                .ToListAsync();
+
             // Формируем список станций вдоль маршрута:
-            var stationsAlongRoute = routePoints
-                .SelectMany(geoPoint => allStations
-                    .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
-                .DistinctBy(s => s.Id)
-                // Если providerFilter пуст, пропускаем всех; иначе — фильтруем по совпадению (игнорируя регистр)
-                .Where(s => !providerFilter.Any()
-                            || providerFilter.Contains(s.ProviderName?.ToLowerInvariant() ?? string.Empty))
-                .ToList();
+            //var stationsAlongRoute = routePoints
+            //    .SelectMany(geoPoint => allStations
+            //        .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
+            //    .DistinctBy(s => s.Id)
+            //    // Если providerFilter пуст, пропускаем всех; иначе — фильтруем по совпадению (игнорируя регистр)
+            //    .Where(s => !providerFilter.Any()
+            //                || providerFilter.Contains(s.ProviderName?.ToLowerInvariant() ?? string.Empty))
+            //    .ToList();
 
             stationsAlongRoute = RemoveDuplicatesByCoordinates(stationsAlongRoute);
 
@@ -348,6 +369,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Validate finishFuel
             if (finishFuel < 0 || finishFuel > tankCapacity)
                 throw new ArgumentException($"finishLiters must be between 0 and tankCapacity ({tankCapacity} liters).");
+
+
+            //var lineString = new LineString(route
+            //    .Select(p => new Coordinate(p.Longitude, p.Latitude))
+            //    .ToArray())
+            //            { SRID = 4326 };
+
+
+
 
             // 1) Подготовка списка StationInfo (с километражем и ценой)
             var stationInfos = new List<StationInfo>();
@@ -646,7 +676,91 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             return double.MaxValue; // Станция «не попала» ни в один сегмент коридора
         }
 
- 
+        //public static double GetForwardDistanceAlongRoute(List<GeoPoint> routePoints, GeoPoint station)
+        //{
+        //    if (routePoints == null || routePoints.Count < 2)
+        //        return double.MaxValue;
+
+        //    double totalDistanceKm = 0.0;
+
+        //    for (int i = 0; i < routePoints.Count - 1; i++)
+        //    {
+        //        var start = routePoints[i];
+        //        var end = routePoints[i + 1];
+
+        //        // Проверяем, попадает ли станция на этот сегмент
+        //        double distToSegment = DistanceFromPointToSegmentKm(station, start, end);
+        //        if (distToSegment < 0.05) // Например, 50 м
+        //        {
+        //            // Возвращаем расстояние до проекции
+        //            return totalDistanceKm + DistanceAlongSegment(start, end, station);
+        //        }
+
+        //        totalDistanceKm += GeoCalculator.CalculateHaversineDistance(start, end);
+        //    }
+
+        //    return double.MaxValue;
+        //}
+
+        public static double DistanceFromPointToSegmentKm(GeoPoint p, GeoPoint a, GeoPoint b)
+        {
+            double lat1 = a.Latitude;
+            double lon1 = a.Longitude;
+            double lat2 = b.Latitude;
+            double lon2 = b.Longitude;
+            double lat3 = p.Latitude;
+            double lon3 = p.Longitude;
+
+            double dx = lat2 - lat1;
+            double dy = lon2 - lon1;
+
+            if (dx == 0 && dy == 0)
+            {
+                // A и B совпадают
+                return GeoCalculator.CalculateHaversineDistance(p, a);
+            }
+
+            // Коэффициент проекции точки P на прямую AB
+            double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
+            t = Math.Max(0.0, Math.Min(1.0, t));
+
+            // Точка проекции на сегменте
+            double projLat = lat1 + t * dx;
+            double projLon = lon1 + t * dy;
+            var projPoint = new GeoPoint(projLat, projLon);
+
+            return GeoCalculator.CalculateHaversineDistance(p, projPoint);
+        }
+
+        public static double DistanceAlongSegment(GeoPoint a, GeoPoint b, GeoPoint p)
+        {
+            double lat1 = a.Latitude;
+            double lon1 = a.Longitude;
+            double lat2 = b.Latitude;
+            double lon2 = b.Longitude;
+            double lat3 = p.Latitude;
+            double lon3 = p.Longitude;
+
+            double dx = lat2 - lat1;
+            double dy = lon2 - lon1;
+
+            if (dx == 0 && dy == 0)
+            {
+                return 0.0;
+            }
+
+            // Коэффициент проекции точки P на прямую AB
+            double t = ((lat3 - lat1) * dx + (lon3 - lon1) * dy) / (dx * dx + dy * dy);
+            t = Math.Max(0.0, Math.Min(1.0, t));
+
+            // Точка проекции на сегменте
+            double projLat = lat1 + t * dx;
+            double projLon = lon1 + t * dy;
+            var projPoint = new GeoPoint(projLat, projLon);
+
+            return GeoCalculator.CalculateHaversineDistance(a, projPoint);
+        }
+
         private FuelStationDto FuelStationToDto(
            FuelStation station,
            int stopOrder,
@@ -699,6 +813,35 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 IsAlgorithm = false,
                 RoadSectionId = roadSectionId
             };
+        }
+
+        private async Task RasdasdunAsync(List<GeoPoint> route)
+        {
+
+            using var scope = serviceProvider.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<IFuelStationContext>();
+
+            var sql = @"
+                        WITH route AS (
+                            SELECT ST_MakeLine(ARRAY[
+                                {0}
+                            ])::geography AS route_line
+                        )
+                        SELECT 
+                            fs.""Id"",
+                            fs.""ProviderName"",
+                            ST_Length(ST_LineSubstring(route_line, 0, ST_LineLocatePoint(route_line, fs.""GeoCoordinates""))) AS distance_meters
+                        FROM ""FuelStations"" fs, route;
+                    ";
+
+
+                    var pointsSql = string.Join(",", route.Select(p =>
+            $"ST_SetSRID(ST_MakePoint({p.Longitude}, {p.Latitude}), 4326)"
+        ));
+
+            var result = context.FuelStations
+           .FromSqlRaw(sql, pointsSql)
+           .ToListAsync();
         }
 
 

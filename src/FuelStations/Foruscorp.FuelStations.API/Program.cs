@@ -59,12 +59,18 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+app.MapGet("/", context =>
 {
+    context.Response.Redirect("/swagger/index.html", permanent: false);
+    return Task.CompletedTask;
+});
+
     app.UseSwagger();
     app.UseSwaggerUI();
     app.ApplyFuelStationContextMigrations();
+// Configure the HTTP request pipeline.
+if (app.Environment.IsDevelopment())
+{
 }
 
 
