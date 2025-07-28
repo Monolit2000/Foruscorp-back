@@ -102,6 +102,7 @@ services:
       - "5003:5003"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
     depends_on:
       - rabbitmq
       - redis
@@ -120,6 +121,7 @@ services:
       - "5001:5001"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
     depends_on:
       - rabbitmq
       - redis
