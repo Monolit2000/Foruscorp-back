@@ -70,8 +70,8 @@ services:
 
   foruscorp.auth:
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - ASPNETCORE_HTTP_PORT=5007
+      # - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_HTTP_PORTS=5007
       # - ASPNETCORE_HTTPS_PORTS=5008
     ports:
       - "5007"
