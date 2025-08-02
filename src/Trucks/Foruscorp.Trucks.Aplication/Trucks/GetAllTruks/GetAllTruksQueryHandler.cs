@@ -9,13 +9,16 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.Trucks.Aplication.Trucks.GetAllTruks
 {
-    public class GetAllTruksQueryHandler(ITruckContext truckContext) : IRequestHandler<GetAllTruksQuery, List<TruckDto>>
+    public class GetAllTruksQueryHandler(
+        ICurrentUser currentUser,
+        ITruckContext truckContext) : IRequestHandler<GetAllTruksQuery, List<TruckDto>>
     {
         public async Task<List<TruckDto>> Handle(GetAllTruksQuery request, CancellationToken cancellationToken)
         {
             var truks = await truckContext.Trucks
                 .Include(t => t.Driver) 
                 .AsNoTracking()
+                .Where(t => currentUser.CompanyId == t.CompanyId ) 
                 .ToListAsync();
 
             if(!truks.Any())

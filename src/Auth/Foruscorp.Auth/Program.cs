@@ -41,6 +41,11 @@ builder.Services.AddMassTransit(busConfiguration =>
     busConfiguration.AddConsumers(typeof(IApplication).Assembly);
 });
 
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(IApplication).Assembly);
+});
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
     {

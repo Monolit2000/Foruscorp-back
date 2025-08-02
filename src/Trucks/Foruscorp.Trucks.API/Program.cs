@@ -20,6 +20,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHttpContextAccessor();
 
 
 // Configure OpenTelemetry
@@ -62,24 +63,24 @@ builder.Services.AddTrucksServices(builder.Configuration);
 
 var app = builder.Build();
 
-//app.MapGet("/", context =>
-//{
-//    context.Response.Redirect("/swagger/index.html", permanent: false);
-//    return Task.CompletedTask;
-//});
-
 app.MapGet("/", context =>
 {
-    context.Response.Redirect("/scalar/v1", permanent: false);
+    context.Response.Redirect("/swagger/index.html", permanent: false);
     return Task.CompletedTask;
 });
+
+//app.MapGet("/", context =>
+//{
+//    context.Response.Redirect("/scalar/v1", permanent: false);
+//    return Task.CompletedTask;
+//});
 
 
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseSwagger();
-    app.UseSwaggerUI();
-    app.ApplyTuckMigrations();
+app.UseSwaggerUI();
+app.ApplyTuckMigrations();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

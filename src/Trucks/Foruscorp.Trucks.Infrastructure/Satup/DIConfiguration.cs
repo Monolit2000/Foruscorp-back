@@ -1,10 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;    
+﻿using Foruscorp.Trucks.Aplication.Contruct;
+using Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient;
+using Foruscorp.Trucks.Infrastructure.Persistence;
+using Foruscorp.Trucks.Infrastructure.Services;
+using MassTransit;
+using Microsoft.EntityFrameworkCore;    
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Foruscorp.Trucks.Infrastructure.Persistence;
-using Foruscorp.Trucks.Aplication.Contruct;
-using MassTransit;
-using Foruscorp.Trucks.Infrastructure.ApiClients.SnsaraClient;
+using Microsoft.AspNetCore.Http;
 
 namespace Foruscorp.Trucks.Infrastructure.Satup
 {
@@ -44,6 +46,8 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
             services.AddScoped<ITruckContext, TruckContext>();
 
             services.AddScoped<ITruckProviderService, SamsaraApiService>();
+
+            services.AddScoped<ICurrentUser, CurrentUser>();
 
             return services;
         }

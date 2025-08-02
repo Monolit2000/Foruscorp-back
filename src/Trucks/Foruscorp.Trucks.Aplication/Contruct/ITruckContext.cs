@@ -1,4 +1,5 @@
-﻿using Foruscorp.Trucks.Domain.DriverFuelHistorys;
+﻿using Foruscorp.Trucks.Domain.Companys;
+using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Domain.RouteOffers;
 using Foruscorp.Trucks.Domain.Trucks;
@@ -19,6 +20,7 @@ namespace Foruscorp.Trucks.Aplication.Contruct
         DbSet<User> Users { get; set; }
         DbSet<DriverBonus> DriverBonuses { get; set; }
         DbSet<RouteOffer> RouteOffers { get; set; }
+        DbSet<Company> Companys { get; set; }
 
         DbSet<DriverFuelHistory> DriverFuelHistories { get; set; }
 

@@ -13,8 +13,12 @@ namespace Foruscorp.Auth.Controllers
     [ApiController]
     [Route("[controller]")]
     public class AuthController(
-        IAuthService authService) : ControllerBase
+        IAuthService authService,
+        IUserService userService) : ControllerBase
     {
+
+
+
 
         [HttpPost("Register")]
         public async Task<ActionResult<User>> Register(UserDto request)
@@ -24,6 +28,14 @@ namespace Foruscorp.Auth.Controllers
                 return BadRequest("User already exists");
 
             return Ok(user);
+        }
+
+
+        [HttpPost("set-user-role")]
+        public async Task<ActionResult<User>> SetUserRole(SetUserRoleDto request)
+        {
+           await userService.SetUserRole(request.userId, request.roleName);
+            return Ok();
         }
 
 
@@ -59,7 +71,14 @@ namespace Foruscorp.Auth.Controllers
                 return Unauthorized("Token does not contain user ID");
             }
 
-            return Ok(userId);
+            var user = new
+            {
+                UserId = userId,
+                CompanyId = HttpContext.User.FindFirst("company_id")?.Value,
+                Roles = HttpContext.User.FindAll(ClaimTypes.Role).Select(r => r.Value).ToList()
+            };
+
+            return Ok(user);
         }
     }
 }

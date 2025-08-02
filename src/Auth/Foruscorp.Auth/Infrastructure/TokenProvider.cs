@@ -26,9 +26,18 @@ namespace Foruscorp.Auth.Infrastructure
             var creds = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha512);
 
             var claims = new List<Claim>
-                {
-                    new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                };
+            {
+                new Claim(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            };
+
+            if (user.CompanyId.HasValue)
+            {
+                claims.Add(new Claim("company_id", user.CompanyId.Value.ToString()));
+            }
+
+            foreach (var role in user.Roles)
+                claims.Add(new Claim(ClaimTypes.Role, role.Role.ToString()));
+
 
             var tokenDescriptor = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],

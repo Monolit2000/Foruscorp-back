@@ -10,6 +10,8 @@ namespace Foruscorp.Trucks.Domain.Drivers
 {
     public class Driver : Entity, IAggregateRoot
     {
+        public Guid? CompanyId { get; private set; }
+
         public Guid? UserId { get; private set; }   
         public Guid? TruckId { get; private set; }
         public Truck Truck { get; private set; }
@@ -105,7 +107,11 @@ namespace Foruscorp.Trucks.Domain.Drivers
             TruckId = null;
         }
 
- 
+        public void SetCompany(Guid companyId)
+        {
+            CompanyId = companyId;
+        }
+
         public DriverBonus IncreaseBonus(int amount, string reason)
         {
             var bonus = DriverBonus.CreateNew(this.Id, amount, reason);

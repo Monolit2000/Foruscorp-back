@@ -47,6 +47,10 @@ namespace Foruscorp.Auth.Servises
             }
 
             var user = User.CreateNew(request.Email, request.UserName);
+
+            if (request.CompanyId.HasValue)
+                user.SetCompanyId(request.CompanyId.Value);
+
             var hasedPass = new PasswordHasher<User>()
                 .HashPassword(user, request.Password);
             user.PasswordHash = hasedPass;

@@ -1,4 +1,5 @@
 ﻿using System;
+using Foruscorp.Trucks.Domain.Companys;
 using Foruscorp.Trucks.Domain.Trucks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -55,6 +56,11 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
             // builder.HasOne(t => t.Driver)
             //     .WithOne(d => d.Truck)
             //     .HasForeignKey<Truck>(t => t.DriverId);
+
+            //builder.HasOne<Company>()
+            //    .WithMany()
+            //    .HasForeignKey(t => t.CompanyId)
+            //    .OnDelete(DeleteBehavior.Cascade);
 
             // Indexes
             builder.HasIndex(t => t.Vin);

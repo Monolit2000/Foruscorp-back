@@ -13,6 +13,8 @@
     <PackageReference Include="MassTransit" Version="8.4.0" />
     <PackageReference Include="MassTransit.RabbitMQ" Version="8.4.0" />
 
+    <PackageReference Include="MediatR" Version="12.4.1" />
+
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="9.0.6" />
     <PackageReference Include="Microsoft.AspNetCore.Identity" Version="2.3.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.6" />
@@ -29,6 +31,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Trucks\Foruscorp.Trucks.IntegrationEvents\Foruscorp.Trucks.IntegrationEvents.csproj" />
     <ProjectReference Include="..\Foruscorp.Users.IntegrationEvents\Foruscorp.Users.IntegrationEvents.csproj" />
   </ItemGroup>
 

@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Auth.DataBase;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Auth.Migrations
 {
     [DbContext(typeof(UserContext))]
-    partial class UserContextModelSnapshot : ModelSnapshot
+    [Migration("20250801211113_Add_Company")]
+    partial class Add_Company
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -68,26 +71,6 @@ namespace Foruscorp.Auth.Migrations
                     b.ToTable("Users", "User");
                 });
 
-            modelBuilder.Entity("Foruscorp.Auth.Domain.Users.UserRole", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserRoles", "User");
-                });
-
             modelBuilder.Entity("Foruscorp.Auth.Domain.Users.User", b =>
                 {
                     b.HasOne("Foruscorp.Auth.Domain.Users.Company", null)
@@ -96,25 +79,9 @@ namespace Foruscorp.Auth.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Foruscorp.Auth.Domain.Users.UserRole", b =>
-                {
-                    b.HasOne("Foruscorp.Auth.Domain.Users.User", "User")
-                        .WithMany("Roles")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Foruscorp.Auth.Domain.Users.Company", b =>
                 {
                     b.Navigation("Users");
-                });
-
-            modelBuilder.Entity("Foruscorp.Auth.Domain.Users.User", b =>
-                {
-                    b.Navigation("Roles");
                 });
 #pragma warning restore 612, 618
         }

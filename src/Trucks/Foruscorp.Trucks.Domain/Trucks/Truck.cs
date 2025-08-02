@@ -7,6 +7,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
     public class Truck : Entity, IAggregateRoot
     {
         public Guid Id { get; private set; }
+        public Guid? CompanyId { get; private set; } 
         public string ProviderTruckId { get; private set; }
         public string Name { get; set; }
         public string Vin { get; private set; }
@@ -164,6 +165,11 @@ namespace Foruscorp.Trucks.Domain.Trucks
 
             AddDomainEvent(new TruckActivatedEvent(Id));
         }
+
+        public void SetCompany(Guid companyId)
+        {
+            CompanyId = companyId;
+        }   
 
         public void SetInactiveStatus()
         {

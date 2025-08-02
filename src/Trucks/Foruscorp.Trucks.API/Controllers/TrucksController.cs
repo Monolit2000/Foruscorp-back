@@ -1,4 +1,5 @@
 using FluentResults;
+using Foruscorp.Trucks.Aplication.Companys;
 using Foruscorp.Trucks.Aplication.Contruct;
 using Foruscorp.Trucks.Aplication.Contruct.Samasara;
 using Foruscorp.Trucks.Aplication.DriverBonuses.DecreaseBonus;
@@ -15,6 +16,7 @@ using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
 using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
+using Foruscorp.Trucks.Aplication.Trucks.SetCompany;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +34,21 @@ namespace Foruscorp.Trucks.API.Controllers
         IMediator mediator,
         ITruckProviderService truckProviderService) : ControllerBase
     {
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ISuccess))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("set-company")]
+        public async Task<ActionResult> SatCompanyCommand(SetCompanyCommand setCompanyCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(setCompanyCommand, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Successes.First().Message);
+        }
+
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<TruckDto>))]
         [HttpPost("create-truck")]
         public async Task<ActionResult> GetFuelStationsByRadius( CreateTruckCommand createTruckCommand, CancellationToken cancellationToken)

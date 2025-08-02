@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Domain.Trucks;
 using System.Runtime.CompilerServices;
+using Foruscorp.Trucks.Domain.Companys;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 {
@@ -80,6 +81,10 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
                 .WithOne(t => t.Driver)
                 .HasForeignKey<Driver>(d => d.TruckId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            //builder.HasOne<Company>()
+            //    .WithMany()
+            //    .HasForeignKey(d => d.CompanyId);
 
             // Indexes
             builder.HasIndex(d => d.LicenseNumber)
