@@ -2,7 +2,10 @@
 {
     public interface IUserService
     {
-        Task SetUserRole(Guid userId, string roleName);
+        Task<string> SetUserRole(Guid userId, string roleName);
+        Task<string> SetCompanyId(Guid userId, Guid companyId);
+
+
         Task<bool> IsUserAuthenticatedAsync(string userId, string password);
         Task<string> GetUserNameAsync(string userId);
         Task<string> GetUserEmailAsync(string userId);

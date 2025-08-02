@@ -1,4 +1,8 @@
 ﻿namespace Foruscorp.Auth.Controllers
 {
-    public record SetUserRoleDto(Guid userId, string roleName);
+    public class SetUserRoleDto 
+    {
+     public Guid userId { get; set; }
+        public string roleName { get; set; }
+            }
 }

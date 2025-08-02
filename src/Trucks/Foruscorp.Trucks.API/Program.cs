@@ -1,9 +1,11 @@
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Foruscorp.Trucks.Infrastructure.Satup;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using Npgsql;
 using OpenTelemetry;
 using OpenTelemetry.Logs;
@@ -13,6 +15,7 @@ using OpenTelemetry.Trace;
 using Scalar.AspNetCore;
 using StackExchange.Redis;
 using System;
+using System.Text;
 using System.Threading.Tasks;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -43,6 +46,19 @@ builder.Services.AddOpenTelemetry()
     .UseOtlpExporter();
 
 
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters()
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!))
+        };
+    });
 
 //// Configure logging
 builder.Logging.AddOpenTelemetry(logging =>
@@ -88,6 +104,9 @@ if (app.Environment.IsDevelopment())
 }
 
 //app.UseAuthorization();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors("AllowAll");
 

@@ -18,8 +18,6 @@ namespace Foruscorp.Auth.Controllers
     {
 
 
-
-
         [HttpPost("Register")]
         public async Task<ActionResult<User>> Register(UserDto request)
         {
@@ -31,12 +29,7 @@ namespace Foruscorp.Auth.Controllers
         }
 
 
-        [HttpPost("set-user-role")]
-        public async Task<ActionResult<User>> SetUserRole(SetUserRoleDto request)
-        {
-           await userService.SetUserRole(request.userId, request.roleName);
-            return Ok();
-        }
+
 
 
         [HttpPost("login")]

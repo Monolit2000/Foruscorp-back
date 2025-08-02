@@ -12,15 +12,19 @@ namespace Foruscorp.Auth.DataBase.Configurations
 
             builder.HasKey(ur => ur.Id);
 
-            builder.Property(ur => ur.Id).IsRequired();
+            builder.Property(ur => ur.Id)
+                .ValueGeneratedNever()
+                .IsRequired();
 
             builder.Property(ur => ur.Role)
-                   .HasConversion<string>() // enum to string
+                   .HasConversion<string>()
                    .IsRequired();
 
             builder.HasOne(ur => ur.User)
                    .WithMany(u => u.Roles)
                    .HasForeignKey(ur => ur.UserId);
+
+            builder.HasIndex(ur => new { ur.UserId, ur.Role });
         }
     }
 }
