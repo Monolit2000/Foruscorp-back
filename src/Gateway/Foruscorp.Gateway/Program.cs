@@ -1,16 +1,11 @@
-
-//using Microsoft.AspNetCore.Authentication.BearerToken;
-using Microsoft.AspNetCore.Authentication.BearerToken;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
-using System.Security.Claims;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
 
 
 builder.Services
@@ -26,9 +21,6 @@ builder.Services.AddOpenTelemetry()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation())
     .UseOtlpExporter();
-
-
-
 
 
 //builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
@@ -81,5 +73,4 @@ app.UseAuthorization();
 app.MapReverseProxy();
 
 //app.MapControllers();
-
 app.Run();

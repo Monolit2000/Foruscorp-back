@@ -39,7 +39,7 @@ namespace Foruscorp.Auth.Servises
         {
 
         }
-        public async Task<User> RegisterAsync(UserDto request)
+        public async Task<User> RegisterAsync(UserAuthDto request)
         {
             if(await context.Users.AnyAsync(u => u.UserName == request.UserName))
             {

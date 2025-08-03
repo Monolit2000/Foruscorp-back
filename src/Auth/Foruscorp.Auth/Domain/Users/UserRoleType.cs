@@ -4,6 +4,8 @@
     {
         Admin,
         Driver,
-        Manager
+        Manager, //Admin
+        SuperAdmin,
+        SelfDriver, //Self-registered driver
     }
 }

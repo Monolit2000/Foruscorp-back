@@ -1,5 +1,6 @@
 ﻿using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.Domain.Users;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Foruscorp.Auth.Controllers
@@ -16,6 +17,14 @@ namespace Foruscorp.Auth.Controllers
            return Ok(token);
         }
 
+
+        [HttpPost("delete-user-role")]
+        public async Task<ActionResult> DeleteUserRole(SetUserRoleDto request)
+        {
+            var token = await userService.DeleteUserRole(request.userId, request.roleName);
+            return Ok(token);
+        }
+
         [HttpPost("set-company")]
         public async Task<ActionResult> SetCompanyId(SetCompanyRequest request)
         {
@@ -23,6 +32,31 @@ namespace Foruscorp.Auth.Controllers
            return Ok(token);
         }
 
-        
+        [HttpGet("all")]
+        public async Task<ActionResult> GetAllUsers(CancellationToken cancellationToken)
+        {
+           var token = await userService.GetAllUsers();
+           return Ok(token);
+        }
+
+        [HttpGet("by-id/{id:guid}")]
+        public async Task<ActionResult> GetUserByIdAsync([FromRoute] Guid id, CancellationToken cancellationToken)
+        {
+           var result = await userService.GetUserByIdAsync(id);
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
+        }
+
+        [HttpGet("by-name/{name}")]
+        public async Task<ActionResult> GetUserByNameAsync([FromRoute] string name, CancellationToken cancellationToken)
+        {
+           var result = await userService.GetUserByNameAsync(name);
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
+        }
     }
 }

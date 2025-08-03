@@ -6,9 +6,9 @@ using Foruscorp.Trucks.Aplication.Contruct;
 using MassTransit;
 using Foruscorp.Trucks.IntegrationEvents;
 
-namespace Foruscorp.Trucks.Aplication.Companys
+namespace Foruscorp.Trucks.Aplication.Companys.CreateCompany
 {
-    public record CreateCompanyCommand(string Name) : IRequest<Result>;
+    public record CreateCompanyCommand(string Name, string SamsaraToken) : IRequest<Result>;
     public class CreateCompanyCommandHandler(
         ITruckContext context,
         IPublishEndpoint publishEndpoint) : IRequestHandler<CreateCompanyCommand, Result>
@@ -21,7 +21,7 @@ namespace Foruscorp.Trucks.Aplication.Companys
             if (isCompanyExist)
                 return Result.Fail($"Company with name {request.Name} already exists.");
 
-            var company = Company.Create(request.Name);
+            var company = Company.Create(request.Name, request.SamsaraToken);
 
             await context.Companys.AddAsync(company);
 

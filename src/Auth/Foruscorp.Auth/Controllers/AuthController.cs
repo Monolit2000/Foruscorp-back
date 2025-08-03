@@ -19,7 +19,7 @@ namespace Foruscorp.Auth.Controllers
 
 
         [HttpPost("Register")]
-        public async Task<ActionResult<User>> Register(UserDto request)
+        public async Task<ActionResult<User>> Register(UserAuthDto request)
         {
             var user = await authService.RegisterAsync(request);
             if(user is null)

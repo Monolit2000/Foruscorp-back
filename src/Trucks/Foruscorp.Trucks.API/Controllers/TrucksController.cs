@@ -1,30 +1,31 @@
-using System;
-using MediatR;
-using System.Linq;
 using FluentResults;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using Foruscorp.Trucks.Aplication.Trucks;
-using Foruscorp.Trucks.Aplication.Drivers;
 using Foruscorp.Trucks.Aplication.Contruct;
-using Foruscorp.Trucks.Aplication.Drivers.SetUser;
 using Foruscorp.Trucks.Aplication.Contruct.Samasara;
-using Foruscorp.Trucks.Aplication.Trucks.SetCompany;
-using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
-using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
-using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
-using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
-using Foruscorp.Trucks.Aplication.Trucks.AttachDriver;
-using Foruscorp.Trucks.Aplication.Drivers.CreateDriver;
-using Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers;
-using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
 using Foruscorp.Trucks.Aplication.DriverBonuses.DecreaseBonus;
 using Foruscorp.Trucks.Aplication.DriverBonuses.IncreaseBonus;
+using Foruscorp.Trucks.Aplication.Drivers;
+using Foruscorp.Trucks.Aplication.Drivers.CreateDriver;
+using Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers;
+using Foruscorp.Trucks.Aplication.Drivers.GetDriverById;
+using Foruscorp.Trucks.Aplication.Drivers.SetUser;
 using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
+using Foruscorp.Trucks.Aplication.Trucks;
+using Foruscorp.Trucks.Aplication.Trucks.AttachDriver;
+using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
+using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
+using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
+using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
+using Foruscorp.Trucks.Aplication.Trucks.LoadTrucks;
+using Foruscorp.Trucks.Aplication.Trucks.SetCompany;
+using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
@@ -200,6 +201,11 @@ namespace Foruscorp.Trucks.API.Controllers
 
             return Ok(result.Value);
         }
+
+
+
+
+
 
 
 

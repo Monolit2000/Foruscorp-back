@@ -1,6 +1,6 @@
 ﻿namespace Foruscorp.Auth.Controllers
 {
-    public class UserDto
+    public class UserAuthDto
     {
         public string Email { get; set; }
         public string UserName { get; set; }

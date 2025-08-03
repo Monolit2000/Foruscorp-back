@@ -1,10 +1,17 @@
-﻿namespace Foruscorp.Auth.Contruct
+﻿using FluentResults;
+using Foruscorp.Auth.Servises;
+
+namespace Foruscorp.Auth.Contruct
 {
     public interface IUserService
     {
         Task<string> SetUserRole(Guid userId, string roleName);
+        Task<string> DeleteUserRole(Guid userId, string roleName);
         Task<string> SetCompanyId(Guid userId, Guid companyId);
+        Task<IEnumerable<UserDto>> GetAllUsers();
 
+        Task<Result<UserDto>> GetUserByNameAsync(string name);
+        Task<Result<UserDto>> GetUserByIdAsync(Guid userId);
 
         Task<bool> IsUserAuthenticatedAsync(string userId, string password);
         Task<string> GetUserNameAsync(string userId);

@@ -3,6 +3,7 @@ using Foruscorp.Trucks.Domain.Trucks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -13,6 +14,8 @@ namespace Foruscorp.Trucks.Domain.Companys
         public Guid Id { get; set; }
         public List<Truck> Trucks { get; private set; } = [];
         public List<Driver> Drivers { get; private set; } = [];
+
+        public string ExternalToken { get; set; }
 
         public string Name { get; set; }
         public string Cnpj { get; set; }
@@ -34,6 +37,15 @@ namespace Foruscorp.Trucks.Domain.Companys
             return new Company
             {
                 Name = name,
+            };
+        }
+
+        public static Company Create(string name, string token)
+        {
+            return new Company
+            {
+                Name = name,
+                ExternalToken = token
             };
         }
     }

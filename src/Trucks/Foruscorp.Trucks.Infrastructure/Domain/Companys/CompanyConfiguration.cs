@@ -20,6 +20,9 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Companys
             builder.Property(c => c.Id)
                 .IsRequired();
 
+            builder.Property(c => c.ExternalToken)
+                .IsRequired(false);
+
             builder.Property(c => c.Name)
                 .IsRequired()
                 .HasMaxLength(200);
