@@ -36,7 +36,10 @@ namespace Foruscorp.Auth.Infrastructure
             }
 
             foreach (var role in user.Roles)
+            {
                 claims.Add(new Claim(ClaimTypes.Role, role.Role.ToString()));
+                claims.Add(new Claim("role", role.Role.ToString()));
+            }
 
 
             var tokenDescriptor = new JwtSecurityToken(
