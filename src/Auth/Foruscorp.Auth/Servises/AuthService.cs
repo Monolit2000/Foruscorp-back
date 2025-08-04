@@ -21,6 +21,7 @@ namespace Foruscorp.Auth.Servises
         public async Task<LoginResponce> LoginAsync(UserLoginDto request)
         {
             var user = await context.Users
+                .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
                 throw new KeyNotFoundException("User not found.");
