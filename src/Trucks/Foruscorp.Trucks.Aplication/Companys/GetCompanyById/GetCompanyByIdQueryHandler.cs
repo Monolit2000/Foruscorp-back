@@ -16,7 +16,11 @@ namespace Foruscorp.Trucks.Aplication.Companys.GetCompanyById
     {
         public async Task<Result<CompanyDto>> Handle(GetCompanyByIdQuery request, CancellationToken cancellationToken)
         {
-            var company = await truckContext.Companys.FirstOrDefaultAsync(c => c.Id == request.CompanyId);
+            var company = await truckContext.Companys
+                .AsNoTracking()
+                .Include(c => c.Drivers)
+                .Include(c => c.Trucks)
+                .FirstOrDefaultAsync(c => c.Id == request.CompanyId);
             if (company == null)
                 return Result.Fail("Company not found.");
 

@@ -16,8 +16,6 @@ namespace Foruscorp.Auth.Controllers
         IAuthService authService,
         IUserService userService) : ControllerBase
     {
-
-
         [HttpPost("Register")]
         public async Task<ActionResult<User>> Register(UserAuthDto request)
         {
@@ -27,10 +25,6 @@ namespace Foruscorp.Auth.Controllers
 
             return Ok(user);
         }
-
-
-
-
 
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(UserLoginDto request)

@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+﻿using Foruscorp.Trucks.Domain.Drivers;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,6 +13,9 @@ namespace Foruscorp.Trucks.Domain.Users
     {
         public Guid UserId { get; set; }
         public DateTime CreatedAt { get; set; }
+
+        public Guid? ContactId { get; set; }
+        public Contact Contact { get; set; }
 
         private User() { }
        

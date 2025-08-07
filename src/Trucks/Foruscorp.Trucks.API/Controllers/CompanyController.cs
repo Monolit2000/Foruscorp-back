@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Companys;
 using Foruscorp.Trucks.Aplication.Companys.CreateCompany;
+using Foruscorp.Trucks.Aplication.Companys.GetCompanyById;
 using Foruscorp.Trucks.Aplication.Companys.GetCompanys;
 using Foruscorp.Trucks.Aplication.DriverBonuses.IncreaseBonus;
 using MediatR;
@@ -49,7 +50,7 @@ namespace Foruscorp.Trucks.API.Controllers
         [HttpGet("by-id/{id:guid}")]
         public async Task<ActionResult> GetCompanyByIdQuery([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            var result = await mediator.Send(new GetCompanysQuery(), cancellationToken);
+            var result = await mediator.Send(new GetCompanyByIdQuery(id), cancellationToken);
 
             if (result.IsFailed)
                 return BadRequest(result.Errors);
