@@ -9,5 +9,7 @@ namespace Foruscorp.Auth.Contruct
     {
         Task<User> RegisterAsync(UserAuthDto request);
         Task<LoginResponce> LoginAsync(UserLoginDto request);
+        Task<RefreshTokenResponce> RefreshAsync();
+        Task<string> GenerateRefreshToken(Guid userId);
     }
 }

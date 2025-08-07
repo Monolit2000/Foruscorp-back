@@ -1,9 +1,11 @@
 using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.Domain.Users;
+using Foruscorp.Auth.Servises;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -29,29 +31,37 @@ namespace Foruscorp.Auth.Controllers
         }
 
 
-
-
-
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Login(UserLoginDto request)
+        [HttpPost("refresh")]
+        public async Task<IActionResult> Refresh()
         {
             try
             {
-                var responce = await authService.LoginAsync(request);
-                if (string.IsNullOrEmpty(responce.Token))
-                    return Unauthorized("Invalid credentials");
-
-                return Ok(responce);
+                var response = await authService.RefreshAsync();
+                return Ok(response);
             }
-            catch (KeyNotFoundException)
+            catch (UnauthorizedAccessException ex)
             {
-                return Unauthorized("User not found");
+                return Unauthorized(ex.Message);
             }
-            catch (UnauthorizedAccessException)
-            {
-                return Unauthorized("Invalid password");
-            }
+        }
 
+
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] UserLoginDto request)
+        {
+            try
+            {
+                var response = await authService.LoginAsync(request);
+                return Ok(response);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(ex.Message);
+            }
         }
 
         [Authorize] // обязательная авторизация
