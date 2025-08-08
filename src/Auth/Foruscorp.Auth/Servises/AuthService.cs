@@ -39,10 +39,10 @@ namespace Foruscorp.Auth.Servises
             {
                 HttpOnly = true,
                 Secure = true,
-                SameSite = SameSiteMode.Strict,
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
                 Path = "/api/auth/refresh",
-                Domain = configuration["Cookie:Domain"]
+                Domain = "test"
             });
 
             return new LoginResponce { UserId = user.Id, Token = token };
