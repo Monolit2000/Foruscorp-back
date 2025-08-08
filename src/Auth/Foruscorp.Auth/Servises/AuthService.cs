@@ -38,11 +38,11 @@ namespace Foruscorp.Auth.Servises
             httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", refreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
+                Secure = false,
                 SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
-                Path = "/api/auth/refresh",
-                Domain = "test"
+                Path = "/Auth/refresh",
+                Domain = null
             });
 
             return new LoginResponce { UserId = user.Id, Token = token };
@@ -101,11 +101,11 @@ namespace Foruscorp.Auth.Servises
             httpContextAccessor.HttpContext.Response.Cookies.Append("refreshToken", newRefreshToken, new CookieOptions
             {
                 HttpOnly = true,
-                Secure = true,
-                SameSite = SameSiteMode.Strict,
+                Secure = false,
+                SameSite = SameSiteMode.Lax,
                 Expires = DateTimeOffset.UtcNow.AddDays(7),
-                Path = "/api/auth/refresh",
-                Domain = configuration["Cookie:Domain"]
+                Path = "/Auth/refresh",
+                Domain = null
             });
 
             await RevokeRefreshToken(refreshToken);
