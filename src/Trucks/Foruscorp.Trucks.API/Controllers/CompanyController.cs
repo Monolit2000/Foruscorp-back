@@ -1,7 +1,9 @@
 ﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Companys;
 using Foruscorp.Trucks.Aplication.Companys.CreateCompany;
+using Foruscorp.Trucks.Aplication.Companys.GetCompanyById;
 using Foruscorp.Trucks.Aplication.Companys.GetCompanys;
+using Foruscorp.Trucks.Aplication.Companys.SetCompanyManager;
 using Foruscorp.Trucks.Aplication.DriverBonuses.IncreaseBonus;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +33,23 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result.Successes.First().Message);
         }
 
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ISuccess))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("set-company-manager")]
+        public async Task<ActionResult> SetCompanyManagerCommand(SetCompanyManagerCommand setCompanyManagerCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(setCompanyManagerCommand, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result);
+        }
+
+
+
+
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<CompanyDto>))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpGet("all")]
@@ -49,12 +68,16 @@ namespace Foruscorp.Trucks.API.Controllers
         [HttpGet("by-id/{id:guid}")]
         public async Task<ActionResult> GetCompanyByIdQuery([FromRoute] Guid id, CancellationToken cancellationToken)
         {
-            var result = await mediator.Send(new GetCompanysQuery(), cancellationToken);
+            var result = await mediator.Send(new GetCompanyByIdQuery(id), cancellationToken);
 
             if (result.IsFailed)
                 return BadRequest(result.Errors);
 
             return Ok(result.Value);
         }
+
+
+
+
     }
 }

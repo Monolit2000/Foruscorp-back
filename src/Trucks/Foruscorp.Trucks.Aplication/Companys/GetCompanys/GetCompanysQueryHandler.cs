@@ -12,13 +12,19 @@ namespace Foruscorp.Trucks.Aplication.Companys.GetCompanys
         public async Task<Result<List<CompanyDto>>> Handle(GetCompanysQuery request, CancellationToken cancellationToken)
         {
             var companys = await truckContext.Companys
-                .AsNoTracking()
-                .ToListAsync(cancellationToken);
+                                .AsNoTracking()
+                                .Select(c => new 
+                                {
+                                    Company = c,
+                                    DriverCount = c.Drivers.Count,
+                                    TruckCount = c.Trucks.Count
+                                }).ToListAsync(cancellationToken);
+
             if (companys is null || !companys.Any())
-                throw new KeyNotFoundException("No companies found.");
+                return new List<CompanyDto>();
 
             var companyDtos = companys
-                .Select(c => c.ToCompanyDto())
+                .Select(c => c.Company.ToCompanyDto(c.DriverCount,c.TruckCount))
                 .ToList();
 
             return companyDtos;
