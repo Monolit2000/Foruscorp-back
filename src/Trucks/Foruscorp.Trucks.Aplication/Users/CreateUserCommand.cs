@@ -10,5 +10,7 @@ namespace Foruscorp.Trucks.Aplication.Users
     public class CreateUserCommand : IRequest
     {
         public Guid UserId { get; set; }
+
+        public string Email { get; set; }
     }
 }

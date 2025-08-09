@@ -18,13 +18,14 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence.Configurations
 
             builder.Property(u => u.CreatedAt)
                    .IsRequired();
-                   //.HasColumnType("timestamp without time zone");
 
-            // если хотите, чтобы СУБД по-умолчанию ставила текущее время (необязательно,
-            // ведь вы уже устанавливаете CreatedAt в конструкторе):
-            // builder.Property(u => u.CreatedAt)
-            //        .HasDefaultValueSql("CURRENT_TIMESTAMP")
-            //        .ValueGeneratedOnAdd();
+            builder.Property(u => u.ContactId)
+                .IsRequired(false);
+
+            builder.HasOne(u => u.Contact)
+                   .WithOne() 
+                   .HasForeignKey<User>(u => u.ContactId)
+                   .OnDelete(DeleteBehavior.Restrict);
         }
     }
 }

@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TruckContext))]
-    partial class TuckContextModelSnapshot : ModelSnapshot
+    [Migration("20250807174926_Driver_Id_Update")]
+    partial class Driver_Id_Update
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -62,35 +65,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Companys", "Tuck");
-                });
-
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.CompanyManager", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "CompanyId")
-                        .IsUnique();
-
-                    b.ToTable("CompanyManager", "Tuck");
                 });
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.DriverFuelHistorys.DriverFuelHistory", b =>
@@ -351,25 +325,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.ToTable("Users", "Tuck");
                 });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.CompanyManager", b =>
-                {
-                    b.HasOne("Foruscorp.Trucks.Domain.Companys.Company", "Company")
-                        .WithMany("CompanyManagers")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foruscorp.Trucks.Domain.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("Foruscorp.Trucks.Domain.DriverFuelHistorys.DriverFuelHistory", b =>
                 {
                     b.HasOne("Foruscorp.Trucks.Domain.Drivers.Driver", null)
@@ -441,8 +396,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.Company", b =>
                 {
-                    b.Navigation("CompanyManagers");
-
                     b.Navigation("Drivers");
 
                     b.Navigation("Trucks");

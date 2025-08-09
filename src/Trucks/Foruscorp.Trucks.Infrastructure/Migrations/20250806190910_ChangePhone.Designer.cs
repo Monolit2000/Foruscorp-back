@@ -3,6 +3,7 @@ using System;
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.Trucks.Infrastructure.Migrations
 {
     [DbContext(typeof(TruckContext))]
-    partial class TuckContextModelSnapshot : ModelSnapshot
+    [Migration("20250806190910_ChangePhone")]
+    partial class ChangePhone
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -64,35 +67,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.ToTable("Companys", "Tuck");
                 });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.CompanyManager", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("CompanyId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<DateTime>("UpdatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("UserId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompanyId");
-
-                    b.HasIndex("UserId");
-
-                    b.HasIndex("UserId", "CompanyId")
-                        .IsUnique();
-
-                    b.ToTable("CompanyManager", "Tuck");
-                });
-
             modelBuilder.Entity("Foruscorp.Trucks.Domain.DriverFuelHistorys.DriverFuelHistory", b =>
                 {
                     b.Property<Guid>("Id")
@@ -118,39 +92,12 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.ToTable("DriverFuelHistories", "Tuck");
                 });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Contact", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("character varying(20)");
-
-                    b.Property<string>("TelegramLink")
-                        .HasMaxLength(200)
-                        .HasColumnType("character varying(200)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Contacts", "Tuck");
-                });
-
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Drivers.Driver", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("uuid")
+                        .HasColumnName("DriverId");
 
                     b.Property<decimal>("Bonus")
                         .HasColumnType("decimal(18,2)");
@@ -158,11 +105,13 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.Property<Guid?>("CompanyId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("uuid");
-
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("integer");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("HireDate")
                         .HasColumnType("timestamp with time zone");
@@ -183,9 +132,6 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("ContactId")
-                        .IsUnique();
 
                     b.HasIndex("LicenseNumber")
                         .IsUnique();
@@ -337,37 +283,12 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.Property<Guid>("UserId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("ContactId")
-                        .HasColumnType("uuid");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("UserId");
 
-                    b.HasIndex("ContactId")
-                        .IsUnique();
-
                     b.ToTable("Users", "Tuck");
-                });
-
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.CompanyManager", b =>
-                {
-                    b.HasOne("Foruscorp.Trucks.Domain.Companys.Company", "Company")
-                        .WithMany("CompanyManagers")
-                        .HasForeignKey("CompanyId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foruscorp.Trucks.Domain.Users.User", "User")
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Company");
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.DriverFuelHistorys.DriverFuelHistory", b =>
@@ -386,15 +307,35 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .HasForeignKey("CompanyId")
                         .OnDelete(DeleteBehavior.Cascade);
 
-                    b.HasOne("Foruscorp.Trucks.Domain.Drivers.Contact", "Contact")
-                        .WithOne()
-                        .HasForeignKey("Foruscorp.Trucks.Domain.Drivers.Driver", "ContactId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("Foruscorp.Trucks.Domain.Trucks.Truck", "Truck")
                         .WithOne("Driver")
                         .HasForeignKey("Foruscorp.Trucks.Domain.Drivers.Driver", "TruckId")
                         .OnDelete(DeleteBehavior.Restrict);
+
+                    b.OwnsOne("Foruscorp.Trucks.Domain.Drivers.Contact", "Contact", b1 =>
+                        {
+                            b1.Property<Guid>("DriverId")
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("Email")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)");
+
+                            b1.Property<string>("Phone")
+                                .HasMaxLength(50)
+                                .HasColumnType("character varying(50)");
+
+                            b1.Property<string>("TelegramLink")
+                                .HasMaxLength(100)
+                                .HasColumnType("character varying(100)");
+
+                            b1.HasKey("DriverId");
+
+                            b1.ToTable("Drivers", "Tuck");
+
+                            b1.WithOwner()
+                                .HasForeignKey("DriverId");
+                        });
 
                     b.Navigation("Contact");
 
@@ -429,20 +370,8 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
-            modelBuilder.Entity("Foruscorp.Trucks.Domain.Users.User", b =>
-                {
-                    b.HasOne("Foruscorp.Trucks.Domain.Drivers.Contact", "Contact")
-                        .WithOne()
-                        .HasForeignKey("Foruscorp.Trucks.Domain.Users.User", "ContactId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
-                    b.Navigation("Contact");
-                });
-
             modelBuilder.Entity("Foruscorp.Trucks.Domain.Companys.Company", b =>
                 {
-                    b.Navigation("CompanyManagers");
-
                     b.Navigation("Drivers");
 
                     b.Navigation("Trucks");

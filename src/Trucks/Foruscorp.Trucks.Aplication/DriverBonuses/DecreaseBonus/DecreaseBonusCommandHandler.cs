@@ -11,6 +11,7 @@ namespace Foruscorp.Trucks.Aplication.DriverBonuses.DecreaseBonus
         public async Task<Result> Handle(DecreaseBonusCommand request, CancellationToken cancellationToken)
         {
             var driver = truckContext.Drivers
+                .Include(d => d.Bonuses)
                 .FirstOrDefault(d => d.Id == request.DriverId);
 
             if (driver == null)
@@ -26,3 +27,4 @@ namespace Foruscorp.Trucks.Aplication.DriverBonuses.DecreaseBonus
         }
     }
 }
+ 

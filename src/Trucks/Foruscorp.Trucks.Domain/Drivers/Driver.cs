@@ -1,6 +1,4 @@
-﻿
-
-using Foruscorp.BuildingBlocks.Domain;
+﻿using Foruscorp.BuildingBlocks.Domain;
 using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Drivers.Events;
 using Foruscorp.Trucks.Domain.RouteOffers;
@@ -15,14 +13,13 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public Guid? UserId { get; private set; }   
         public Guid? TruckId { get; private set; }
         public Truck Truck { get; private set; }
-        public Contact Contact { get; private set; } 
 
+        public Guid? ContactId { get; private set; }  
+        public Contact Contact { get; private set; } 
         public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
-
         public Guid Id { get; private set; }
-        public string FullName { get; private set; }
         public string LicenseNumber { get; private set; }
         public DriverStatus Status { get; private set; }
         public DateTime HireDate { get; private set; }
@@ -33,17 +30,17 @@ namespace Foruscorp.Trucks.Domain.Drivers
         private Driver() { }
 
         private Driver(
-            string fullName,
+            string fullName = null,
             string phoneNumber = null,
             string email = null,
             string telegramLink = null,
             Guid? userId = null)
         {
             Id = Guid.NewGuid();
-            FullName = fullName;
             UserId = userId;    
 
             Contact = Contact.Create(
+                fullName,
                 phoneNumber,
                 email,
                 telegramLink); 
@@ -69,11 +66,12 @@ namespace Foruscorp.Trucks.Domain.Drivers
 
 
         public void UpdateContact(
+            string fullName = null,
             string phoneNumber = null,
             string email = null,
             string telegramLink = null)
         {
-            Contact = Contact.Create(phoneNumber, email, telegramLink);
+            Contact = Contact.Create(fullName,phoneNumber, email, telegramLink);
         }   
 
         public RouteOffer ProposeRouteOffer(Guid routeId)

@@ -17,7 +17,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers
             {
                 Id = driver.Id,
                 TruckId = driver.TruckId ?? Guid.Empty,
-                FullName = driver.FullName,
+                FullName = driver.Contact?.FullName,
                 Phone = driver.Contact?.Phone,
                 Email = driver.Contact?.Email,
                 Bonus = driver.TotalBonus,

@@ -11,6 +11,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
         {
             var drivers = await context.Drivers
                 .AsNoTracking()
+                .Include(d => d.Contact)
                 .Include(d => d.Truck)
                 .ToListAsync();
 

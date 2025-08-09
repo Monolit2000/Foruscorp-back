@@ -16,10 +16,23 @@ namespace Foruscorp.Trucks.Aplication.Companys
         public string Name { get; set; }
 
         public DateTime CreatedAt { get; set; }
+
+        public int DriversCount { get; set; }
+        public int TrucksCount { get; set; }
+
         //public DateTime UpdatedAt { get; set; }
 
         //public List<TruckDto> Trucks { get; set; } = new();
         //public List<DriverDto> Drivers { get; set; } = new();
+    }
+
+    public class CompanyManagerDto
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public Guid CompanyId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
     public static class CompanyMapper
@@ -35,6 +48,39 @@ namespace Foruscorp.Trucks.Aplication.Companys
                 //Phone = company.Phone,
                 //Address = company.Address,
                 CreatedAt = company.CreatedAt,
+                DriversCount = company.Drivers.Count,
+                TrucksCount = company.Trucks.Count,
+                //UpdatedAt = company.UpdatedAt,
+                //Trucks = company.Trucks.Select(t => new TruckDto
+                //{
+                //    Id = t.Id,
+                //    LicensePlate = t.LicensePlate,
+                //    Model = t.Model,
+                //    Brand = t.Brand
+                //}).ToList(),
+                //Drivers = company.Drivers.Select(d => new DriverDto
+                //{
+                //    Id = d.Id,
+                //    FullName = d.FullName,
+                //    LicenseNumber = d.LicenseNumber
+                //}).ToList()
+            };
+        }
+
+
+        public static CompanyDto ToCompanyDto(this Company company, int driversCount, int trucksCount)
+        {
+            return new CompanyDto
+            {
+                Id = company.Id,
+                Name = company.Name,
+                //Cnpj = company.Cnpj,
+                //Email = company.Email,
+                //Phone = company.Phone,
+                //Address = company.Address,
+                CreatedAt = company.CreatedAt,
+                DriversCount = driversCount,
+                TrucksCount = trucksCount,
                 //UpdatedAt = company.UpdatedAt,
                 //Trucks = company.Trucks.Select(t => new TruckDto
                 //{
