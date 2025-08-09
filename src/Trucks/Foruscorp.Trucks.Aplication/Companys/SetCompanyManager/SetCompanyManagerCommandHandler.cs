@@ -21,6 +21,12 @@ namespace Foruscorp.Trucks.Aplication.Companys.SetCompanyManager
             if (company == null)
                 return Result.Fail("Company not found.");
 
+            var IsUserExisst = await truckContext.Users
+                .AnyAsync(u => u.UserId == request.UserId, cancellationToken);
+
+            if (!IsUserExisst)
+                return Result.Fail("User not found.");
+
             var manager = company.AddManager(request.UserId);
 
             await truckContext.SaveChangesAsync(cancellationToken);

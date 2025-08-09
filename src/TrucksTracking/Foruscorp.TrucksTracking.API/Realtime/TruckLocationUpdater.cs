@@ -63,7 +63,9 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             }
 
             // Start polling
-            return PollLoopAsync(stoppingToken);
+            //return PollLoopAsync(stoppingToken);
+
+            return Task.CompletedTask;
         }
 
         private async Task PollLoopAsync(CancellationToken token)
