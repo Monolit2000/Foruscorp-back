@@ -19,10 +19,20 @@ namespace Foruscorp.Trucks.Aplication.Companys
 
         public int DriversCount { get; set; }
         public int TrucksCount { get; set; }
+
         //public DateTime UpdatedAt { get; set; }
 
         //public List<TruckDto> Trucks { get; set; } = new();
         //public List<DriverDto> Drivers { get; set; } = new();
+    }
+
+    public class CompanyManagerDto
+    {
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public Guid CompanyId { get; set; }
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 
     public static class CompanyMapper

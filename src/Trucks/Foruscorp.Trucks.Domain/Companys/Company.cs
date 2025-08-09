@@ -14,9 +14,8 @@ namespace Foruscorp.Trucks.Domain.Companys
         public Guid Id { get; set; }
         public List<Truck> Trucks { get; private set; } = [];
         public List<Driver> Drivers { get; private set; } = [];
-
+        public List<CompanyManager> CompanyManagers { get; private set; } = []; 
         public string ExternalToken { get; set; }
-
         public string Name { get; set; }
         public string Cnpj { get; set; }
         public string Email { get; set; }
@@ -30,6 +29,15 @@ namespace Foruscorp.Trucks.Domain.Companys
             Id = Guid.NewGuid();
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
+        }
+
+        public CompanyManager AddManager(Guid userId)
+        {
+            var manager = CompanyManager.Create(userId, this.Id);
+            CompanyManagers.Add(manager);
+            UpdatedAt = DateTime.UtcNow;
+
+            return manager;
         }
 
         public static Company Create(string name)
@@ -48,5 +56,7 @@ namespace Foruscorp.Trucks.Domain.Companys
                 ExternalToken = token
             };
         }
+
+        
     }
 }

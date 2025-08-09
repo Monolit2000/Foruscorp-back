@@ -1,12 +1,7 @@
-﻿using FluentResults;
-using Foruscorp.Trucks.Aplication.Contruct;
-using MediatR;
+﻿using MediatR;
+using FluentResults;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Foruscorp.Trucks.Aplication.Contruct;
 
 namespace Foruscorp.Trucks.Aplication.Companys.GetCompanyById
 {
@@ -20,6 +15,9 @@ namespace Foruscorp.Trucks.Aplication.Companys.GetCompanyById
                 .AsNoTracking()
                 .Include(c => c.Drivers)
                 .Include(c => c.Trucks)
+                .Include(c => c.CompanyManagers)
+                    .ThenInclude(cm => cm.User)
+                        .ThenInclude(u => u.Contact)
                 .FirstOrDefaultAsync(c => c.Id == request.CompanyId);
             if (company == null)
                 return Result.Fail("Company not found.");
