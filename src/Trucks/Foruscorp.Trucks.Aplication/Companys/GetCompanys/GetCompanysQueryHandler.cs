@@ -13,6 +13,9 @@ namespace Foruscorp.Trucks.Aplication.Companys.GetCompanys
         {
             var companys = await truckContext.Companys
                                 .AsNoTracking()
+                                .Include(c => c.CompanyManagers)
+                                    .ThenInclude(cm => cm.User)
+                                        .ThenInclude(u => u.Contact)
                                 .Select(c => new 
                                 {
                                     Company = c,

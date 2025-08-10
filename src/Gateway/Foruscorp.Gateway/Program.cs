@@ -1,30 +1,62 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add controllers for telemetry testing
+builder.Services.AddControllers();
 
 builder.Services
     .AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
 
-
+// Configure OpenTelemetry with full instrumentation
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("YarpGateway"))
-        .WithTracing(tracing =>
-    tracing
+    .ConfigureResource(resource => resource
+        .AddService("YarpGateway")
+        .AddAttributes(new KeyValuePair<string, object>[]
+        {
+            new("service.instance.id", Environment.MachineName),
+            new("service.version", "1.0.0")
+        }))
+    .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
-        .AddEntityFrameworkCoreInstrumentation())
+        .AddRuntimeInstrumentation()
+        .AddMeter("YarpGateway"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation(options =>
+        {
+            options.RecordException = true;
+            //options.EnableGrpcAspNetCoreSupport = true;
+        })
+        .AddHttpClientInstrumentation(options =>
+        {
+            options.RecordException = true;
+            options.EnrichWithHttpRequestMessage = (activity, request) =>
+            {
+                activity.SetTag("http.request.method", request.Method.ToString());
+                activity.SetTag("http.request.url", request.RequestUri?.ToString());
+            };
+        })
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddSource("YarpGateway"))
     .UseOtlpExporter();
 
-
-//builder.Services.AddAuthentication(BearerTokenDefaults.AuthenticationScheme)
-//    .AddBearerToken();
+// Configure logging with OpenTelemetry
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+    logging.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService("YarpGateway"));
+});
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -42,35 +74,36 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
-//app.MapGet("login", () =>
-//    Results.SignIn(
-//        new ClaimsPrincipal(
-//            new ClaimsIdentity(
-//                new[]
-//                {
-//                    new Claim("sub", Guid.NewGuid().ToString())
-//                },
-//                BearerTokenDefaults.AuthenticationScheme)
-//        ),
-//        authenticationScheme: BearerTokenDefaults.AuthenticationScheme
-//    )
-//);
-
+// Middleware to ensure proper trace context propagation
 app.Use(async (context, next) =>
 {
     // Log incoming headers for debugging
     var traceParent = context.Request.Headers["traceparent"];
     var traceState = context.Request.Headers["tracestate"];
-    Console.WriteLine($"Incoming traceparent: {traceParent}, tracestate: {traceState}");
+    var logger = context.RequestServices.GetRequiredService<ILogger<Program>>();
+    
+    logger.LogInformation("Incoming request: {Method} {Path}, TraceParent: {TraceParent}, TraceState: {TraceState}", 
+        context.Request.Method, context.Request.Path, traceParent, traceState);
+
+    // Ensure trace context is properly propagated
+    if (!string.IsNullOrEmpty(traceParent))
+    {
+        context.Request.Headers["traceparent"] = traceParent;
+        if (!string.IsNullOrEmpty(traceState))
+        {
+            context.Request.Headers["tracestate"] = traceState;
+        }
+    }
 
     await next(context);
 });
 
 app.UseAuthentication();
-
 app.UseAuthorization();
+
+// Map controllers for telemetry testing
+app.MapControllers();
 
 app.MapReverseProxy();
 
-//app.MapControllers();
 app.Run();
