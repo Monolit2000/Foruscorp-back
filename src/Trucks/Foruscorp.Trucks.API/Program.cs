@@ -31,11 +31,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(resource => resource
         .AddService("Trucks.API")
-        .AddAttributes(new KeyValuePair<string, object>[]
-        {
-            new("service.instance.id", Environment.MachineName),
-            new("service.version", "1.0.0")
-        }))
+     )
     .WithMetrics(metrics => metrics
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
@@ -43,20 +39,6 @@ builder.Services.AddOpenTelemetry()
         .AddNpgsqlInstrumentation()
         .AddMeter("Trucks.API"))
     .WithTracing(tracing => tracing
-        .AddAspNetCoreInstrumentation(options =>
-        {
-            options.RecordException = true;
-            //options.EnableGrpcAspNetCoreSupport = true;
-        })
-        .AddHttpClientInstrumentation(options =>
-        {
-            options.RecordException = true;
-            options.EnrichWithHttpRequestMessage = (activity, request) =>
-            {
-                activity.SetTag("http.request.method", request.Method.ToString());
-                activity.SetTag("http.request.url", request.RequestUri?.ToString());
-            };
-        })
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
         .AddNpgsql()
