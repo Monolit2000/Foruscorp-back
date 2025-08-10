@@ -63,9 +63,9 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             }
 
             // Start polling
-            //return PollLoopAsync(stoppingToken);
+            return PollLoopAsync(stoppingToken);
 
-            return Task.CompletedTask;
+            //return Task.CompletedTask;
         }
 
         private async Task PollLoopAsync(CancellationToken token)
@@ -161,7 +161,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
                       })
                 .ToList();
 
-            _logger.LogInformation("Fetched {Count} updates.", updates.Count);
+            //_logger.LogInformation("Fetched {Count} updates.", updates.Count);
             return updates;
         }
 
@@ -235,7 +235,7 @@ namespace Foruscorp.TrucksTracking.API.Realtime
             {
                 try
                 {
-                    _logger.LogInformation("Processing reader for {Count} items", reader.Count);
+                    //_logger.LogInformation("Processing reader for {Count} items", reader.Count);
 
                     using var scope = _scopeFactory.CreateScope();
                     var sender = scope.ServiceProvider.GetRequiredService<ISender>();
