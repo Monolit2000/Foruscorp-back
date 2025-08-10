@@ -71,7 +71,11 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string email = null,
             string telegramLink = null)
         {
-            Contact = Contact.Create(fullName,phoneNumber, email, telegramLink);
+
+            if (Contact != null)
+                Contact.Update(fullName, phoneNumber, email, telegramLink);
+            else
+                Contact = Contact.Create(fullName, phoneNumber, email, telegramLink);
         }   
 
         public RouteOffer ProposeRouteOffer(Guid routeId)
