@@ -16,9 +16,6 @@ namespace Foruscorp.Trucks.Domain.Drivers
 
         public Guid? TruckId { get; private set; }
         public Truck Truck { get; private set; }
-
-        //public Guid? ContactId { get; private set; }  
-        //public Contact Contact { get; private set; } 
         public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
@@ -41,12 +38,6 @@ namespace Foruscorp.Trucks.Domain.Drivers
         {
             Id = Guid.NewGuid();
             UserId = userId;    
-
-            //Contact = Contact.Create(
-            //    fullName,
-            //    phoneNumber,
-            //    email,
-            //    telegramLink); 
         }
 
 
