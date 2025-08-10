@@ -19,6 +19,8 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetDriverById
                 .AsNoTracking()
                 .Include(d => d.Bonuses)
                 .Include(d => d.Truck)
+                .Include(d => d.User)
+                    .ThenInclude(u => u.Contact)
                 .FirstOrDefaultAsync(d => d.Id == request.DriverId, cancellationToken);
             if (driver == null)
                 return Result.Fail($"Driver with ID {request.DriverId} not found.");
