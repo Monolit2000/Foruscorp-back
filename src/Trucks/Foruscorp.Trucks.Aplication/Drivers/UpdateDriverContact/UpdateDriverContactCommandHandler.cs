@@ -12,7 +12,8 @@ namespace Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact
         public async Task<Result<DriverDto>> Handle(UpdateDriverContactCommand request, CancellationToken cancellationToken)
         {
             var driver = await truckContext.Drivers
-                .Include(d => d.Contact)
+                .Include(d => d.User)
+                    .ThenInclude(u => u.Contact)
                 .FirstOrDefaultAsync(d => d.Id == request.DriverId, cancellationToken);
 
             if (driver == null)

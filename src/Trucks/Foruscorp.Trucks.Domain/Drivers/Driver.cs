@@ -3,6 +3,7 @@ using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Drivers.Events;
 using Foruscorp.Trucks.Domain.RouteOffers;
 using Foruscorp.Trucks.Domain.Trucks;
+using Foruscorp.Trucks.Domain.Users;
 
 namespace Foruscorp.Trucks.Domain.Drivers
 {
@@ -11,11 +12,13 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public Guid? CompanyId { get; private set; }
 
         public Guid? UserId { get; private set; }   
+        public User User { get; private set; }
+
         public Guid? TruckId { get; private set; }
         public Truck Truck { get; private set; }
 
-        public Guid? ContactId { get; private set; }  
-        public Contact Contact { get; private set; } 
+        //public Guid? ContactId { get; private set; }  
+        //public Contact Contact { get; private set; } 
         public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
@@ -39,11 +42,11 @@ namespace Foruscorp.Trucks.Domain.Drivers
             Id = Guid.NewGuid();
             UserId = userId;    
 
-            Contact = Contact.Create(
-                fullName,
-                phoneNumber,
-                email,
-                telegramLink); 
+            //Contact = Contact.Create(
+            //    fullName,
+            //    phoneNumber,
+            //    email,
+            //    telegramLink); 
         }
 
 
@@ -53,6 +56,18 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string email = null,
             string telegramLink = null,
             Guid? userId = null)
+        {
+            if (string.IsNullOrWhiteSpace(fullName))
+                throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
+            return new Driver(fullName, phoneNumber, email, telegramLink, userId);
+        }
+
+        public static Driver CreateNew(
+            Guid? userId,
+            string fullName,
+            string phoneNumber = null,
+            string email = null,
+            string telegramLink = null)
         {
             if (string.IsNullOrWhiteSpace(fullName))
                 throw new ArgumentException("Full name cannot be empty.", nameof(fullName));
@@ -72,10 +87,13 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string telegramLink = null)
         {
 
-            if (Contact != null)
-                Contact.Update(fullName, phoneNumber, email, telegramLink);
-            else
-                Contact = Contact.Create(fullName, phoneNumber, email, telegramLink);
+            if (User != null)
+            {
+                if (User.Contact != null)
+                    User.Contact.Update(fullName, phoneNumber, email, telegramLink);
+                else
+                    User.Contact = Contact.Create(fullName, phoneNumber, email, telegramLink);
+            }
         }   
 
         public RouteOffer ProposeRouteOffer(Guid routeId)
