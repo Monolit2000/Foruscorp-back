@@ -10,6 +10,7 @@ using MassTransit;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 namespace Foruscorp.Auth.Servises
@@ -21,6 +22,69 @@ namespace Foruscorp.Auth.Servises
         IPublishEndpoint publishEndpoint,
         IHttpContextAccessor httpContextAccessor) : IAuthService
     {
+
+        public async Task LogoutAsync(bool allDevices = false)
+        {
+            var http = httpContextAccessor.HttpContext
+                ?? throw new InvalidOperationException("No HttpContext");
+
+            var refreshCookie = http.Request.Cookies["refreshToken"];
+            Guid? userId = null;
+
+            if (!string.IsNullOrEmpty(refreshCookie))
+            {
+                var current = await context.RefreshTokens
+                    .FirstOrDefaultAsync(t => t.Token == refreshCookie);
+
+                if (current != null)
+                {
+                    userId = current.UserId;
+                    if (!current.IsRevoked)
+                    {
+                        current.IsRevoked = true; 
+                    }
+                }
+            }
+    
+            if (allDevices)
+            {
+              
+                if (userId is null)
+                {
+                    var claim = http.User?.FindFirst(ClaimTypes.NameIdentifier)
+                                ?? http.User?.FindFirst("sub");
+                    if (claim != null && Guid.TryParse(claim.Value, out var parsed))
+                        userId = parsed;
+                }
+
+                if (userId.HasValue)
+                {
+
+                    await context.RefreshTokens
+                        .Where(t => t.UserId == userId.Value && !t.IsRevoked)
+                        .ExecuteUpdateAsync(s => s.SetProperty(t => t.IsRevoked, true));
+//                var tokens = await context.RefreshTokens
+//                    .Where(t => t.UserId == userId.Value && !t.IsRevoked)
+//                    .ToListAsync();
+//                foreach (var t in tokens) t.IsRevoked = true;
+                }
+            }
+
+            await context.SaveChangesAsync();
+
+            // 3) Удалить cookie (важно совпадение Path с тем, как устанавливали)
+            http.Response.Cookies.Delete("refreshToken", new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = false,          // В продакшене: true (HTTPS)!
+                SameSite = SameSiteMode.Lax,
+                Path = "/Auth/refresh",  // тот же путь, что при установке
+                Domain = null
+            });
+        }
+
+
+
         public async Task<LoginResponce> LoginAsync(UserLoginDto request)
         {
             var user = await context.Users

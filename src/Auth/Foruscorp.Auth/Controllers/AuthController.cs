@@ -62,6 +62,17 @@ namespace Foruscorp.Auth.Controllers
             }
         }
 
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync([FromQuery] bool allDevices = false)
+        {
+            await authService.LogoutAsync();
+
+            return Ok("Logged out successfully");
+        }
+
+
+
+
         [Authorize] // обязательная авторизация
         [HttpGet("me")]
         public ActionResult<string> GetCurrentUserId()

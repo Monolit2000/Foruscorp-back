@@ -11,5 +11,6 @@ namespace Foruscorp.Auth.Contruct
         Task<LoginResponce> LoginAsync(UserLoginDto request);
         Task<RefreshTokenResponce> RefreshAsync();
         Task<string> GenerateRefreshToken(Guid userId);
+        Task LogoutAsync(bool allDevices = false);
     }
 }
