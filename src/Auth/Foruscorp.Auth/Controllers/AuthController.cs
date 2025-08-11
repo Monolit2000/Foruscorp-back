@@ -65,7 +65,7 @@ namespace Foruscorp.Auth.Controllers
         [HttpPost("logout")]
         public async Task<IActionResult> LogoutAsync([FromQuery] bool allDevices = false)
         {
-            await authService.LogoutAsync();
+            await authService.LogoutAsync(allDevices);
 
             return Ok("Logged out successfully");
         }
