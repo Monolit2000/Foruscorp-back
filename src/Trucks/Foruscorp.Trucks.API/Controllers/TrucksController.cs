@@ -123,15 +123,6 @@ namespace Foruscorp.Trucks.API.Controllers
         }
 
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
-        [HttpPost("create-driver")]
-        public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(createDriverCommand, cancellationToken);
-            return Ok(result);
-        }
-
-
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("increase-driver-bonus")]
