@@ -17,7 +17,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetAllTruks
         {
             var truks = await truckContext.Trucks
                 .Include(t => t.Driver)
-                    .ThenInclude(d => d.User)
+                    .ThenInclude(d => d.DriverUser)
                         .ThenInclude(u => u.Contact)
                 .AsNoTracking()
                 .Where(t => currentUser.CompanyId == t.CompanyId ) 

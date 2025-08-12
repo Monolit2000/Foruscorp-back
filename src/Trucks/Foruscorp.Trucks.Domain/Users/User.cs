@@ -22,6 +22,7 @@ namespace Foruscorp.Trucks.Domain.Users
         public User(Guid userId, string userName)
         {
             UserId = userId;
+            UserName = userName;
             CreatedAt = DateTime.UtcNow;
         }
 

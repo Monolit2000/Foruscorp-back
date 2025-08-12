@@ -8,6 +8,8 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Users
     {
         public void Configure(EntityTypeBuilder<Contact> builder)
         {
+            builder.ToTable("Contacts");
+
             builder.HasKey(c => c.Id); 
 
             builder.Property(c => c.Id)

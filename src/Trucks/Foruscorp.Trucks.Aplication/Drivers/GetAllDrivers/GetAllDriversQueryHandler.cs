@@ -15,7 +15,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
             var drivers = await context.Drivers
                 .AsNoTracking()
                 .Include(d => d.Truck)
-                .Include(d => d.User)
+                .Include(d => d.DriverUser)
                     .ThenInclude(u => u.Contact)
                 .ToListAsync(cancellationToken);
 
@@ -56,11 +56,11 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
             return new GetAllDriverDto
             {
                 Id = driver.Id,
-                FullName = driver.User?.Contact?.FullName,
-                Phone = driver.User?.Contact?.Phone,
-                Email = driver.User?.Contact?.Email,
+                FullName = driver.DriverUser?.Contact?.FullName,
+                Phone = driver.DriverUser?.Contact?.Phone,
+                Email = driver.DriverUser?.Contact?.Email,
                 Bonus = driver.TotalBonus,
-                TelegramLink = driver.User?.Contact?.TelegramLink,
+                TelegramLink = driver.DriverUser?.Contact?.TelegramLink,
                 Truck = driver.Truck == null
                     ? null
                     : new GetAllTruckDto

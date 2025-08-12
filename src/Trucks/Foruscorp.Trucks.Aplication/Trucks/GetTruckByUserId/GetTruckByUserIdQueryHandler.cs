@@ -17,7 +17,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId
         {
             var driver = await truckContext.Drivers
                 .Include(d => d.Truck)
-                .Include(d => d.User)
+                .Include(d => d.DriverUser)
                     .ThenInclude(u => u.Contact)
                 .FirstOrDefaultAsync(d => d.UserId == request.UserId, cancellationToken);
 
