@@ -1,6 +1,8 @@
 ﻿using MediatR;
 using Foruscorp.Trucks.Domain.Drivers;
 using Foruscorp.Trucks.Aplication.Contruct;
+using Foruscorp.Trucks.IntegrationEvents;
+using MassTransit;
 using MassTransit.Testing;
 using Microsoft.EntityFrameworkCore;
 using FluentResults;
@@ -15,7 +17,9 @@ namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
         public string TelegramLink { get; set; }
     }
 
-    public class CreateDriverCommandHandler(ITruckContext context) : IRequestHandler<CreateDriverCommand, Result<DriverDto>>
+    public class CreateDriverCommandHandler(
+        ITruckContext context,
+        IPublishEndpoint publishEndpoint) : IRequestHandler<CreateDriverCommand, Result<DriverDto>>
     {
         public async Task<Result<DriverDto>> Handle(CreateDriverCommand request, CancellationToken cancellationToken)
         {
@@ -24,6 +28,15 @@ namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
             await context.Drivers.AddAsync(driver, cancellationToken);
 
             await context.SaveChangesAsync(cancellationToken);
+
+            await publishEndpoint.Publish(new DriverCreatedIntegrationEvent(
+                driver.Id, 
+                driver.UserId.Value, 
+                request.Name,
+                request.Phone,
+                request.Email,
+                request.TelegramLink), 
+                cancellationToken);
 
             return driver.ToDriverDto();
         }

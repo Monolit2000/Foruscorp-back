@@ -36,6 +36,20 @@ namespace Foruscorp.Trucks.Domain.Drivers
             string telegramLink = null)
         {
             Id = Guid.NewGuid();
+            Status = DriverStatus.Active;
+            HireDate = DateTime.UtcNow;
+            
+            var userId = Guid.NewGuid();
+            var user = User.CreateNew(userId, fullName);
+            
+            if (!string.IsNullOrWhiteSpace(fullName) || !string.IsNullOrWhiteSpace(phoneNumber) || 
+                !string.IsNullOrWhiteSpace(email) || !string.IsNullOrWhiteSpace(telegramLink))
+            {
+                user.Contact = Contact.Create(fullName, phoneNumber, email, telegramLink);
+            }
+            
+            UserId = userId;
+            DriverUser = user;
         }
 
 
