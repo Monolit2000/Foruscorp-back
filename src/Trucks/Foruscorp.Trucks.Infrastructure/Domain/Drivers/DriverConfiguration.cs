@@ -49,7 +49,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             //       .HasForeignKey<Driver>(u => u.ContactId)
             //       .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasOne(u => u.User)
+            builder.HasOne(u => u.DriverUser)
                    .WithOne()
                    .HasForeignKey<Driver>(u => u.UserId)
                    .OnDelete(DeleteBehavior.SetNull);
