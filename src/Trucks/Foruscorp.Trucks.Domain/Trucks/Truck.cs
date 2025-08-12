@@ -149,7 +149,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public void DetachDriver()
         {
             if (DriverId == null)
-                throw new InvalidOperationException("Truck does not have an assigned driver.");
+                return;
 
             Driver = null;
 
