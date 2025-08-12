@@ -12,6 +12,7 @@ using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
 using Foruscorp.Trucks.Aplication.Trucks;
 using Foruscorp.Trucks.Aplication.Trucks.AttachDriver;
 using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
+using Foruscorp.Trucks.Aplication.Trucks.GetAllTruckUnit;
 using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
@@ -35,6 +36,16 @@ namespace Foruscorp.Trucks.API.Controllers
         IMediator mediator,
         ITruckProviderService truckProviderService) : ControllerBase
     {
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckUnitDto>))]
+        [HttpGet("truckUnits")]
+        public async Task<ActionResult> GetAllTruckUnitCammand(Guid truckId, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new GetAllTruckUnitCammand(), cancellationToken);
+            return Ok(result);
+        }
+
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ISuccess))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
