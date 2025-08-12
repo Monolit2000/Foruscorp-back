@@ -13,21 +13,21 @@ namespace Foruscorp.Trucks.Domain.Users
     {
         public Guid UserId { get; set; }
         public DateTime CreatedAt { get; set; }
-
+        public string UserName { get; set; }
         public Guid? ContactId { get; set; }
         public Contact Contact { get; set; }
 
         private User() { }
        
-        public User(Guid userId)
+        public User(Guid userId, string userName)
         {
             UserId = userId;
             CreatedAt = DateTime.UtcNow;
         }
 
-        public static User CreateNew(Guid userId)
+        public static User CreateNew(Guid userId, string userName)  
         {
-            return new User(userId);
+            return new User(userId, userName);
         }
 
         //public void UpdateUser(string userName, string email)

@@ -200,6 +200,7 @@ namespace Foruscorp.Auth.Servises
             await publishEndpoint.Publish(new NewUserRegistratedIntegrationEvent
             {
                 UserId = user.Id,
+                UserName = user.UserName
             });
 
             return user;
