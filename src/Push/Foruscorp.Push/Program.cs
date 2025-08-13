@@ -2,6 +2,12 @@ using ExpoCommunityNotificationServer.Client;
 using Foruscorp.Push.Infrastructure;
 using Foruscorp.Push.Infrastructure.Database;
 using Scalar.AspNetCore;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Npgsql;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +17,32 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Configure OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Push.API"))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddNpgsqlInstrumentation()
+        .AddMeter("Push.API"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddNpgsql()
+        .AddSource("Push.API"))
+    .UseOtlpExporter();
+
+// Configure logging with OpenTelemetry
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+    logging.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService("Push.API"));
+});
 
 // Add Prometheus metrics
 builder.Services.AddHealthChecks();

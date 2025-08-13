@@ -8,6 +8,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using OpenTelemetry;
+using OpenTelemetry.Logs;
+using OpenTelemetry.Metrics;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Npgsql;
 using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +28,34 @@ builder.Services.AddDbContext<UserContext>((sp, options) =>
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi("v1");
+
+// Configure OpenTelemetry
+builder.Services.AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("Auth.API"))
+    .WithMetrics(metrics => metrics
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddNpgsqlInstrumentation()
+        .AddMeter("Auth.API"))
+    .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddEntityFrameworkCoreInstrumentation()
+        .AddRabbitMQInstrumentation()
+        .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
+        .AddSource("Auth.API"))
+    .UseOtlpExporter();
+
+// Configure logging with OpenTelemetry
+builder.Logging.AddOpenTelemetry(logging =>
+{
+    logging.IncludeScopes = true;
+    logging.IncludeFormattedMessage = true;
+    logging.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService("Auth.API"));
+});
 
 // Add Prometheus metrics
 builder.Services.AddHealthChecks();
