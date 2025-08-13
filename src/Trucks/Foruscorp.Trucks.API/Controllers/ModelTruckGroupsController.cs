@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Foruscorp.Trucks.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class ModelTruckGroupsController : ControllerBase
     {
         private readonly IMediator _mediator;
