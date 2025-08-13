@@ -2,6 +2,7 @@ using Foruscorp.Trucks.Aplication.ModelTruckGroups.FormModelTruckGroupsForAllTru
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetAllModelTruckGroups;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupFuelCapacity;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeight;
+using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeightFuelCapacity;
 using Foruscorp.Trucks.Aplication.Trucks.Commands;
 using Foruscorp.Trucks.Aplication.Trucks.Queries;
 using MediatR;
@@ -113,9 +114,17 @@ namespace Foruscorp.Trucks.API.Controllers
 
         }
 
+        [HttpPost("set-WeightAndFuelCapacit")]
+        public async Task<ActionResult<FormModelTruckGroupForAllTruksCommand>> SetTruckGroupWeightFuelCapacityCommand(SetTruckGroupWeightFuelCapacityCommand setTruckGroupWeightFuelCapacityCommand)
+        {
+            var result = await _mediator.Send(setTruckGroupWeightFuelCapacityCommand);
 
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
 
+            return Ok(result);
 
+        }
 
     }
 }
