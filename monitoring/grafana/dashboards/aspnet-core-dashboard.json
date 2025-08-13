@@ -1,0 +1,99 @@
+{
+  "id": null,
+  "title": "ASP.NET Core Applications",
+  "tags": ["aspnetcore", "dotnet", "foruscorp"],
+  "style": "dark",
+  "timezone": "browser",
+  "panels": [
+    {
+      "id": 1,
+      "title": "HTTP Requests Rate",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "rate(http_requests_received_total[5m])",
+          "legendFormat": "{{job}} - {{controller}}/{{action}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      }
+    },
+    {
+      "id": 2,
+      "title": "HTTP Response Time (95th percentile)",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m]))",
+          "legendFormat": "{{job}} - 95th percentile"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      }
+    },
+    {
+      "id": 3,
+      "title": "Active Requests",
+      "type": "stat",
+      "targets": [
+        {
+          "expr": "sum(http_requests_in_progress) by (job)",
+          "legendFormat": "{{job}}"
+        }
+      ],
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      }
+    },
+    {
+      "id": 4,
+      "title": "HTTP Status Codes",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_received_total[5m])) by (code, job)",
+          "legendFormat": "{{job}} - {{code}}"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      }
+    },
+    {
+      "id": 5,
+      "title": "Memory Usage",
+      "type": "graph",
+      "targets": [
+        {
+          "expr": "dotnet_total_memory_bytes / 1024 / 1024",
+          "legendFormat": "{{job}} - MB"
+        }
+      ],
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      }
+    }
+  ],
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "refresh": "10s"
+}
