@@ -49,7 +49,7 @@ services:
     ports:
       - "5007:5007"
     environment:
-      <<: [*db-env, *mq-env, *common-env]
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
     depends_on:
       - rabbitmq
     extra_hosts:
