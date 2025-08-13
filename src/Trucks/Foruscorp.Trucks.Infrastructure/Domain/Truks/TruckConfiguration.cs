@@ -16,6 +16,9 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
 
             builder.Property(t => t.ProviderTruckId);
 
+            builder.Property(t => t.CompanyId)
+                .IsRequired(false);
+
             builder.Property(t => t.Vin)
                 .IsRequired(false);
 

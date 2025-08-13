@@ -22,6 +22,7 @@ namespace Foruscorp.Trucks.Aplication.Contruct
         DbSet<RouteOffer> RouteOffers { get; set; }
         DbSet<Company> Companys { get; set; }
 
+        DbSet<ModelTruckGroup> ModelTruckGroups { get; set; }
         DbSet<DriverFuelHistory> DriverFuelHistories { get; set; }
 
         Task SaveChangesAsync(CancellationToken cancellationToken);

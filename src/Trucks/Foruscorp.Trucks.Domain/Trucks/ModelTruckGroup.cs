@@ -36,5 +36,29 @@ namespace Foruscorp.Trucks.Domain.Trucks
             CreatedAt = DateTime.UtcNow;
             UpdatedAt = DateTime.UtcNow;
         }
+
+        public void SetAverageFuelConsumption(double averageFuelConsumption)
+        {
+            if (averageFuelConsumption <= 0)
+                throw new ArgumentException("Average fuel consumption must be greater than zero.", nameof(averageFuelConsumption));
+            AverageFuelConsumption = averageFuelConsumption;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SetAveregeWeight(double averageWeight)
+        {
+            if (averageWeight <= 0)
+                throw new ArgumentException("Average weight must be greater than zero.", nameof(averageWeight));
+            AveregeWeight = averageWeight;
+            UpdatedAt = DateTime.UtcNow;
+        }
+
+        public void SetFuelCapacity(double fuelCapacity)
+        {
+            if (fuelCapacity <= 0)
+                throw new ArgumentException("Fuel capacity must be greater than zero.", nameof(fuelCapacity));
+            FuelCapacity = fuelCapacity;
+            UpdatedAt = DateTime.UtcNow;
+        }
     }
 }

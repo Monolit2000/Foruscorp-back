@@ -21,9 +21,5 @@
 	  <ProjectReference Include="..\Foruscorp.Trucks.IntegrationEvents\Foruscorp.Trucks.IntegrationEvents.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <Folder Include="ModelTruckGroups\" />
-	</ItemGroup>
-
 
 </Project>
