@@ -39,6 +39,8 @@ builder.Services.AddOpenTelemetry()
         .AddNpgsqlInstrumentation()
         .AddMeter("Trucks.API"))
     .WithTracing(tracing => tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
         .AddNpgsql()
