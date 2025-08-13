@@ -226,6 +226,45 @@ services:
     networks:
       - foruscorp-docker-network
 
+  prometheus:
+    container_name: foruscorp-prometheus
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alerts.yml:/etc/prometheus/alerts.yml:ro
+      - prometheus-data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--storage.tsdb.retention.time=200h'
+      - '--web.enable-lifecycle'
+    networks:
+      - foruscorp-docker-network
+    restart: unless-stopped
+
+  grafana:
+    container_name: foruscorp-grafana
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_USERS_ALLOW_SIGN_UP: false
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    networks:
+      - foruscorp-docker-network
+    restart: unless-stopped
+    depends_on:
+      - prometheus
+
   # seq:
   #   container_name: seq
   #   image: datalust/seq:latest
@@ -250,4 +289,8 @@ volumes:
   postgres-data:
     driver: local
   rabbitmq-data:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
     driver: local

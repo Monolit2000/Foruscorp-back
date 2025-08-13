@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Scalar.AspNetCore;
 using System.Text;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,6 +22,13 @@ builder.Services.AddDbContext<UserContext>((sp, options) =>
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi("v1");
+
+// Add Prometheus metrics
+builder.Services.AddHealthChecks();
+builder.Services.AddMetricServer(options =>
+{
+    options.Port = 9090;
+});
 
 builder.Services.AddMassTransit(busConfiguration =>
 {
@@ -87,6 +95,12 @@ if (app.Environment.IsDevelopment())
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+// Add Prometheus metrics endpoint
+app.UseMetricServer();
+app.UseHttpMetrics();
+app.MapHealthChecks("/health");
+app.MapMetrics("/metrics");
 
 app.MapControllers();
 

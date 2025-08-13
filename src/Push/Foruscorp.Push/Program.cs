@@ -2,6 +2,7 @@ using ExpoCommunityNotificationServer.Client;
 using Foruscorp.Push.Infrastructure;
 using Foruscorp.Push.Infrastructure.Database;
 using Scalar.AspNetCore;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -10,6 +11,13 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+
+// Add Prometheus metrics
+builder.Services.AddHealthChecks();
+builder.Services.AddMetricServer(options =>
+{
+    options.Port = 9090;
+});
 
 builder.Services.AddPushInfrastructure(builder.Configuration);
 
@@ -38,6 +46,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthorization();
+
+// Add Prometheus metrics endpoint
+app.UseMetricServer();
+app.UseHttpMetrics();
+app.MapHealthChecks("/health");
+app.MapMetrics("/metrics");
 
 app.MapControllers();
 

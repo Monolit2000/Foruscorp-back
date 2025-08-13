@@ -11,6 +11,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using System.Diagnostics.Metrics;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -68,6 +69,13 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddHostedService<TruckLocationUpdater>();
+
+// Add Prometheus metrics
+builder.Services.AddHealthChecks();
+builder.Services.AddMetricServer(options =>
+{
+    options.Port = 9090;
+});
 //builder.Services.AddSingleton<ActiveTruckManager>();
 
 builder.Services.AddCors(options =>
@@ -105,6 +113,11 @@ app.UseCors("AllowAll");
 
 app.MapHub<TruckHub>("/truck-tracking");
 
+// Add Prometheus metrics endpoint
+app.UseMetricServer();
+app.UseHttpMetrics();
+app.MapHealthChecks("/health");
+app.MapMetrics("/metrics");
 
 //app.UseSerilogRequestLogging();
 

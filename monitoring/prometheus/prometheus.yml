@@ -1,0 +1,72 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "alerts.yml"
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+  # .NET Applications
+  - job_name: 'foruscorp-gateway'
+    static_configs:
+      - targets: ['foruscorp.gateway:5000']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-auth'
+    static_configs:
+      - targets: ['foruscorp.auth:5007']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-push'
+    static_configs:
+      - targets: ['foruscorp.push:5010']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-fuelstations-api'
+    static_configs:
+      - targets: ['foruscorp.fuelstations.api:5002']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-trucks-api'
+    static_configs:
+      - targets: ['foruscorp.trucks.api:5003']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-truckstracking-api'
+    static_configs:
+      - targets: ['foruscorp.truckstracking.api:5001']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  - job_name: 'foruscorp-fuelroutes-api'
+    static_configs:
+      - targets: ['foruscorp.fuelroutes.api:5004']
+    metrics_path: '/metrics'
+    scrape_interval: 10s
+
+  # Infrastructure services
+  - job_name: 'rabbitmq'
+    static_configs:
+      - targets: ['rabbitmq:15672']
+    metrics_path: '/metrics'
+    scrape_interval: 30s
+
+  - job_name: 'redis'
+    static_configs:
+      - targets: ['redis:6379']
+    scrape_interval: 30s
+
+  - job_name: 'postgres'
+    static_configs:
+      - targets: ['foruscorp.db:5432']
+    scrape_interval: 30s

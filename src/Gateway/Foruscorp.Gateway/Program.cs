@@ -6,6 +6,7 @@ using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using System.Text;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,6 +16,13 @@ builder.Services.AddControllers();
 builder.Services
     .AddReverseProxy()
     .LoadFromConfig(builder.Configuration.GetSection("ReverseProxy"));
+
+// Add Prometheus metrics
+builder.Services.AddHealthChecks();
+builder.Services.AddMetricServer(options =>
+{
+    options.Port = 9090;
+});
 
 // Configure OpenTelemetry with full instrumentation
 builder.Services.AddOpenTelemetry()
@@ -100,6 +108,12 @@ app.Use(async (context, next) =>
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Add Prometheus metrics endpoint
+app.UseMetricServer();
+app.UseHttpMetrics();
+app.MapHealthChecks("/health");
+app.MapMetrics("/metrics");
 
 // Map controllers for telemetry testing
 app.MapControllers();

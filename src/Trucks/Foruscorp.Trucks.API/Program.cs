@@ -19,6 +19,7 @@ using System;
 using System.Text;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +27,13 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
+
+// Add Prometheus metrics
+builder.Services.AddHealthChecks();
+builder.Services.AddMetricServer(options =>
+{
+    options.Port = 9090;
+});
 
 // Configure OpenTelemetry with improved configuration
 builder.Services.AddOpenTelemetry()
@@ -92,6 +100,12 @@ app.MapScalarApiReference();
 app.UseSwagger();
 app.UseSwaggerUI();
 app.ApplyTuckMigrations();
+
+// Add Prometheus metrics endpoint
+app.UseMetricServer();
+app.UseHttpMetrics();
+app.MapHealthChecks("/health");
+app.MapMetrics("/metrics");
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

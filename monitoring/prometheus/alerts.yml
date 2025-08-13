@@ -1,0 +1,82 @@
+groups:
+  - name: foruscorp-alerts
+    rules:
+      # Алерт на высокое использование CPU
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 80
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage detected"
+          description: "{{ $labels.job }} is using {{ $value }}% CPU"
+
+      # Алерт на высокое использование памяти
+      - alert: HighMemoryUsage
+        expr: (process_resident_memory_bytes / 1024 / 1024) > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage detected"
+          description: "{{ $labels.job }} is using {{ $value }} MB of memory"
+
+      # Алерт на высокое время ответа HTTP
+      - alert: HighHTTPResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High HTTP response time detected"
+          description: "{{ $labels.job }} 95th percentile response time is {{ $value }}s"
+
+      # Алерт на высокую частоту ошибок
+      - alert: HighErrorRate
+        expr: rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate detected"
+          description: "{{ $labels.job }} has {{ $value | humanizePercentage }} error rate"
+
+      # Алерт на недоступность сервиса
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+
+      # Алерт на высокое количество активных соединений к БД
+      - alert: HighDatabaseConnections
+        expr: pg_stat_database_numbackends > 50
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High database connections detected"
+          description: "Database {{ $labels.datname }} has {{ $value }} active connections"
+
+      # Алерт на высокое использование Redis
+      - alert: HighRedisMemoryUsage
+        expr: redis_memory_used_bytes / 1024 / 1024 > 500
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High Redis memory usage detected"
+          description: "Redis is using {{ $value }} MB of memory"
+
+      # Алерт на большое количество сообщений в RabbitMQ
+      - alert: HighRabbitMQQueueMessages
+        expr: rabbitmq_queue_messages > 1000
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High RabbitMQ queue messages detected"
+          description: "Queue {{ $labels.queue }} has {{ $value }} messages"
