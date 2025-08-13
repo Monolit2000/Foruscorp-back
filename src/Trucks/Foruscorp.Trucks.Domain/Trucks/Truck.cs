@@ -22,6 +22,8 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public TruckStatus Status { get; private set; }
         public Guid? DriverId { get; private set; }
         public Driver Driver { get; private set; }
+        public Guid? ModelTruckGroupId { get; private set; }
+        public ModelTruckGroup ModelTruckGroup { get; private set; }
 
         private Truck() { }
 
@@ -169,6 +171,21 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public void SetCompany(Guid companyId)
         {
             CompanyId = companyId;
+        }
+
+        public void SetModelTruckGroup(ModelTruckGroup modelTruckGroup)
+        {
+            if (modelTruckGroup == null)
+                throw new ArgumentNullException(nameof(modelTruckGroup));
+
+            ModelTruckGroupId = modelTruckGroup.Id;
+            ModelTruckGroup = modelTruckGroup;
+        }
+
+        public void RemoveModelTruckGroup()
+        {
+            ModelTruckGroupId = null;
+            ModelTruckGroup = null;
         }   
 
         public void SetInactiveStatus()

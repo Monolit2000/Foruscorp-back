@@ -12,6 +12,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
     public class TruckContext : DbContext, ITruckContext
     {
         public DbSet<Truck> Trucks { get; set; }
+        public DbSet<ModelTruckGroup> ModelTruckGroups { get; set; }
         
         public DbSet<Driver> Drivers { get; set; }
 

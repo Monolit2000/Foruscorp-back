@@ -52,15 +52,13 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
             builder.Property(t => t.DriverId)
                 .IsRequired(false);
 
-            // Uncomment if the Driver relationship is needed
-            // builder.HasOne(t => t.Driver)
-            //     .WithOne(d => d.Truck)
-            //     .HasForeignKey<Truck>(t => t.DriverId);
+            builder.Property(t => t.ModelTruckGroupId)
+                .IsRequired(false);
 
-            //builder.HasOne<Company>()
-            //    .WithMany()
-            //    .HasForeignKey(t => t.CompanyId)
-            //    .OnDelete(DeleteBehavior.Cascade);
+            builder.HasOne(t => t.ModelTruckGroup)
+                .WithMany(m => m.Trucks)
+                .HasForeignKey(t => t.ModelTruckGroupId)
+                .OnDelete(DeleteBehavior.SetNull);
 
             // Indexes
             builder.HasIndex(t => t.Vin);
@@ -70,6 +68,7 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.Trucks
             builder.HasIndex(t => t.LicensePlate);
 
             builder.HasIndex(t => t.DriverId);
+            builder.HasIndex(t => t.ModelTruckGroupId);
         }
     }
 }
