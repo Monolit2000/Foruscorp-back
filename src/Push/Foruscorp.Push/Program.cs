@@ -30,7 +30,9 @@ builder.Services.AddOpenTelemetry()
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
+        .AddRabbitMQInstrumentation()
         .AddNpgsql()
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
         .AddSource("Push.API"))
     .UseOtlpExporter();
 
