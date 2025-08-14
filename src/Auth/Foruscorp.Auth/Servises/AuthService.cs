@@ -96,7 +96,7 @@ namespace Foruscorp.Auth.Servises
             var verifyResult = new PasswordHasher<User>()
                 .VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verifyResult == PasswordVerificationResult.Failed)
-                Result.Fail("Invalid password.");
+                return Result.Fail("Invalid password.");
             var token = tokenProvider.Create(user);
             var refreshToken = await GenerateRefreshToken(user.Id);
 
