@@ -9,8 +9,17 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add controllers for telemetry testing
-builder.Services.AddControllers();
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader();
+    });
+});
 
 builder.Services
     .AddReverseProxy()
@@ -74,6 +83,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 var app = builder.Build();
 
+app.UseCors("AllowAll");
+
 // Middleware to ensure proper trace context propagation
 app.Use(async (context, next) =>
 {
@@ -98,11 +109,9 @@ app.Use(async (context, next) =>
     await next(context);
 });
 
+
 app.UseAuthentication();
 app.UseAuthorization();
-
-// Map controllers for telemetry testing
-app.MapControllers();
 
 app.MapReverseProxy();
 
