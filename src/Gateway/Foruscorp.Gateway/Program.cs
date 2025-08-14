@@ -15,7 +15,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowAll", policy =>
     {
         policy
-            .WithOrigins("https://4uscorp-web-git-feature-drag-white-rainy-76s-projects.vercel.app")
+            .WithOrigins("http://localhost:3000", "https://4uscorp-web-git-feature-drag-white-rainy-76s-projects.vercel.app")
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
