@@ -1,4 +1,5 @@
-﻿using Foruscorp.Auth.Controllers;
+﻿using FluentResults;
+using Foruscorp.Auth.Controllers;
 using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.DataBase;
 using Foruscorp.Auth.Domain.Users;
@@ -85,17 +86,17 @@ namespace Foruscorp.Auth.Servises
 
 
 
-        public async Task<LoginResponce> LoginAsync(UserLoginDto request)
+        public async Task<Result<LoginResponce>> LoginAsync(UserLoginDto request)
         {
             var user = await context.Users
                 .Include(u => u.Roles)
                 .FirstOrDefaultAsync(u => u.UserName == request.UserName);
             if (user == null)
-                throw new KeyNotFoundException("User not found.");
+                return Result.Fail("User not found.");
             var verifyResult = new PasswordHasher<User>()
                 .VerifyHashedPassword(user, user.PasswordHash, request.Password);
             if (verifyResult == PasswordVerificationResult.Failed)
-                throw new UnauthorizedAccessException("Invalid password.");
+                Result.Fail("Invalid password.");
             var token = tokenProvider.Create(user);
             var refreshToken = await GenerateRefreshToken(user.Id);
 
