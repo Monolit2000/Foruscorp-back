@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foruscorp-gateway
+  namespace: foruscorp
+  labels:
+    app: foruscorp-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: foruscorp-gateway
+  template:
+    metadata:
+      labels:
+        app: foruscorp-gateway
+    spec:
+      containers:
+      - name: gateway
+        image: futondoker/foruscorpgateway:v1
+        ports:
+        - containerPort: 5000
+          name: http
+        - containerPort: 5011
+          name: https
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: ASPNETCORE_ENVIRONMENT
+        - name: ASPNETCORE_Kestrel__Certificates__Default__Path
+          value: "/etc/certs/certificate.pfx"
+        - name: ASPNETCORE_Kestrel__Certificates__Default__Password
+          valueFrom:
+            secretKeyRef:
+              name: foruscorp-secrets
+              key: certificate-password
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "5000"
+        - name: ASPNETCORE_HTTPS_PORTS
+          value: "5011"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+        - name: OTEL_EXPORTER_OTLP_HEADERS
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_HEADERS
+        volumeMounts:
+        - name: certificate
+          mountPath: /etc/certs
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: certificate
+        secret:
+          secretName: foruscorp-certificate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: foruscorp-gateway
+  namespace: foruscorp
+  labels:
+    app: foruscorp-gateway
+spec:
+  selector:
+    app: foruscorp-gateway
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 5011
+    protocol: TCP
+    name: https
+  type: LoadBalancer
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: foruscorp-certificate
+  namespace: foruscorp
+type: kubernetes.io/tls
+data:
+  # Add your certificate data here
+  tls.crt: ""  # Base64 encoded certificate
+  tls.key: ""  # Base64 encoded private key

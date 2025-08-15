@@ -1,0 +1,402 @@
+# Foruscorp Kubernetes Deployment
+# This file contains all the manifests needed to deploy the Foruscorp application
+
+# 1. Create namespace
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: foruscorp
+  labels:
+    name: foruscorp
+    app: foruscorp
+
+# 2. ConfigMap and Secrets
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foruscorp-config
+  namespace: foruscorp
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  MessageBroker__HostName: "rabbitmq://rabbitmq"
+  MessageBroker__Username: "guest"
+  MessageBroker__Password: "guest"
+  ConnectionStrings__DefaultConnection: "Host=foruscorp-postgres;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: foruscorp-secrets
+  namespace: foruscorp
+type: Opaque
+data:
+  postgres-password: eW91cl9zZWN1cmVfcGFzc3dvcmQ=  # your_secure_password
+  samsara-api-token: ""  # Add your Samsara API token here
+  certificate-password: Zm9ydXNjb3Jw  # foruscorp
+
+# 3. Infrastructure Services (Database, Message Broker, Cache)
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foruscorp-postgres
+  namespace: foruscorp
+  labels:
+    app: foruscorp-postgres
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: foruscorp-postgres
+  template:
+    metadata:
+      labels:
+        app: foruscorp-postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:latest
+        ports:
+        - containerPort: 5432
+        env:
+        - name: POSTGRES_USER
+          value: "postgres"
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: foruscorp-secrets
+              key: postgres-password
+        - name: POSTGRES_DB
+          value: "ForuscorpDB"
+        volumeMounts:
+        - name: postgres-storage
+          mountPath: /var/lib/postgresql/data
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: postgres-storage
+        persistentVolumeClaim:
+          claimName: postgres-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: foruscorp-postgres
+  namespace: foruscorp
+  labels:
+    app: foruscorp-postgres
+spec:
+  selector:
+    app: foruscorp-postgres
+  ports:
+  - port: 5432
+    targetPort: 5432
+    protocol: TCP
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: foruscorp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: ""
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  namespace: foruscorp
+  labels:
+    app: rabbitmq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rabbitmq
+  template:
+    metadata:
+      labels:
+        app: rabbitmq
+    spec:
+      containers:
+      - name: rabbitmq
+        image: rabbitmq:3-management
+        ports:
+        - containerPort: 5672
+          name: amqp
+        - containerPort: 15672
+          name: management
+        env:
+        - name: RABBITMQ_DEFAULT_USER
+          value: "guest"
+        - name: RABBITMQ_DEFAULT_PASS
+          value: "guest"
+        volumeMounts:
+        - name: rabbitmq-storage
+          mountPath: /var/lib/rabbitmq
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+      volumes:
+      - name: rabbitmq-storage
+        persistentVolumeClaim:
+          claimName: rabbitmq-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: foruscorp
+  labels:
+    app: rabbitmq
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+  - port: 5672
+    targetPort: 5672
+    protocol: TCP
+    name: amqp
+  - port: 15672
+    targetPort: 15672
+    protocol: TCP
+    name: management
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: rabbitmq-pvc
+  namespace: foruscorp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: ""
+
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+  namespace: foruscorp
+  labels:
+    app: redis
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis
+        image: redis:6-alpine
+        ports:
+        - containerPort: 6379
+        volumeMounts:
+        - name: redis-storage
+          mountPath: /data
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+      volumes:
+      - name: redis-storage
+        persistentVolumeClaim:
+          claimName: redis-pvc
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: foruscorp
+  labels:
+    app: redis
+spec:
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+    protocol: TCP
+  type: ClusterIP
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: redis-pvc
+  namespace: foruscorp
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  storageClassName: ""
+
+# 4. Application Services
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: foruscorp-gateway
+  namespace: foruscorp
+  labels:
+    app: foruscorp-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: foruscorp-gateway
+  template:
+    metadata:
+      labels:
+        app: foruscorp-gateway
+    spec:
+      containers:
+      - name: gateway
+        image: futondoker/foruscorpgateway:v1
+        ports:
+        - containerPort: 5000
+          name: http
+        - containerPort: 5011
+          name: https
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: ASPNETCORE_ENVIRONMENT
+        - name: ASPNETCORE_Kestrel__Certificates__Default__Path
+          value: "/etc/certs/certificate.pfx"
+        - name: ASPNETCORE_Kestrel__Certificates__Default__Password
+          valueFrom:
+            secretKeyRef:
+              name: foruscorp-secrets
+              key: certificate-password
+        - name: ASPNETCORE_HTTP_PORTS
+          value: "5000"
+        - name: ASPNETCORE_HTTPS_PORTS
+          value: "5011"
+        - name: OTEL_EXPORTER_OTLP_ENDPOINT
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_ENDPOINT
+        - name: OTEL_EXPORTER_OTLP_PROTOCOL
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_PROTOCOL
+        - name: OTEL_EXPORTER_OTLP_HEADERS
+          valueFrom:
+            configMapKeyRef:
+              name: foruscorp-config
+              key: OTEL_EXPORTER_OTLP_HEADERS
+        volumeMounts:
+        - name: certificate
+          mountPath: /etc/certs
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 5000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: certificate
+        secret:
+          secretName: foruscorp-certificate
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: foruscorp-gateway
+  namespace: foruscorp
+  labels:
+    app: foruscorp-gateway
+spec:
+  selector:
+    app: foruscorp-gateway
+  ports:
+  - port: 80
+    targetPort: 5000
+    protocol: TCP
+    name: http
+  - port: 443
+    targetPort: 5011
+    protocol: TCP
+    name: https
+  type: LoadBalancer
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: foruscorp-certificate
+  namespace: foruscorp
+type: kubernetes.io/tls
+data:
+  tls.crt: ""  # Add your certificate data here
+  tls.key: ""  # Add your private key data here
+
+# Note: This is a simplified version. For production, you should:
+# 1. Add all other service deployments (auth, push, fuelstations, trucks, truckstracking, fuelroutes)
+# 2. Configure proper health check endpoints
+# 3. Set up proper SSL certificates
+# 4. Configure monitoring and logging
+# 5. Set up proper resource limits and requests
+# 6. Configure network policies
+# 7. Set up ingress controllers
+# 8. Configure horizontal pod autoscalers

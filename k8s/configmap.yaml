@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: foruscorp-config
+  namespace: foruscorp
+data:
+  ASPNETCORE_ENVIRONMENT: "Production"
+  MessageBroker__HostName: "rabbitmq://rabbitmq"
+  MessageBroker__Username: "guest"
+  MessageBroker__Password: "guest"
+  ConnectionStrings__DefaultConnection: "Host=foruscorp-postgres;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="

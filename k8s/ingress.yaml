@@ -1,0 +1,75 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: foruscorp-ingress
+  namespace: foruscorp
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  tls:
+  - hosts:
+    - api.foruscorp.com
+    secretName: foruscorp-tls
+  rules:
+  - host: api.foruscorp.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-gateway
+            port:
+              number: 80
+      - path: /auth
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-auth
+            port:
+              number: 5007
+      - path: /push
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-push
+            port:
+              number: 5010
+      - path: /fuelstations
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-fuelstations-api
+            port:
+              number: 5002
+      - path: /trucks
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-trucks-api
+            port:
+              number: 5003
+      - path: /truckstracking
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-truckstracking-api
+            port:
+              number: 5001
+      - path: /fuelroutes
+        pathType: Prefix
+        backend:
+          service:
+            name: foruscorp-fuelroutes-api
+            port:
+              number: 5004
+      - path: /dashboard
+        pathType: Prefix
+        backend:
+          service:
+            name: aspire-dashboard
+            port:
+              number: 18888

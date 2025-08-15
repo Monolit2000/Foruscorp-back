@@ -1,0 +1,120 @@
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: foruscorp-network-policy
+  namespace: foruscorp
+spec:
+  podSelector:
+    matchLabels:
+      app: foruscorp-gateway
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: foruscorp
+    ports:
+    - protocol: TCP
+      port: 80
+    - protocol: TCP
+      port: 443
+  egress:
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-auth
+    ports:
+    - protocol: TCP
+      port: 5007
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-push
+    ports:
+    - protocol: TCP
+      port: 5010
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-fuelstations-api
+    ports:
+    - protocol: TCP
+      port: 5002
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-trucks-api
+    ports:
+    - protocol: TCP
+      port: 5003
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-truckstracking-api
+    ports:
+    - protocol: TCP
+      port: 5001
+  - to:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-fuelroutes-api
+    ports:
+    - protocol: TCP
+      port: 5004
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: database-network-policy
+  namespace: foruscorp
+spec:
+  podSelector:
+    matchLabels:
+      app: foruscorp-postgres
+  policyTypes:
+  - Ingress
+  ingress:
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-auth
+    ports:
+    - protocol: TCP
+      port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-push
+    ports:
+    - protocol: TCP
+      port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-fuelstations-api
+    ports:
+    - protocol: TCP
+      port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-trucks-api
+    ports:
+    - protocol: TCP
+      port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-truckstracking-api
+    ports:
+    - protocol: TCP
+      port: 5432
+  - from:
+    - podSelector:
+        matchLabels:
+          app: foruscorp-fuelroutes-api
+    ports:
+    - protocol: TCP
+      port: 5432

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: aspire-dashboard
+  namespace: foruscorp
+  labels:
+    app: aspire-dashboard
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: aspire-dashboard
+  template:
+    metadata:
+      labels:
+        app: aspire-dashboard
+    spec:
+      containers:
+      - name: aspire-dashboard
+        image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+        ports:
+        - containerPort: 18888
+          name: dashboard
+        - containerPort: 4317
+          name: otlp
+        env:
+        - name: DOTNET_ENVIRONMENT
+          value: "Development"
+        - name: Dashboard__Otlp__EndpointUrl
+          value: "http://aspire-dashboard:4317"
+        - name: Dashboard__Frontend__AuthMode
+          value: "Unsecured"
+        - name: DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS
+          value: "true"
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 18888
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 18888
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: aspire-dashboard
+  namespace: foruscorp
+  labels:
+    app: aspire-dashboard
+spec:
+  selector:
+    app: aspire-dashboard
+  ports:
+  - port: 18888
+    targetPort: 18888
+    protocol: TCP
+    name: dashboard
+  - port: 4317
+    targetPort: 4317
+    protocol: TCP
+    name: otlp
+  type: ClusterIP
