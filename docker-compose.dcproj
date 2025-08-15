@@ -20,6 +20,8 @@
     <None Include="docker-compose.yml" />
     <None Include=".dockerignore" />
     <None Include="docker-stack.yml" />
+    <None Include="README.md" />
+    <None Include="test-metrics.ps1" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="config\" />
