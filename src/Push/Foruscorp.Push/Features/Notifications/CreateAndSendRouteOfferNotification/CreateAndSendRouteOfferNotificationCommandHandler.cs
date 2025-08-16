@@ -46,23 +46,27 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotificat
 
         private async Task SendToPendingRecipientsAsync(Notification notification, CancellationToken ct)
         {
-            foreach (var rec in notification.Recipients.ToList())
-            {
-                try
+            var tasks = notification.Recipients
+                .Select(async rec =>
                 {
-                    await pushService.SendAsync(
-                        rec.Device.Token.Value,
-                        notification.Content.Title,
-                        notification.Content.Body,
-                        notification.Payload.Data);
+                    try
+                    {
+                        await pushService.SendAsync(
+                            rec.Device.Token.Value,
+                            notification.Content.Title,
+                            notification.Content.Body,
+                            notification.Payload.Data);
 
-                    rec.MarkDelivered(DateTime.UtcNow);
-                }
-                catch (Exception ex)
-                {
-                    rec.MarkFailed(ex.Message);
-                }
-            }
+                        rec.MarkDelivered(DateTime.UtcNow);
+                    }
+                    catch (Exception ex)
+                    {
+                        rec.MarkFailed(ex.Message);
+                    }
+                })
+                .ToList();
+
+            await Task.WhenAll(tasks);
         }
 
     }
