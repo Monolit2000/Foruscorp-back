@@ -21,7 +21,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.UpdateTruckStatus
             logger.LogInformation("Updating truck status for TruckId: {TruckId} to Status: {Status}", request.TruckId, request.Status);
 
             var truck = await truckContext.Trucks
-            .FirstOrDefaultAsync(t => t.Id == request.TruckId);
+                .FirstOrDefaultAsync(t => t.Id == request.TruckId);
 
             if (truck == null)
                 logger.LogWarning("Truck not found with ID: {TruckId}", request.TruckId);
