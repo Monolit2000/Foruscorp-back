@@ -9,6 +9,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public readonly List<FuelPrice> FuelPrices = [];
 
         public Guid Id { get; private set; }
+        public string FuelStationProviderId { get; set; }
         public string ProviderName { get; private set; } 
         public string Address { get; private set; }
         public string FuelProvider { get; private set; }    
