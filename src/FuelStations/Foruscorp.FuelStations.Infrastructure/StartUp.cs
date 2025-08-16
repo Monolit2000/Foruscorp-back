@@ -8,6 +8,7 @@ using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using Foruscorp.FuelStations.Infrastructure.Processing;
 using Microsoft.EntityFrameworkCore.Query;
 using Foruscorp.FuelStations.Infrastructure.Services;
+using Foruscorp.FuelStations.Aplication.Contructs.Services;
 
 namespace Foruscorp.FuelStations.Infrastructure
 {
@@ -19,6 +20,8 @@ namespace Foruscorp.FuelStations.Infrastructure
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
             });
+
+            services.AddScoped<IFuelStationContext, FuelStationContext>();
 
             services.AddHostedService<FuelStationProcessor>();
 
@@ -32,6 +35,7 @@ namespace Foruscorp.FuelStations.Infrastructure
             });
 
             services.AddScoped<IXMlFuelStationService, XMlFuelStationService>();
+            services.AddScoped<IFuelStationsService, FuelStationsService>();
             return services;
         }
     }

@@ -69,12 +69,12 @@ namespace Foruscorp.FuelStations.API.Controllers
             return Ok(result);
         }
 
-        [HttpPost("parcePailot")]
-        public async Task<ActionResult<IEnumerable<FuelStationDto>>> Parceasdsad(CancellationToken cancellationToken)
-        {
-            await _fuelStationsService.LoversePilotParce();
-            return Ok();    
-        }
+        //[HttpPost("parcePailot")]
+        //public async Task<ActionResult<IEnumerable<FuelStationDto>>> Parceasdsad(CancellationToken cancellationToken)
+        //{
+        //    await _fuelStationsService.LoversePilotParce();
+        //    return Ok();    
+        //}
 
 
 

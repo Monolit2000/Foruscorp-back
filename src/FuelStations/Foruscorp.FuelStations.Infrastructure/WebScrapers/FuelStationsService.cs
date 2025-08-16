@@ -55,39 +55,39 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 
 
 
-        public async Task LoversePilotParce()
-        {
-            using var client = new HttpClient();
+        //public async Task LoversePilotParce()
+        //{
+        //    using var client = new HttpClient();
 
-            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
-            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        //    client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+        //    client.DefaultRequestHeaders.Add("Accept", "application/json");
 
-            string routeUrl = "https://locations.pilotflyingj.com/search?q=41.881953,-87.632362&qp=Chicago,%20Illinois,%20United%20States&r=500&l=en";
+        //    string routeUrl = "https://locations.pilotflyingj.com/search?q=41.881953,-87.632362&qp=Chicago,%20Illinois,%20United%20States&r=500&l=en";
 
-            var response = await client.GetAsync(routeUrl);
-            string responseBody = await response.Content.ReadAsStringAsync();
+        //    var response = await client.GetAsync(routeUrl);
+        //    string responseBody = await response.Content.ReadAsStringAsync();
 
 
-            if (!response.Content.Headers.ContentType.MediaType.Contains("application/json"))
-            {
-                Console.WriteLine("❌ Очікувався JSON, але отримано HTML або інший тип.");
-                Console.WriteLine(responseBody.Substring(0, 300)); 
-                return;
-            }
+        //    if (!response.Content.Headers.ContentType.MediaType.Contains("application/json"))
+        //    {
+        //        Console.WriteLine("❌ Очікувався JSON, але отримано HTML або інший тип.");
+        //        Console.WriteLine(responseBody.Substring(0, 300)); 
+        //        return;
+        //    }
 
             
-            using var doc = JsonDocument.Parse(responseBody);
-            var root = doc.RootElement;
+        //    using var doc = JsonDocument.Parse(responseBody);
+        //    var root = doc.RootElement;
 
-            var pages = root.GetProperty("response").GetProperty("entities");
-            foreach (var entity in pages.EnumerateArray())
-            {
-                if (entity.TryGetProperty("c_pagesName", out var name))
-                {
-                    Console.WriteLine($"✅ Name: {name.GetString()}");
-                }
-            }
-        }
+        //    var pages = root.GetProperty("response").GetProperty("entities");
+        //    foreach (var entity in pages.EnumerateArray())
+        //    {
+        //        if (entity.TryGetProperty("c_pagesName", out var name))
+        //        {
+        //            Console.WriteLine($"✅ Name: {name.GetString()}");
+        //        }
+        //    }
+        //}
     }
 }
 

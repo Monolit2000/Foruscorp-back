@@ -15,6 +15,6 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
             string destination = "Lebanon, Kansas, США");
 
 
-        Task LoversePilotParce();
+        //Task LoversePilotParce();
     }
 }
