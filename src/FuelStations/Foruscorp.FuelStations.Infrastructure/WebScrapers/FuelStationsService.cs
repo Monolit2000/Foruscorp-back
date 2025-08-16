@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Microsoft.VisualBasic;
+using System.Text.Json;
 
 namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
 {
@@ -51,62 +52,43 @@ namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
                 }
             }
         }
+
+
+
+        public async Task LoversePilotParce()
+        {
+            using var client = new HttpClient();
+
+            client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+
+            string routeUrl = "https://locations.pilotflyingj.com/search?q=41.881953,-87.632362&qp=Chicago,%20Illinois,%20United%20States&r=500&l=en";
+
+            var response = await client.GetAsync(routeUrl);
+            string responseBody = await response.Content.ReadAsStringAsync();
+
+
+            if (!response.Content.Headers.ContentType.MediaType.Contains("application/json"))
+            {
+                Console.WriteLine("❌ Очікувався JSON, але отримано HTML або інший тип.");
+                Console.WriteLine(responseBody.Substring(0, 300)); 
+                return;
+            }
+
+            
+            using var doc = JsonDocument.Parse(responseBody);
+            var root = doc.RootElement;
+
+            var pages = root.GetProperty("response").GetProperty("entities");
+            foreach (var entity in pages.EnumerateArray())
+            {
+                if (entity.TryGetProperty("c_pagesName", out var name))
+                {
+                    Console.WriteLine($"✅ Name: {name.GetString()}");
+                }
+            }
+        }
     }
 }
 
 
-
-//using System.Text;
-//using System.Text.Json;
-//using System.Net.Http.Headers;
-//using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
-
-//namespace Foruscorp.FuelStations.Infrastructure.WebScrapers
-//{
-//    public class FuelStationsService : IFuelStationsService 
-//    {
-//        public async Task<List<FuelStationResponce>> GetFuelStations(string bearerToken, int radius = 15, string source = "Lebanon, Kansas, США", string destination = "Lebanon, Kansas, США")
-//        {
-//            using (var client = new HttpClient())
-//            {
-//                client.DefaultRequestHeaders.Clear();
-//                client.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36");
-//                client.DefaultRequestHeaders.Add("Origin", "https://app.thefuelmap.com");
-//                client.DefaultRequestHeaders.Add("Referer", "https://app.thefuelmap.com/");
-//                client.DefaultRequestHeaders.Add("Authorization", $"Bearer {bearerToken}");
-//                client.DefaultRequestHeaders.Add("X-Requested-With", "XMLHttpRequest");
-//                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-//                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("text/plain"));
-//                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("*/*"));
-
-//                string routeUrl = "https://fuel.fulgertransport.com/api/web/get-route";
-
-//                var payload = new
-//                {
-//                    source,
-//                    destination,
-//                    date = "2025-04-02",
-//                    distanceFilterId = radius.ToString(),
-//                    locationFilterId = new List<string>(),
-//                    truckStopChainFilterId = new List<string>()
-//                };
-
-//                var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
-
-//                HttpResponseMessage response = await client.PostAsync(routeUrl, content);
-
-//                if (response.IsSuccessStatusCode)
-//                {
-//                    string responseBody = await response.Content.ReadAsStringAsync();
-//                    var fuelStations = JsonSerializer.Deserialize<List<FuelStationResponce>>(responseBody);
-//                    return fuelStations ?? new List<FuelStationResponce>(); // Возвращаем пустой список, если десериализация вернула null
-//                }
-//                else
-//                {
-//                    string errorBody = await response.Content.ReadAsStringAsync();
-//                    throw new HttpRequestException($"Ошибка при запросе к API: {response.StatusCode}, тело ошибки: {errorBody}");
-//                }
-//            }
-//        }
-//    }
-//}

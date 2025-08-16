@@ -13,5 +13,8 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.WebScrapers
             int radius = 15, 
             string source = "Lebanon, Kansas, США", 
             string destination = "Lebanon, Kansas, США");
+
+
+        Task LoversePilotParce();
     }
 }
