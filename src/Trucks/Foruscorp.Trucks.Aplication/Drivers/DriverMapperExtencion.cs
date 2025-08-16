@@ -17,11 +17,11 @@ namespace Foruscorp.Trucks.Aplication.Drivers
             {
                 Id = driver.Id,
                 TruckId = driver.TruckId ?? Guid.Empty,
-                FullName = driver.FullName,
-                Phone = driver.Contact?.Phone,
-                Email = driver.Contact?.Email,
+                FullName = driver.DriverUser?.Contact?.FullName,
+                Phone = driver.DriverUser?.Contact?.Phone,
+                Email = driver.DriverUser?.Contact?.Email,
                 Bonus = driver.TotalBonus,
-                TelegramLink = driver.Contact?.TelegramLink
+                TelegramLink = driver.DriverUser?.Contact?.TelegramLink
             };
         }
     }

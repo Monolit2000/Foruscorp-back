@@ -12,6 +12,8 @@ using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
 using Foruscorp.Trucks.Aplication.Trucks;
 using Foruscorp.Trucks.Aplication.Trucks.AttachDriver;
 using Foruscorp.Trucks.Aplication.Trucks.CreateTruck;
+using Foruscorp.Trucks.Aplication.Trucks.DetachDriver;
+using Foruscorp.Trucks.Aplication.Trucks.GetAllTruckUnit;
 using Foruscorp.Trucks.Aplication.Trucks.GetAllTruks;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckById;
 using Foruscorp.Trucks.Aplication.Trucks.GetTruckByUserId;
@@ -35,6 +37,16 @@ namespace Foruscorp.Trucks.API.Controllers
         IMediator mediator,
         ITruckProviderService truckProviderService) : ControllerBase
     {
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckUnitDto>))]
+        [HttpGet("truckUnits")]
+        public async Task<ActionResult> GetAllTruckUnitCammand(CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(new GetAllTruckUnitCammand(), cancellationToken);
+            return Ok(result);
+        }
+
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ISuccess))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
@@ -71,12 +83,35 @@ namespace Foruscorp.Trucks.API.Controllers
         }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FluentResults.Result>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("attach-driver")]
         public async Task<ActionResult> AttachDriver(AttachDriverCommand attachDriverCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(attachDriverCommand, cancellationToken);
-            return Ok(result);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok();
         }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<FluentResults.Result>))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("detach-driver")]
+        public async Task<ActionResult> DetachDriverCommandHandler(DetachDriverCommand detachDriverCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(detachDriverCommand, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok();
+        }
+
+
+
+
 
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<TruckDto>))]
@@ -84,25 +119,6 @@ namespace Foruscorp.Trucks.API.Controllers
         public async Task<ActionResult> GetTruckList( CancellationToken cancellationToken)
         {
             var result = await mediator.Send(new GetAllTruksQuery(), cancellationToken);
-            return Ok(result);
-        }
-
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
-        [HttpPost("create-driver")]
-        public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(createDriverCommand, cancellationToken);
-            return Ok(result);
-        }
-
-
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
-        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
-        [HttpPost("update-driver-contact")]
-        public async Task<ActionResult> CreateDriver(UpdateDriverContactCommand updateDriverContactCommand, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(updateDriverContactCommand, cancellationToken);
             return Ok(result);
         }
 

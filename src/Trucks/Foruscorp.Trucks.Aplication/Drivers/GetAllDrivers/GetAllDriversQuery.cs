@@ -7,7 +7,7 @@ using MediatR;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
 {
-    public class GetAllDriversQuery : IRequest<List<DriverDto>>
+    public class GetAllDriversQuery : IRequest<List<GetAllDriverDto>>
     {
     }
 }

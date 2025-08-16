@@ -13,6 +13,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact
     public class UpdateDriverContactCommand : IRequest<Result<DriverDto>>
     {
         public Guid DriverId { get; set; }
+        public string FullName { get; set; }
         public string Phone { get; set; }
         public string Email { get; set; }
         public string TelegramLink { get; set; }    

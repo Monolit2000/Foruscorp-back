@@ -16,4 +16,9 @@ namespace Foruscorp.Trucks.Aplication.Drivers
         public int Bonus { get; set; }
         public string TelegramLink { get; set; }
     }
+
+    public class SmallTruckDto
+    {
+        
+    }
 }

@@ -5,34 +5,47 @@ using Foruscorp.FuelRoutes.IntegrationEvents;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.Text.Json;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 {
-
     public record AssignRouteCommand(Guid RouteId, Guid RouteSectionId, Guid TruckId) : IRequest<Result>;
 
     public class AssignRouteCommandHandler(
-        IPublishEndpoint publishEndpoint, 
-        IFuelRouteContext context) : IRequestHandler<AssignRouteCommand, Result>
+        IPublishEndpoint publishEndpoint,
+        IFuelRouteContext context,
+        ILogger<AssignRouteCommandHandler> logger) : IRequestHandler<AssignRouteCommand, Result>
     {
         public async Task<Result> Handle(AssignRouteCommand request, CancellationToken cancellationToken)
         {
             var fuelRoute = await context.FuelRoutes
-                  .Include(x => x.RouteSections)
-                  .Include(x => x.FuelRouteStations.Where(fs => fs.RoadSectionId == request.RouteSectionId))    
-                  .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
+                .Include(x => x.FuelRouteStations.Where(fs => fs.RoadSectionId == request.RouteSectionId))
+                .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoute == null)
+            {
+                logger.LogWarning("Fuel route with ID {RouteId} not found.", request.RouteId);
                 return Result.Fail("Fuel route not found.");
+            }
+
+            var routeSections = await context.RouteSections
+                .Where(fs => fs.Id == request.RouteSectionId)
+                .ToListAsync();
+
+            fuelRoute.RouteSections = routeSections;
+
+            logger.LogInformation("Processing fuel route: {FuelRoute}", JsonSerializer.Serialize(fuelRoute, new JsonSerializerOptions { WriteIndented = true}));
 
             fuelRoute.MarkAsSended(request.RouteSectionId);
-
             fuelRoute.MarkAsAccepted();
 
             await context.SaveChangesAsync(cancellationToken);
 
-            await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId));
+            var publishEventTask = publishEndpoint.Publish(
+                new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId)
+            );
 
             var fuelRouteStations = fuelRoute.FuelRouteStations
                 .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
@@ -46,21 +59,24 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                     double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
                 .ToList();
 
-            await PublisFuelStationsPlan(fuelRouteStations);
+            var publishStationsTask = PublisFuelStationsPlan(fuelRouteStations);
 
-            return Result.Ok().WithSuccess("Fuel route sent successfully.");    
+            await Task.WhenAll(publishEventTask, publishStationsTask);
+
+            logger.LogInformation("Fuel route {RouteId} sent successfully.", fuelRoute.Id);
+            return Result.Ok().WithSuccess("Fuel route sent successfully.");
         }
 
         private async Task PublisFuelStationsPlan(List<FuelRouteStationPlan> fuelRouteStations)
         {
-            foreach(var planedStation in fuelRouteStations)
+            foreach (var planedStation in fuelRouteStations)
             {
                 await publishEndpoint.Publish(new FuelStationPlanAssignedIntegrationEvent(
                     planedStation.FuelStationId,
                     planedStation.RouteId,
                     planedStation.TruckId,
                     planedStation.Address,
-                    planedStation.nearDistance, 
+                    planedStation.nearDistance,
                     planedStation.Longitude,
                     planedStation.Latitude));
             }

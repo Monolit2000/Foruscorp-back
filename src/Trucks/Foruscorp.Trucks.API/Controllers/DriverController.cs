@@ -1,15 +1,17 @@
-﻿using System;
-using MediatR;
-using FluentResults;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
-using System.Collections.Generic;
-using Foruscorp.Trucks.Aplication.Trucks;
+﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Drivers;
+using Foruscorp.Trucks.Aplication.Drivers.CreateDriver;
 using Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers;
 using Foruscorp.Trucks.Aplication.Drivers.GetDriverById;
+using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
+using Foruscorp.Trucks.Aplication.Trucks;
+using MediatR;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.API.Controllers
 {
@@ -27,6 +29,14 @@ namespace Foruscorp.Trucks.API.Controllers
 
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [HttpPost("Сreate")]
+        public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(createDriverCommand, cancellationToken);
+            return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpGet("driver/{id:guid}")]
         public async Task<ActionResult<TruckDto>> GetDriverById(
@@ -42,5 +52,13 @@ namespace Foruscorp.Trucks.API.Controllers
         }
 
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("update-driver-contact")]
+        public async Task<ActionResult> CreateDriver(UpdateDriverContactCommand updateDriverContactCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(updateDriverContactCommand, cancellationToken);
+            return Ok(result);
+        }
     }
 }

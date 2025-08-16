@@ -12,12 +12,14 @@ namespace Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact
         public async Task<Result<DriverDto>> Handle(UpdateDriverContactCommand request, CancellationToken cancellationToken)
         {
             var driver = await truckContext.Drivers
+                .Include(d => d.DriverUser)
+                    .ThenInclude(u => u.Contact)
                 .FirstOrDefaultAsync(d => d.Id == request.DriverId, cancellationToken);
 
             if (driver == null)
                 return Result.Fail("Driver not found");
 
-            driver.UpdateContact(request.Phone, request.Email, request.TelegramLink);
+            driver.UpdateContact(request.FullName, request.Phone, request.Email, request.TelegramLink);
 
             await truckContext.SaveChangesAsync(cancellationToken);
 

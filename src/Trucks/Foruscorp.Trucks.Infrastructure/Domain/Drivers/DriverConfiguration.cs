@@ -15,15 +15,15 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
 
             builder.HasKey(d => d.Id);
 
-            builder.Property(d => d.Id)
-                .HasColumnName("DriverId");
+            builder.Property(d => d.Id);
 
             builder.Property(d => d.UserId)
                 .IsRequired(false);
 
-            builder.Property(d => d.FullName)
-                .IsRequired()
-                .HasMaxLength(100);
+
+            //builder.Property(d => d.FullName)
+            //    .IsRequired()
+            //    .HasMaxLength(100);
 
             builder.Property(d => d.LicenseNumber)
                 .IsRequired(false)
@@ -44,22 +44,33 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.Bonus)
                 .HasColumnType("decimal(18,2)");
 
-            builder.OwnsOne(d => d.Contact, b =>
-            {
-                b.Property(c => c.Phone)
-                    .HasColumnName("PhoneNumber")
-                    .IsRequired(false)
-                    .HasMaxLength(50);
+            //builder.HasOne(u => u.Contact)
+            //       .WithOne()
+            //       .HasForeignKey<Driver>(u => u.ContactId)
+            //       .OnDelete(DeleteBehavior.Restrict);
 
-                b.Property(c => c.Email)
-                    .IsRequired(false)
-                    .HasMaxLength(100);
+            builder.HasOne(u => u.DriverUser)
+                   .WithOne()
+                   .HasForeignKey<Driver>(u => u.UserId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
+            //builder.OwnsOne(d => d.Contact, b =>
+            //{
+            //    b.Property(c => c.FullName)
+            //        .IsRequired(false);
 
-                b.Property(c => c.TelegramLink)
-                    .IsRequired(false)
-                    .HasMaxLength(100);
-            });
+            //    b.Property(c => c.Phone)
+            //        .IsRequired(false)
+            //        .HasMaxLength(50);
+
+            //    b.Property(c => c.Email)
+            //        .IsRequired(false)
+            //        .HasMaxLength(100);
+
+            //    b.Property(c => c.TelegramLink)
+            //        .IsRequired(false)
+            //        .HasMaxLength(100);
+            //});
 
 
             builder.HasMany(d => d.Bonuses)
