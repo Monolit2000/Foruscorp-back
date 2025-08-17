@@ -17,7 +17,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Foruscorp.FuelStations.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class FuelStationController : ControllerBase
     {
         private readonly IMediator _mediator;
