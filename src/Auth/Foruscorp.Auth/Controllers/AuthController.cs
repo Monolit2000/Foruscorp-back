@@ -30,7 +30,7 @@ namespace Foruscorp.Auth.Controllers
         }
 
 
-        [HttpPost("refresh")]
+        [HttpGet("refresh")]
         public async Task<IActionResult> Refresh()
         {
             try
@@ -67,7 +67,7 @@ namespace Foruscorp.Auth.Controllers
 
 
 
-        [Authorize] // обязательная авторизация
+        [Authorize] // Г®ГЎГїГ§Г ГІГҐГ«ГјГ­Г Гї Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГї
         [HttpGet("me")]
         public ActionResult<string> GetCurrentUserId()
         {
