@@ -6,6 +6,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
@@ -136,6 +137,20 @@ namespace Foruscorp.FuelStations.API.Controllers
             }
             
             return Ok("Love's prices loaded successfully");
+        }
+
+        [HttpPost("load-prices")]
+        public async Task<ActionResult> LoadPrices(List<IFormFile> files, CancellationToken cancellationToken)
+        {
+            var request = new LoadPricesCommand(files);
+            var result = await _mediator.Send(request, cancellationToken);
+            
+            if (result.IsFailed)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok("All price files processed successfully");
         }
 
 
