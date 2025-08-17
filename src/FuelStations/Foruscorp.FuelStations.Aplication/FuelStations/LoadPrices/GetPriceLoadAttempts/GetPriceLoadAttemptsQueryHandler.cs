@@ -13,9 +13,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices.GetPriceLoad
     public record GetPriceLoadAttemptsQuery(
         DateTime? FromDate = null,
         DateTime? ToDate = null,
-        bool? IsSuccessful = null,
-        int? Page = null,
-        int? PageSize = null) : IRequest<Result<List<PriceLoadAttemptDto>>>;
+        bool? IsSuccessful = null) : IRequest<Result<List<PriceLoadAttemptDto>>>;
 
     public class GetPriceLoadAttemptsQueryHandler : IRequestHandler<GetPriceLoadAttemptsQuery, Result<List<PriceLoadAttemptDto>>>
     {
@@ -52,13 +50,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices.GetPriceLoad
 
                 // Сортируем по дате начала (новые сначала)
                 query = query.OrderByDescending(pla => pla.StartedAt);
-
-                // Применяем пагинацию
-                if (request.Page.HasValue && request.PageSize.HasValue)
-                {
-                    var skip = (request.Page.Value - 1) * request.PageSize.Value;
-                    query = query.Skip(skip).Take(request.PageSize.Value);
-                }
 
                 var attempts = await query.ToListAsync(cancellationToken);
 

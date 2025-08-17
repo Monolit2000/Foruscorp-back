@@ -159,11 +159,9 @@ namespace Foruscorp.FuelStations.API.Controllers
             [FromQuery] DateTime? fromDate = null,
             [FromQuery] DateTime? toDate = null,
             [FromQuery] bool? isSuccessful = null,
-            [FromQuery] int? page = null,
-            [FromQuery] int? pageSize = null,
             CancellationToken cancellationToken = default)
         {
-            var query = new GetPriceLoadAttemptsQuery(fromDate, toDate, isSuccessful, page, pageSize);
+            var query = new GetPriceLoadAttemptsQuery(fromDate, toDate, isSuccessful);
             var result = await _mediator.Send(query, cancellationToken);
             
             if (result.IsFailed)
