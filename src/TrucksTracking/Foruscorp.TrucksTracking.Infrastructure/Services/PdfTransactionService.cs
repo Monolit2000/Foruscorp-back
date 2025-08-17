@@ -30,29 +30,124 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
             {
                 _logger.LogInformation("Starting to parse PDF file: {FileName}", file.FileName);
 
-                // Сохраняем файл во временную директорию
-                var tempPath = Path.GetTempFileName();
-                using (var stream = new FileStream(tempPath, FileMode.Create))
+                // Читаем PDF напрямую из потока
+                using (var stream = file.OpenReadStream())
                 {
-                    await file.CopyToAsync(stream, cancellationToken);
+                    var transactions = await ParsePdfTransactionsFromStreamAsync(stream, cancellationToken);
+
+                    _logger.LogInformation("Successfully parsed {TransactionCount} transactions from PDF file: {FileName}", 
+                        transactions.Count, file.FileName);
+
+                    return transactions;
                 }
-
-                var transactions = await ParsePdfTransactionsFromPathAsync(tempPath, cancellationToken);
-
-                // Удаляем временный файл
-                if (File.Exists(tempPath))
-                {
-                    File.Delete(tempPath);
-                }
-
-                _logger.LogInformation("Successfully parsed {TransactionCount} transactions from PDF file: {FileName}", 
-                    transactions.Count, file.FileName);
-
-                return transactions;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error parsing PDF file: {FileName}", file.FileName);
+                throw;
+            }
+        }
+
+        public async Task<List<Transaction>> ParsePdfTransactionsFromStreamAsync(Stream pdfStream, CancellationToken cancellationToken = default)
+        {
+            if (pdfStream == null || !pdfStream.CanRead)
+            {
+                _logger.LogWarning("PDF stream is null or not readable");
+                return new List<Transaction>();
+            }
+
+            try
+            {
+                _logger.LogInformation("Starting to parse PDF from stream");
+
+                string allText = ExtractTextFromPdfStream(pdfStream);
+                string[] lines = allText.Split(new[] { "\r\n", "\r", "\n" }, StringSplitOptions.RemoveEmptyEntries);
+                List<Transaction> transactions = new List<Transaction>();
+
+                Transaction currentGroup = null;
+                Fill currentFill = null;
+                int lineIndex = 0;
+
+                while (lineIndex < lines.Length)
+                {
+                    cancellationToken.ThrowIfCancellationRequested();
+
+                    string line = lines[lineIndex].Trim();
+
+                    // Skip headers and irrelevant lines
+                    if (ShouldSkipLine(line))
+                    {
+                        lineIndex++;
+                        continue;
+                    }
+
+                    // Start of a new transaction group or fill
+                    if (IsCardNumberLine(line))
+                    {
+                        string card = ExtractCardNumber(line);
+
+                        if (currentGroup != null && currentGroup.Card != card)
+                        {
+                            transactions.Add(currentGroup);
+                            currentGroup = null;
+                        }
+
+                        if (currentGroup == null)
+                        {
+                            currentGroup = Transaction.CreateNew(card, string.Empty);
+                        }
+
+                        // Start a new fill within the group
+                        currentFill = CreateFillFromLines(lines, ref lineIndex);
+                        currentGroup.AddFill(currentFill);
+                        
+                        // Extract items from the same line if they exist
+                        if (line.Contains(" ULSD ") || line.Contains(" DEFD "))
+                        {
+                            ExtractItemsFromLine(line, currentFill);
+                        }
+                    }
+                    // Item lines (ULSD or DEFD) - standalone items on separate lines
+                    else if (line == "ULSD" || line == "DEFD")
+                    {
+                        if (currentFill != null)
+                        {
+                            var item = CreateItemFromLines(lines, ref lineIndex, line);
+                            currentFill.AddItem(item);
+                        }
+                    }
+                    // Item lines that start with ULSD or DEFD (when they are part of the location line)
+                    else if (line.StartsWith("ULSD ") || line.StartsWith("DEFD "))
+                    {
+                        if (currentFill != null)
+                        {
+                            var item = CreateItemFromLines(lines, ref lineIndex, line);
+                            currentFill.AddItem(item);
+                        }
+                    }
+                    // Summary section (after items, per group)
+                    else if (line == "Amount" && currentGroup != null)
+                    {
+                        ProcessSummarySection(lines, ref lineIndex, currentGroup);
+                    }
+                    else
+                    {
+                        lineIndex++;
+                    }
+                    lineIndex++;
+                }
+
+                if (currentGroup != null)
+                {
+                    transactions.Add(currentGroup);
+                }
+
+                _logger.LogInformation("Successfully parsed {TransactionCount} transactions from PDF", transactions.Count);
+                return transactions;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error parsing PDF from stream");
                 throw;
             }
         }
@@ -464,6 +559,26 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
             string currency = parts[5];
             
             return Item.CreateNew(itemType, unitPrice, quantity, amount, db, currency);
+        }
+
+        private string ExtractTextFromPdfStream(Stream pdfStream)
+        {
+            // Сбрасываем позицию потока в начало
+            pdfStream.Position = 0;
+            
+            using (PdfReader reader = new PdfReader(pdfStream))
+            using (PdfDocument document = new PdfDocument(reader))
+            {
+                var text = new StringBuilder();
+                for (int i = 1; i <= document.GetNumberOfPages(); i++)
+                {
+                    var page = document.GetPage(i);
+                    var strategy = new LocationTextExtractionStrategy();
+                    var currentText = PdfTextExtractor.GetTextFromPage(page, strategy);
+                    text.AppendLine(currentText);
+                }
+                return text.ToString();
+            }
         }
 
         private string ExtractTextFromPdf(string pdfPath)
