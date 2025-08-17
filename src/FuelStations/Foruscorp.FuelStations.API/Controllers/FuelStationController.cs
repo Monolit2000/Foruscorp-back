@@ -1,9 +1,11 @@
 ﻿using Foruscorp.FuelStations.Aplication.Contructs.Services;
+using Foruscorp.FuelStations.Aplication.Contructs.Services.Models;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Aplication.FuelStations;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using MediatR;
@@ -105,6 +107,20 @@ namespace Foruscorp.FuelStations.API.Controllers
             var request = new LoadPriceCommand(file);
             var result = await _mediator.Send(request, cancellationToken);
             return Ok(result);
+        }
+
+        [HttpGet("load-loves-stores")]
+        public async Task<ActionResult<LovesApiResponseModel>> LoadLovesStores(CancellationToken cancellationToken)
+        {
+            var request = new LoadLovesStoresCommand();
+            var result = await _mediator.Send(request, cancellationToken);
+            
+            if (result.IsFailed)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok(result.Value);
         }
 
 
