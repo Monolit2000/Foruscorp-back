@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace Foruscorp.TrucksTracking.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("[controller]")]
     public class TransactionController : ControllerBase
     {
         private readonly IMediator _mediator;
