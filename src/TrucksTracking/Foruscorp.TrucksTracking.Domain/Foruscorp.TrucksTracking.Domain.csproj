@@ -6,4 +6,8 @@
     <Nullable>disable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\BuildingBlocks\Foruscorp.BuildingBlocks.Domain\Foruscorp.BuildingBlocks.Domain.csproj" />
+  </ItemGroup>
+
 </Project>
