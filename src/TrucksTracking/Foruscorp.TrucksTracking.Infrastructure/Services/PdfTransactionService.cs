@@ -1,15 +1,11 @@
-using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
-using Foruscorp.TrucksTracking.Domain.Transactions;
+using System.Text;
+using iText.Kernel.Pdf;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
+using Foruscorp.TrucksTracking.Domain.Transactions;
+using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Services
 {
@@ -110,19 +106,34 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
                             currentGroup = Transaction.CreateNew(card, string.Empty);
                         }
 
-                        // Start a new fill within the group
-                        currentFill = CreateFillFromLines(lines, ref lineIndex);
-                        currentGroup.AddFill(currentFill);
+                                                 // Start a new fill within the group
+                         currentFill = CreateFillFromLines(lines, ref lineIndex);
+                         currentGroup.AddFill(currentFill);
+                         
+                         // Extract items from the same line if they exist
+                         if (line.Contains(" ULSD ") || line.Contains(" DEFD "))
+                         {
+                             ExtractItemsFromLine(line, currentFill);
+                         }
                     }
-                    // Item lines (ULSD or DEFD)
-                    else if (line == "ULSD" || line == "DEFD")
-                    {
-                        if (currentFill != null)
-                        {
-                            var item = CreateItemFromLines(lines, ref lineIndex, line);
-                            currentFill.AddItem(item);
-                        }
-                    }
+                                         // Item lines (ULSD or DEFD) - standalone items on separate lines
+                     else if (line == "ULSD" || line == "DEFD")
+                     {
+                         if (currentFill != null)
+                         {
+                             var item = CreateItemFromLines(lines, ref lineIndex, line);
+                             currentFill.AddItem(item);
+                         }
+                     }
+                     // Item lines that start with ULSD or DEFD (when they are part of the location line)
+                     else if (line.StartsWith("ULSD ") || line.StartsWith("DEFD "))
+                     {
+                         if (currentFill != null)
+                         {
+                             var item = CreateItemFromLines(lines, ref lineIndex, line);
+                             currentFill.AddItem(item);
+                         }
+                     }
                     // Summary section (after items, per group)
                     else if (line == "Amount" && currentGroup != null)
                     {
@@ -168,16 +179,28 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
         {
             // Получаем текущую строку, которая содержит всю информацию о заправке
             string currentLine = lines[lineIndex];
-            var parts = currentLine.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             
-            // Парсим данные из строки: "47276 2025-06-04 11:36 16931 USC999 YAROSLAV DOVHOBORETS LOVES #881 TRAVEL STOP DIAMOND OH"
-            // parts[0] = card number (47276)
-            // parts[1] = date (2025-06-04)
-            // parts[2] = time (11:36)
-            // parts[3] = invoice (16931)
-            // parts[4] = unit (USC999)
-            // parts[5..] = driver name + location info
+            // Пример строки: "47276 2025-06-04 11:36 16931 USC999 YAROSLAV DOVHOBORETS LOVES #881 TRAVEL STOP DIAMOND OH ULSD 3.249 127.13 413.03 Y USD/Gallons"
             
+            // Находим позицию первого ULSD или DEFD в строке
+            int ulsdIndex = currentLine.IndexOf(" ULSD ");
+            int defdIndex = currentLine.IndexOf(" DEFD ");
+            int itemStartIndex = -1;
+            
+            if (ulsdIndex > 0)
+                itemStartIndex = ulsdIndex;
+            else if (defdIndex > 0)
+                itemStartIndex = defdIndex;
+            
+            string fillInfo = currentLine;
+            if (itemStartIndex > 0)
+            {
+                fillInfo = currentLine.Substring(0, itemStartIndex);
+            }
+            
+            var parts = fillInfo.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            
+            // Парсим данные о заправке
             string tranDate = parts.Length > 1 ? parts[1] : string.Empty;
             string tranTime = parts.Length > 2 ? parts[2] : string.Empty;
             string invoice = parts.Length > 3 ? parts[3] : string.Empty;
@@ -198,7 +221,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
                     locationParts.Add(parts[i]);
                 }
                 
-                // Предполагаем, что последние 2-3 части - это город и штат
+                // Предполагаем, что последние 2 части - это город и штат
                 if (locationParts.Count >= 2)
                 {
                     state = locationParts[locationParts.Count - 1]; // Последний элемент - штат
@@ -369,6 +392,78 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Services
         {
             var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
             return parts.Length > 0 ? parts[0] : string.Empty;
+        }
+
+        private void ExtractItemsFromLine(string line, Fill currentFill)
+        {
+            // Находим все вхождения ULSD и DEFD в строке
+            var items = new List<string>();
+            
+            // Разделяем строку по ULSD и DEFD
+            var ulsdParts = line.Split(new[] { " ULSD " }, StringSplitOptions.None);
+            var defdParts = line.Split(new[] { " DEFD " }, StringSplitOptions.None);
+            
+            // Обрабатываем ULSD
+            for (int i = 1; i < ulsdParts.Length; i++)
+            {
+                var itemData = "ULSD " + ulsdParts[i];
+                // Находим конец данных товара (до следующего ULSD или DEFD или конца строки)
+                var nextUlsd = itemData.IndexOf(" ULSD ", 5);
+                var nextDefd = itemData.IndexOf(" DEFD ", 5);
+                
+                int endIndex = itemData.Length;
+                if (nextUlsd > 0 && (nextDefd == -1 || nextUlsd < nextDefd))
+                    endIndex = nextUlsd;
+                else if (nextDefd > 0)
+                    endIndex = nextDefd;
+                
+                var cleanItemData = itemData.Substring(0, endIndex).Trim();
+                items.Add(cleanItemData);
+            }
+            
+            // Обрабатываем DEFD
+            for (int i = 1; i < defdParts.Length; i++)
+            {
+                var itemData = "DEFD " + defdParts[i];
+                // Находим конец данных товара
+                var nextUlsd = itemData.IndexOf(" ULSD ", 5);
+                var nextDefd = itemData.IndexOf(" DEFD ", 5);
+                
+                int endIndex = itemData.Length;
+                if (nextUlsd > 0 && (nextDefd == -1 || nextUlsd < nextDefd))
+                    endIndex = nextUlsd;
+                else if (nextDefd > 0)
+                    endIndex = nextDefd;
+                
+                var cleanItemData = itemData.Substring(0, endIndex).Trim();
+                items.Add(cleanItemData);
+            }
+            
+            // Создаем товары из найденных данных
+            foreach (var itemData in items)
+            {
+                var item = CreateItemFromString(itemData);
+                if (item != null)
+                {
+                    currentFill.AddItem(item);
+                }
+            }
+        }
+
+        private Item CreateItemFromString(string itemData)
+        {
+            var parts = itemData.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+            
+            if (parts.Length < 6) return null;
+            
+            string itemType = parts[0]; // ULSD или DEFD
+            double unitPrice = ParseDouble(parts[1]);
+            double quantity = ParseDouble(parts[2]);
+            double amount = ParseDouble(parts[3]);
+            string db = parts[4];
+            string currency = parts[5];
+            
+            return Item.CreateNew(itemType, unitPrice, quantity, amount, db, currency);
         }
 
         private string ExtractTextFromPdf(string pdfPath)
