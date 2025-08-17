@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelStations.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelStationContext))]
-    partial class FuelStationContextModelSnapshot : ModelSnapshot
+    [Migration("20250817154313_Add_PriceLoadAttempts_Entity")]
+    partial class Add_PriceLoadAttempts_Entity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -7,6 +7,7 @@ using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices.GetPriceLoadAttempts;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
@@ -151,6 +152,26 @@ namespace Foruscorp.FuelStations.API.Controllers
             }
             
             return Ok("All price files processed successfully");
+        }
+
+        [HttpGet("price-load-attempts")]
+        public async Task<ActionResult<List<PriceLoadAttemptDto>>> GetPriceLoadAttempts(
+            [FromQuery] DateTime? fromDate = null,
+            [FromQuery] DateTime? toDate = null,
+            [FromQuery] bool? isSuccessful = null,
+            [FromQuery] int? page = null,
+            [FromQuery] int? pageSize = null,
+            CancellationToken cancellationToken = default)
+        {
+            var query = new GetPriceLoadAttemptsQuery(fromDate, toDate, isSuccessful, page, pageSize);
+            var result = await _mediator.Send(query, cancellationToken);
+            
+            if (result.IsFailed)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok(result.Value);
         }
 
 

@@ -1,8 +1,11 @@
 using FluentResults;
+using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
+using Foruscorp.FuelStations.Domain.FuelStations;
 using MediatR;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,13 +19,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
     public class LoadPricesCommandHandler : IRequestHandler<LoadPricesCommand, Result>
     {
         private readonly IMediator _mediator;
+        private readonly IFuelStationContext _fuelStationContext;
         private readonly ILogger<LoadPricesCommandHandler> _logger;
 
         public LoadPricesCommandHandler(
             IMediator mediator,
+            IFuelStationContext fuelStationContext,
             ILogger<LoadPricesCommandHandler> logger)
         {
             _mediator = mediator;
+            _fuelStationContext = fuelStationContext;
             _logger = logger;
         }
 
@@ -33,6 +39,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
                 return Result.Fail("No files provided.");
             }
 
+            // Создаем запись о попытке загрузки
+            var priceLoadAttempt = PriceLoadAttempt.CreateNew(request.files.Count);
+            await _fuelStationContext.PriceLoadAttempts.AddAsync(priceLoadAttempt, cancellationToken);
+            await _fuelStationContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Started price load attempt {AttemptId} with {FileCount} files", 
+                priceLoadAttempt.Id, request.files.Count);
+
             var results = new List<Result>();
             var processedFiles = new List<string>();
 
@@ -41,6 +55,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
                 if (file == null || file.Length == 0)
                 {
                     _logger.LogWarning("Skipping empty file: {FileName}", file?.FileName ?? "null");
+                    priceLoadAttempt.AddFileResult(file?.FileName ?? "null", false, "File is empty or null");
                     continue;
                 }
 
@@ -72,21 +87,26 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
                     results.Add(result);
                     processedFiles.Add(file.FileName);
 
+                    // Добавляем результат обработки файла
                     if (result.IsSuccess)
                     {
                         _logger.LogInformation("Successfully processed file: {FileName}", file.FileName);
+                        priceLoadAttempt.AddFileResult(file.FileName, true);
                     }
                     else
                     {
                         _logger.LogError("Failed to process file: {FileName}. Errors: {Errors}", 
                             file.FileName, string.Join(", ", result.Errors));
+                        priceLoadAttempt.AddFileResult(file.FileName, false, string.Join("; ", result.Errors));
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Unexpected error processing file: {FileName}", file.FileName);
-                    results.Add(Result.Fail($"Error processing file {file.FileName}: {ex.Message}"));
+                    var errorMessage = $"Error processing file {file.FileName}: {ex.Message}";
+                    results.Add(Result.Fail(errorMessage));
                     processedFiles.Add(file.FileName);
+                    priceLoadAttempt.AddFileResult(file.FileName, false, errorMessage);
                 }
             }
 
@@ -97,16 +117,33 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
             _logger.LogInformation("Processing completed. Successfully processed: {SuccessCount}, Failed: {FailedCount}", 
                 successfulResults.Count, failedResults.Count);
 
+            // Завершаем попытку загрузки
+            bool isOverallSuccess = !failedResults.Any();
+            string overallErrorMessage = null;
+
             if (failedResults.Any())
             {
                 var errorMessages = failedResults
                     .SelectMany(r => r.Errors)
                     .ToList();
-
-                return Result.Fail($"Some files failed to process. Successfully processed: {successfulResults.Count}, Failed: {failedResults.Count}. Errors: {string.Join("; ", errorMessages)}");
+                overallErrorMessage = $"Some files failed to process. Successfully processed: {successfulResults.Count}, Failed: {failedResults.Count}. Errors: {string.Join("; ", errorMessages)}";
             }
 
-            return Result.Ok();
+            priceLoadAttempt.Complete(isOverallSuccess, overallErrorMessage);
+
+            await _fuelStationContext.SaveChangesAsync(cancellationToken);
+
+            _logger.LogInformation("Completed price load attempt {AttemptId}. Success rate: {SuccessRate}%, Duration: {Duration}", 
+                priceLoadAttempt.Id, priceLoadAttempt.GetSuccessRate(), priceLoadAttempt.GetProcessingDuration());
+
+            if (isOverallSuccess)
+            {
+                return Result.Ok();
+            }
+            else
+            {
+                return Result.Fail(overallErrorMessage);
+            }
         }
 
         private FileType DetermineFileType(string fileName)
