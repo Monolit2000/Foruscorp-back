@@ -10,6 +10,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Percistence
     {
         public DbSet<FuelStation> FuelStations { get; set; }
         public DbSet<FuelMapProvaider> FuelMapProvaiders { get; set; }
+        public DbSet<PriceLoadAttempt> PriceLoadAttempts { get; set; }
         
 
         public FuelStationContext(DbContextOptions<FuelStationContext> options) : base(options)

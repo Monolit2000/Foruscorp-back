@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelStations.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelStations.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelStationContext))]
-    partial class FuelStationContextModelSnapshot : ModelSnapshot
+    [Migration("20250816211820_AddFuelStationProviderId")]
+    partial class AddFuelStationProviderId
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -92,45 +95,6 @@ namespace Foruscorp.FuelStations.Infrastructure.Migrations
                     b.ToTable("FuelStations", "FuelStation");
                 });
 
-            modelBuilder.Entity("Foruscorp.FuelStations.Domain.FuelStations.PriceLoadAttempt", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid")
-                        .HasColumnName("PriceLoadAttemptId");
-
-                    b.Property<DateTime?>("CompletedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("ErrorMessage")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)");
-
-                    b.Property<int>("FailedFiles")
-                        .HasColumnType("integer");
-
-                    b.Property<bool>("IsSuccessful")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("SuccessfullyProcessedFiles")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TotalFiles")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CompletedAt");
-
-                    b.HasIndex("IsSuccessful");
-
-                    b.HasIndex("StartedAt");
-
-                    b.ToTable("PriceLoadAttempts", "FuelStation");
-                });
-
             modelBuilder.Entity("Foruscorp.FuelStations.Domain.FuelStations.FuelStation", b =>
                 {
                     b.OwnsMany("Foruscorp.FuelStations.Domain.FuelStations.FuelPrice", "FuelPrices", b1 =>
@@ -138,9 +102,6 @@ namespace Foruscorp.FuelStations.Infrastructure.Migrations
                             b1.Property<Guid>("Id")
                                 .ValueGeneratedOnAdd()
                                 .HasColumnType("uuid");
-
-                            b1.Property<DateTime>("CreatedAt")
-                                .HasColumnType("timestamp with time zone");
 
                             b1.Property<double?>("DiscountedPrice")
                                 .HasColumnType("double precision");
@@ -155,9 +116,6 @@ namespace Foruscorp.FuelStations.Infrastructure.Migrations
 
                             b1.Property<double>("Price")
                                 .HasColumnType("double precision");
-
-                            b1.Property<DateTime>("UpdatedAt")
-                                .HasColumnType("timestamp with time zone");
 
                             b1.HasKey("Id");
 
@@ -197,51 +155,6 @@ namespace Foruscorp.FuelStations.Infrastructure.Migrations
                     b.Navigation("Coordinates");
 
                     b.Navigation("FuelPrices");
-                });
-
-            modelBuilder.Entity("Foruscorp.FuelStations.Domain.FuelStations.PriceLoadAttempt", b =>
-                {
-                    b.OwnsMany("Foruscorp.FuelStations.Domain.FuelStations.FileProcessingResult", "FileResults", b1 =>
-                        {
-                            b1.Property<Guid>("Id")
-                                .ValueGeneratedOnAdd()
-                                .HasColumnType("uuid");
-
-                            b1.Property<string>("ErrorMessage")
-                                .HasMaxLength(2000)
-                                .HasColumnType("character varying(2000)");
-
-                            b1.Property<string>("FileName")
-                                .IsRequired()
-                                .HasMaxLength(500)
-                                .HasColumnType("character varying(500)");
-
-                            b1.Property<bool>("IsSuccess")
-                                .HasColumnType("boolean");
-
-                            b1.Property<Guid>("PriceLoadAttemptId")
-                                .HasColumnType("uuid");
-
-                            b1.Property<DateTime>("ProcessedAt")
-                                .HasColumnType("timestamp with time zone");
-
-                            b1.HasKey("Id");
-
-                            b1.HasIndex("FileName");
-
-                            b1.HasIndex("IsSuccess");
-
-                            b1.HasIndex("PriceLoadAttemptId");
-
-                            b1.HasIndex("ProcessedAt");
-
-                            b1.ToTable("FileProcessingResults", "FuelStation");
-
-                            b1.WithOwner()
-                                .HasForeignKey("PriceLoadAttemptId");
-                        });
-
-                    b.Navigation("FileResults");
                 });
 #pragma warning restore 612, 618
         }
