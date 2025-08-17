@@ -12,7 +12,10 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
         public DbSet<TruckLocation> TruckLocations { get; set; }
         public DbSet<TruckFuel> TruckFuels { get; set; }
         public DbSet<Route> Routes { get; set; }    
-        public DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }    
+        public DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }
+        public DbSet<TransactionReport> TransactionReports { get; set; }
+        public DbSet<TransactionFill> TransactionFills { get; set; }
+        public DbSet<TransactionItem> TransactionItems { get; set; }    
 
 
 

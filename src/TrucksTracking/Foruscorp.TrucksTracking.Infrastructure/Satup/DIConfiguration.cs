@@ -6,7 +6,9 @@ using MassTransit;
 using Foruscorp.TrucksTracking.Aplication;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
+using Foruscorp.TrucksTracking.Aplication.TransactionReports;
 using Foruscorp.TrucksTracking.Infrastructure.Services;
+using Foruscorp.TrucksTracking.Domain.Trucks;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 {
@@ -51,6 +53,10 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
             services.AddSingleton<ActiveTruckManager, ActiveTruckManager>();
             services.AddSingleton<TruckInfoManager>();
             services.AddSingleton<ITruckProviderService, TruckProviderService>();
+            
+            // Transaction Report Services
+            services.AddScoped<ITransactionReportRepository, TransactionReportRepository>();
+            services.AddScoped<ITransactionReportService, TransactionReportService>();
 
             return services;
         }
