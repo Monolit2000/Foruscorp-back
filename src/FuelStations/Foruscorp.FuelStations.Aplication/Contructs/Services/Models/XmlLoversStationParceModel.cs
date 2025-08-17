@@ -3,7 +3,7 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.Services.Models
 {
     public class XmlLoversStationParceModel
     {
-        public string StoreId { get; set; }
+        public string Id { get; set; }
 
         public string EffectiveDate { get; set; }
 

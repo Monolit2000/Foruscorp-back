@@ -69,6 +69,26 @@ namespace Foruscorp.FuelStations.API.Controllers
             return Ok(result);
         }
 
+
+        [HttpPost("ParceTaAndPetroStationFile")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> ParceTaAndPetroStationFile(IFormFile file,
+          CancellationToken cancellationToken)
+        {
+            var result = await _xMlFuelStationService.ParceTaAndPetroStationFile(file, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpPost("ParceTaAndPetroStationInfoFile")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> ParceTaAndPetroStationInfoFile(IFormFile file,
+          CancellationToken cancellationToken)
+        {
+            var result = await _xMlFuelStationService.ParceTaAndPetroStationInfoFile(file, cancellationToken);
+            return Ok(result);
+        }
+
+
+
+
         //[HttpPost("parcePailot")]
         //public async Task<ActionResult<IEnumerable<FuelStationDto>>> Parceasdsad(CancellationToken cancellationToken)
         //{
