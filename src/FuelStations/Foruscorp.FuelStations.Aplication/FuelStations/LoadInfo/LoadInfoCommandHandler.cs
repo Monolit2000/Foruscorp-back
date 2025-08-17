@@ -36,18 +36,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo
 
             var fuelStations = await fuelStationContext.FuelStations.ToListAsync(cancellationToken);
 
-            foreach (var station in fuelStations)
-            {
-                var match = models.FirstOrDefault(m =>
-                    Math.Round(m.Longitude, 3) == Math.Round(station.Coordinates.Longitude, 3) &&
-                    Math.Round(m.Latitude, 3) == Math.Round(station.Coordinates.Latitude, 3));
-
-                if (match is not null)
-                {
-                    station.FuelStationProviderId = match.Id;
-                }
-            }
-
             var newStationsList = new List<FuelStation>();
 
             foreach (var model in models)
@@ -75,7 +63,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo
 
                     newStationsList.Add(newFuelStation);
                 }
-
             }
 
             await fuelStationContext.FuelStations.AddRangeAsync(newStationsList);

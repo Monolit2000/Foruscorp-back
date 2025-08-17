@@ -12,14 +12,14 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrice
+namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
 {
-    public record LoadPriceCommand(IFormFile file) : IRequest<Result>;
-    public class LoadPriceCommandHandler(
+    public record LoadTaAndPetroPriceCommand(IFormFile file) : IRequest<Result>;
+    public class LoadTaAndPetroPriceCommandHandler(
         IFuelStationContext fuelStationContext,
-        IXMlFuelStationService xMlFuelStationService) : IRequestHandler<LoadPriceCommand, Result>
+        IXMlFuelStationService xMlFuelStationService) : IRequestHandler<LoadTaAndPetroPriceCommand, Result>
     {
-        public async Task<Result> Handle(LoadPriceCommand request, CancellationToken cancellationToken)
+        public async Task<Result> Handle(LoadTaAndPetroPriceCommand request, CancellationToken cancellationToken)
         {
             if (request.file == null || request.file.Length == 0)
             {

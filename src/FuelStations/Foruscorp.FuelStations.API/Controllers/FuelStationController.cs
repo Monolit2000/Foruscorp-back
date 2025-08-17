@@ -4,7 +4,8 @@ using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Aplication.FuelStations;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
-using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
@@ -104,13 +105,13 @@ namespace Foruscorp.FuelStations.API.Controllers
         public async Task<ActionResult<IEnumerable<FuelStationDto>>> LoadPriceCommand(IFormFile file,
           CancellationToken cancellationToken)
         {
-            var request = new LoadPriceCommand(file);
+            var request = new LoadTaAndPetroPriceCommand(file);
             var result = await _mediator.Send(request, cancellationToken);
             return Ok(result);
         }
 
         [HttpGet("load-loves-stores")]
-        public async Task<ActionResult<LovesApiResponseModel>> LoadLovesStores(CancellationToken cancellationToken)
+        public async Task<ActionResult> LoadLovesStores(CancellationToken cancellationToken)
         {
             var request = new LoadLovesStoresCommand();
             var result = await _mediator.Send(request, cancellationToken);
@@ -120,7 +121,21 @@ namespace Foruscorp.FuelStations.API.Controllers
                 return BadRequest(result.Errors);
             }
             
-            return Ok(result.Value);
+            return Ok("Love's stores loaded successfully");
+        }
+
+        [HttpPost("load-lovers-price")]
+        public async Task<ActionResult> LoadLoversPrice(IFormFile file, CancellationToken cancellationToken)
+        {
+            var request = new LoadLoversPriceCommand(file);
+            var result = await _mediator.Send(request, cancellationToken);
+            
+            if (result.IsFailed)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok("Love's prices loaded successfully");
         }
 
 

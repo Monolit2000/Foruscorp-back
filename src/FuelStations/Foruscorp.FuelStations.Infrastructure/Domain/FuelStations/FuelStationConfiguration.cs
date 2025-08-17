@@ -16,12 +16,10 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
                 .HasColumnName("FuelStationId")
                 .ValueGeneratedOnAdd();
 
-
             builder.Property(fs => fs.FuelStationProviderId)
                 .IsRequired(false);
 
             builder.HasIndex(fs => fs.FuelStationProviderId);
-
 
             builder.Property(fs => fs.Address)
                 .IsRequired()
