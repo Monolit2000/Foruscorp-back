@@ -9,11 +9,11 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.Services.Models
     public class XmlTaAndPetroStationParceModel
     {
         public string Id { get; set; }
-        public decimal ECSCost { get; set; }
-        public decimal Discount { get; set; }
+        public double ECSCost { get; set; }
+        public double Discount { get; set; }
         public string State { get; set; }
         public string TravelCenter { get; set; }
-        public decimal Price { get; set; }
+        public double Price { get; set; }
     }
 
     public class XmlTaAndPetroStationInfoModel
@@ -21,8 +21,8 @@ namespace Foruscorp.FuelStations.Aplication.Contructs.Services.Models
         public string Id { get; set; }
         public string Brand { get; set; }
         public string Location { get; set; }
-        public decimal Longitude { get; set; }
-        public decimal Latitude { get; set; }
+        public double Longitude { get; set; }
+        public double Latitude { get; set; }
         public string State { get; set; }
         public string City { get; set; }
         public string Directions { get; set; }

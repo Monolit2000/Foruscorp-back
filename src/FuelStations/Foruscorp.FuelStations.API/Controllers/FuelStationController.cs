@@ -1,11 +1,13 @@
-﻿using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
+﻿using Foruscorp.FuelStations.Aplication.Contructs.Services;
+using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
+using Foruscorp.FuelStations.Aplication.FuelStations;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
+using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Foruscorp.FuelStations.Aplication.FuelStations;
-using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
-using Foruscorp.FuelStations.Aplication.Contructs.Services;
-using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
-using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 
 namespace Foruscorp.FuelStations.API.Controllers
 {
@@ -83,6 +85,25 @@ namespace Foruscorp.FuelStations.API.Controllers
           CancellationToken cancellationToken)
         {
             var result = await _xMlFuelStationService.ParceTaAndPetroStationInfoFile(file, cancellationToken);
+            return Ok(result);
+        }
+
+        [HttpPost("LoadInfo")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> LoadInfoCommand(IFormFile file,
+          CancellationToken cancellationToken)
+        {
+            var request = new LoadInfoCommand(file);
+            var result = await _mediator.Send(request, cancellationToken);
+            return Ok(result);
+        }
+
+
+        [HttpPost("LoadPrice")]
+        public async Task<ActionResult<IEnumerable<FuelStationDto>>> LoadPriceCommand(IFormFile file,
+          CancellationToken cancellationToken)
+        {
+            var request = new LoadPriceCommand(file);
+            var result = await _mediator.Send(request, cancellationToken);
             return Ok(result);
         }
 

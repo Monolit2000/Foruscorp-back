@@ -8,13 +8,17 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 {
     public record FuelPrice
     {
-        public FuelType FuelType { get; }
-        public double Price { get; }
-        public double? DiscountedPrice { get; } 
+        public FuelType FuelType { get; set; }
+        public double Price { get; set; }
+        public double? DiscountedPrice { get; set; } 
         public double PriceDifference => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : 0; 
         public double PriceAfterDiscount => DiscountedPrice.HasValue ? Price - DiscountedPrice.Value : Price; 
         public double PriceDifferencePercentage => DiscountedPrice.HasValue ? (PriceDifference / Price) * 100 : 0;
         public double PriceDifferencePercentageWithDiscount => DiscountedPrice.HasValue ? (PriceDifference / DiscountedPrice.Value) * 100 : 0;
+
+        public DateTime CreatedAt { get; set; }
+        public DateTime UpdatedAt { get; set; }
+
 
 
         public FuelPrice(FuelType fuelType, double price, double? discountedPrice = null)
@@ -31,6 +35,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             FuelType = fuelType;
             Price = price;
             DiscountedPrice = discountedPrice;
+            CreatedAt = DateTime.UtcNow;
         }
     }
 }

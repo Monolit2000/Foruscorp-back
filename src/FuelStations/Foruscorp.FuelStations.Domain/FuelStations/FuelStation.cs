@@ -10,7 +10,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 
         public Guid Id { get; private set; }
         public string FuelStationProviderId { get; set; }
-        public string ProviderName { get; private set; } 
+        public string ProviderName { get; set; } 
         public string Address { get; private set; }
         public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }

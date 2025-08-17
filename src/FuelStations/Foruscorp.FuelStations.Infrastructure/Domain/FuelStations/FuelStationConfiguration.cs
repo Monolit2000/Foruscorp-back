@@ -74,6 +74,10 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
                 priceBuilder.Property(fp => fp.Price)
                     .IsRequired();
 
+                priceBuilder.Property(fp => fp.CreatedAt);
+
+                priceBuilder.Property(fp => fp.UpdatedAt);
+
                 priceBuilder.Property(fp => fp.DiscountedPrice);
             });
 

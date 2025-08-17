@@ -35,8 +35,8 @@ public class XMlFuelStationService : IXMlFuelStationService
                     Location = row.Cell(5).GetString().Trim(),
                     Directions = row.Cell(7).GetString().Trim(),
                     Address = row.Cell(8).GetString().Trim(),
-                    Longitude = ParseDecimal(row.Cell(13).GetString()),
-                    Latitude = ParseDecimal(row.Cell(14).GetString()),
+                    Latitude = ParseDouble(row.Cell(13).GetString()),
+                    Longitude = ParseDouble(row.Cell(14).GetString()),
                 };
                 result.Add(model);
             }
@@ -67,11 +67,11 @@ public class XMlFuelStationService : IXMlFuelStationService
                 var model = new XmlTaAndPetroStationParceModel
                 {
                     Id = row.Cell(1).GetString().Trim(),
-                    ECSCost = ParseDecimal(row.Cell(2).GetString()),
-                    Discount = ParseDecimal(row.Cell(3).GetString()),
+                    ECSCost = ParseDouble(row.Cell(2).GetString()),
+                    Discount = ParseDouble(row.Cell(3).GetString()),
                     TravelCenter = row.Cell(4).GetString().Trim(),
                     State = row.Cell(5).GetString().Trim(),
-                    Price = ParseDecimal(row.Cell(6).GetString()),
+                    Price = ParseDouble(row.Cell(6).GetString()),
                 };
                 result.Add(model);
             }
@@ -125,6 +125,21 @@ public class XMlFuelStationService : IXMlFuelStationService
 
         input = input.Replace(',', '.');
         if (decimal.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
+        {
+            return Math.Round(value, 3);
+        }
+
+        return 0;
+    }
+
+
+    private double ParseDouble(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return 0;
+
+        input = input.Replace(',', '.');
+
+        if (double.TryParse(input, NumberStyles.Any, CultureInfo.InvariantCulture, out var value))
         {
             return Math.Round(value, 3);
         }
