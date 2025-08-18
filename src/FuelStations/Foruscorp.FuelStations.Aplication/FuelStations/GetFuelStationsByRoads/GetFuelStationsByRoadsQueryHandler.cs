@@ -222,11 +222,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .ToList();
 
             // Формируем список станций вдоль маршрута:
-            var stationsAlongRoute = routePoints
-                .SelectMany(geoPoint => allStations
-                    .Where(s => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
+            var stationsAlongRoute = allStations
+                .Where(s => routePoints
+                    .Any(geoPoint => GeoCalculator.IsPointWithinRadius(geoPoint, s.Coordinates, SearchRadiusKm)))
                 .DistinctBy(s => s.Id)
-                // Если providerFilter пуст, пропускаем всех; иначе — фильтруем по совпадению (игнорируя регистр)
                 .Where(s => !providerFilter.Any()
                             || providerFilter.Contains(s.ProviderName?.ToLowerInvariant() ?? string.Empty))
                 .ToList();
