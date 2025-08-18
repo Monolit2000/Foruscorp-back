@@ -1,7 +1,10 @@
 using Foruscorp.FuelStations.Aplication.Contructs.Services;
 using Foruscorp.FuelStations.Aplication.Contructs.Services.Models;
 using Microsoft.Extensions.Logging;
-using System.Text.Json;
+using Newtonsoft.Json;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Foruscorp.FuelStations.Infrastructure.Services
 {
@@ -24,7 +27,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Services
                 _logger.LogInformation("Fetching stores from Love's API");
 
                 var response = await _httpClient.GetAsync(ApiUrl, cancellationToken);
-                
+
                 if (!response.IsSuccessStatusCode)
                 {
                     _logger.LogError("Failed to fetch stores from Love's API. Status code: {StatusCode}", response.StatusCode);
@@ -32,21 +35,16 @@ namespace Foruscorp.FuelStations.Infrastructure.Services
                 }
 
                 var content = await response.Content.ReadAsStringAsync(cancellationToken);
-                
+
                 if (string.IsNullOrEmpty(content))
                 {
                     _logger.LogWarning("Empty response received from Love's API");
                     return null;
                 }
 
-                var options = new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                };
+                var result = JsonConvert.DeserializeObject<LovesApiResponseModel>(content);
 
-                var result = JsonSerializer.Deserialize<LovesApiResponseModel>(content, options);
-                
-                _logger.LogInformation("Successfully fetched {StoreCount} stores from Love's API", 
+                _logger.LogInformation("Successfully fetched {StoreCount} stores from Love's API",
                     result?.Stores?.Count ?? 0);
 
                 return result;

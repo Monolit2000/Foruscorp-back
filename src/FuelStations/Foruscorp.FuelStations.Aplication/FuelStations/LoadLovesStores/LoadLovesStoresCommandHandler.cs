@@ -56,10 +56,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         Math.Round(s.Coordinates.Longitude, 3) == Math.Round(store.Longitude, 3) &&
                         Math.Round(s.Coordinates.Latitude, 3) == Math.Round(store.Latitude, 3));
 
+
                     if (existingStation != null)
                     {
                         // Обновляем существующую станцию
-                        existingStation.FuelStationProviderId = store.Number.ToString();
+
+                        if(existingStation.FuelStationProviderId == null)
+                            existingStation.FuelStationProviderId = store.Number.ToString();
+
                         existingStation.ProviderName = "Loves";
                         
                         // Обновляем адрес, если он изменился
