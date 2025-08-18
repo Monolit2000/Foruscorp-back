@@ -1,7 +1,7 @@
 x-db: &db-env
   # ConnectionStrings__DefaultConnection: "Host=host.docker.internal;Port=5432;Database=ForuscorpDB;Username=postgres;Password=postgres"
-  # ConnectionStrings__DefaultConnection: "Host=54.151.63.149;Port=5435;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
-  ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  ConnectionStrings__DefaultConnection: "Host=54.151.63.149;Port=5435;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  # ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
 
 x-mq: &mq-env
   MessageBroker__HostName: "rabbitmq://rabbitmq"
@@ -29,13 +29,13 @@ services:
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000"
-      - "5011:5011"
+      # - "5011:5011"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
-      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
       ASPNETCORE_HTTP_PORTS: "5000"
-      ASPNETCORE_HTTPS_PORTS: "5011"
+      # ASPNETCORE_HTTPS_PORTS: "5011"
       <<: *otel-env
     networks:
       - foruscorp-docker-network
@@ -133,8 +133,8 @@ services:
       - foruscorp-docker-network
     restart: unless-stopped
 
-  foruscorp.fuelroutes.api:
-    container_name: fuelroutes-api
+  foruscorp.fuelroutes.api.1:
+    container_name: fuelroutes-api-1
     image: futondoker/foruscorpfuelroutesapi:v1
     build:
       context: .
@@ -143,6 +143,28 @@ services:
       - "5004:5004"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5004
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.fuelroutes.api.2:
+    container_name: fuelroutes-api-2
+    image: futondoker/foruscorpfuelroutesapi:v1
+    build:
+      context: .
+      dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+    ports:
+      - "5005:5005"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 5005
     depends_on:
       - rabbitmq
       - redis
@@ -186,7 +208,6 @@ services:
       - foruscorp.truckstracking.api
       - foruscorp.fuelstations.api
       - foruscorp.trucks.api
-      - foruscorp.fuelroutes.api
 
   rabbitmq:
     container_name: rabbitmq
