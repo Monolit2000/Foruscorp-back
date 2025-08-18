@@ -22,11 +22,20 @@ namespace Foruscorp.Auth.Domain.Users
 
         public static User CreateNew(string email, string userName)
             => new User(email, userName);
-          
 
         public void SetCompanyId(Guid companyId)
         {
             CompanyId = companyId;
+        }
+
+        public void SetDriverRole()
+        {
+            Roles.Add(new UserRole
+            {
+                Id = Guid.NewGuid(),
+                UserId = Id,
+                Role = UserRoleType.Driver
+            });
         }
     }
 }

@@ -31,7 +31,9 @@ namespace Foruscorp.Auth.Features.DriverCreated
                     : $"driver_{message.UserId}";
                 
                 var user = User.CreateNew(email, username);
-                
+
+                user.SetDriverRole();   
+
                 var passwordHasher = new PasswordHasher<User>();
                 user.PasswordHash = passwordHasher.HashPassword(user, "1234");
                 
