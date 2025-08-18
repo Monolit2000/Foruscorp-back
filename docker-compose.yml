@@ -29,13 +29,13 @@ services:
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000"
-      # - "5011:5011"
+      - "5011:5011"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
       ASPNETCORE_HTTP_PORTS: "5000"
-      # ASPNETCORE_HTTPS_PORTS: "5011"
+      ASPNETCORE_HTTPS_PORTS: "5011"
       <<: *otel-env
     networks:
       - foruscorp-docker-network
