@@ -24,6 +24,9 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// Add Health Checks
+builder.Services.AddHealthChecks();
+
 
 // Configure OpenTelemetry
 builder.Services.AddOpenTelemetry()
@@ -86,6 +89,9 @@ app.MapGet("/", context =>
     context.Response.Redirect("/scalar/v1", permanent: false);
     return Task.CompletedTask;
 });
+
+// Add Health Check endpoint
+app.MapHealthChecks("/health");
 
 
 // Configure the HTTP request pipeline.

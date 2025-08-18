@@ -5,6 +5,7 @@ using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using MassTransit;
 using Foruscorp.TrucksTracking.Aplication;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
+using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
 using Foruscorp.TrucksTracking.Aplication.TruckTrackers;
 using Foruscorp.TrucksTracking.Infrastructure.Services;
 
@@ -20,6 +21,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
             });
 
             services.AddScoped<ITruckTrackingContext, TuckTrackingContext>();
+            services.AddScoped<IPdfTransactionService, PdfTransactionService>();
 
 
             services.AddMediatR(cfg =>

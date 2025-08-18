@@ -30,8 +30,8 @@ namespace Foruscorp.Auth.Features.DriverCreated
                     ? message.Name.Replace(" ", "_").ToLowerInvariant() 
                     : $"driver_{message.UserId}";
                 
-                var user = User.CreateNew(email, username);
-                
+                var user = User.CreateDriver(message.UserId, email, username);
+
                 var passwordHasher = new PasswordHasher<User>();
                 user.PasswordHash = passwordHasher.HashPassword(user, "1234");
                 

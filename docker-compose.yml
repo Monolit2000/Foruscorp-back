@@ -9,11 +9,11 @@ x-mq: &mq-env
   MessageBroker__Password: "guest"
 
 x-otel: &otel-env  
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
-  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-  # OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
-  # OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-  # OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
+  # OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+  # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
 
 x-common: &common-env
   ASPNETCORE_ENVIRONMENT: "Production"
@@ -133,8 +133,8 @@ services:
       - foruscorp-docker-network
     restart: unless-stopped
 
-  foruscorp.fuelroutes.api:
-    container_name: fuelroutes-api
+  foruscorp.fuelroutes.api.1:
+    container_name: fuelroutes-api-1
     image: futondoker/foruscorpfuelroutesapi:v1
     build:
       context: .
@@ -143,6 +143,28 @@ services:
       - "5004:5004"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5004
+      ASPNETCORE_ENVIRONMENT: Development
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.fuelroutes.api.2:
+    container_name: fuelroutes-api-2
+    image: futondoker/foruscorpfuelroutesapi:v1
+    build:
+      context: .
+      dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+    ports:
+      - "5005:5005"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_HTTP_PORTS: 5005
     depends_on:
       - rabbitmq
       - redis
@@ -186,7 +208,6 @@ services:
       - foruscorp.truckstracking.api
       - foruscorp.fuelstations.api
       - foruscorp.trucks.api
-      - foruscorp.fuelroutes.api
 
   rabbitmq:
     container_name: rabbitmq
