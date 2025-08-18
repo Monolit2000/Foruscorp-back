@@ -16,7 +16,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public readonly List<MapPoint> MapPoints = [];
 
-        public readonly List<FuelRouteSection> RouteSections = [];
+        public List<FuelRouteSection> RouteSections = [];
 
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }

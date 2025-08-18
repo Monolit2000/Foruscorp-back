@@ -1,3 +1,4 @@
+using FluentResults;
 using Foruscorp.Auth.Contruct;
 using Foruscorp.Auth.Domain.Users;
 using Foruscorp.Auth.Servises;
@@ -29,7 +30,7 @@ namespace Foruscorp.Auth.Controllers
         }
 
 
-        [HttpPost("refresh")]
+        [HttpGet("refresh")]
         public async Task<IActionResult> Refresh()
         {
             try
@@ -43,26 +44,30 @@ namespace Foruscorp.Auth.Controllers
             }
         }
 
-
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody] UserLoginDto request)
         {
-            try
-            {
-                var response = await authService.LoginAsync(request);
-                return Ok(response);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                return NotFound(ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(ex.Message);
-            }
+            var response = await authService.LoginAsync(request);
+
+            if (response.IsFailed)
+                return BadRequest(response.Errors);
+
+            return Ok(response.Value);
         }
 
-        [Authorize] // обязательная авторизация
+        [HttpPost("logout")]
+        public async Task<IActionResult> LogoutAsync([FromQuery] bool allDevices = false)
+        {
+            await authService.LogoutAsync(allDevices);
+
+            return Ok("Logged out successfully");
+        }
+
+
+
+
+        [Authorize] // Г®ГЎГїГ§Г ГІГҐГ«ГјГ­Г Гї Г ГўГІГ®Г°ГЁГ§Г Г¶ГЁГї
         [HttpGet("me")]
         public ActionResult<string> GetCurrentUserId()
         {

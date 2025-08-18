@@ -14,7 +14,7 @@ namespace Foruscorp.Trucks.Aplication.Users
     {
         public async Task Handle(CreateUserCommand request, CancellationToken cancellationToken)
         {
-            var user = User.CreateNew(request.UserId);
+            var user = User.CreateNew(request.UserId, request.UserName);
 
             await context.Users.AddAsync(user, cancellationToken);  
 

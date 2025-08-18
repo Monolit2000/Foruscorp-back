@@ -6,7 +6,7 @@ namespace Foruscorp.Auth.Domain.Users
     public class User
     {
         public Guid? CompanyId { get; private set; }
-        public Guid Id { get; private set; }
+        public Guid Id { get; set; }
         public string Email { get; private set; }
         public string UserName { get; private set; }
         public string PasswordHash { get; set; }
@@ -22,11 +22,28 @@ namespace Foruscorp.Auth.Domain.Users
 
         public static User CreateNew(string email, string userName)
             => new User(email, userName);
-          
+
+        public static User CreateDriver(Guid userId, string email, string userName)
+        {
+            var user = new User(email, userName);
+            user.Id = userId;
+            user.SetDriverRole();
+            return user;
+        }
 
         public void SetCompanyId(Guid companyId)
         {
             CompanyId = companyId;
+        }
+
+        public void SetDriverRole()
+        {
+            Roles.Add(new UserRole
+            {
+                Id = Guid.NewGuid(),
+                UserId = Id,
+                Role = UserRoleType.Driver
+            });
         }
     }
 }

@@ -16,7 +16,7 @@ namespace Foruscorp.Trucks.Aplication.Users
     {
         public async Task Consume(ConsumeContext<NewUserRegistratedIntegrationEvent> context)
         {
-            await sender.Send(new CreateUserCommand {UserId = context.Message.UserId });
+            await sender.Send(new CreateUserCommand {UserId = context.Message.UserId, UserName = context.Message.UserName });
         }
     }
 }

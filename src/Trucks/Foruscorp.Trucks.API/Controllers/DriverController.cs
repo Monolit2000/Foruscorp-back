@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Drivers;
+using Foruscorp.Trucks.Aplication.Drivers.CreateDriver;
 using Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers;
 using Foruscorp.Trucks.Aplication.Drivers.GetDriverById;
 using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
@@ -26,6 +27,14 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [HttpPost("Сreate")]
+        public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(createDriverCommand, cancellationToken);
+            return Ok(result);
+        }
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]

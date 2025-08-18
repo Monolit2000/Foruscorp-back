@@ -1,5 +1,6 @@
 using Foruscorp.Trucks.Infrastructure.Persistence;
 using Foruscorp.Trucks.Infrastructure.Satup;
+using Foruscorp.Trucks.API.Middleware;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +18,7 @@ using StackExchange.Redis;
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,26 +27,26 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpContextAccessor();
 
-
-// Configure OpenTelemetry
-// Configure OpenTelemetry
+// Configure OpenTelemetry with improved configuration
 builder.Services.AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("Trucks.API"))
+    .ConfigureResource(resource => resource
+        .AddService("Trucks.API")
+     )
     .WithMetrics(metrics => metrics
-          .AddAspNetCoreInstrumentation()
-          .AddHttpClientInstrumentation()
-          .AddRuntimeInstrumentation()
-          .AddNpgsqlInstrumentation())
-    .WithTracing(tracing =>
-    tracing
+        .AddAspNetCoreInstrumentation()
+        .AddHttpClientInstrumentation()
+        .AddRuntimeInstrumentation()
+        .AddNpgsqlInstrumentation()
+        .AddMeter("Trucks.API"))
+    .WithTracing(tracing => tracing
         .AddAspNetCoreInstrumentation()
         .AddHttpClientInstrumentation()
         .AddEntityFrameworkCoreInstrumentation()
         .AddRabbitMQInstrumentation()
         .AddNpgsql()
-        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName))
+        .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName)
+        .AddSource("Trucks.API"))
     .UseOtlpExporter();
-
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, options =>
@@ -60,11 +62,13 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-//// Configure logging
+// Configure logging with OpenTelemetry
 builder.Logging.AddOpenTelemetry(logging =>
 {
     logging.IncludeScopes = true;
     logging.IncludeFormattedMessage = true;
+    logging.SetResourceBuilder(ResourceBuilder.CreateDefault()
+        .AddService("Trucks.API"));
 });
 
 builder.Services.AddCors(options =>
@@ -73,6 +77,7 @@ builder.Services.AddCors(options =>
         policy => policy.AllowAnyOrigin()
                         .AllowAnyMethod()
                         .AllowAnyHeader());
+                        //.AllowCredentials());
 });
 
 builder.Services.AddTrucksServices(builder.Configuration);
@@ -85,13 +90,6 @@ app.MapGet("/", context =>
     return Task.CompletedTask;
 });
 
-//app.MapGet("/", context =>
-//{
-//    context.Response.Redirect("/scalar/v1", permanent: false);
-//    return Task.CompletedTask;
-//});
-
-
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseSwagger();
@@ -103,13 +101,12 @@ if (app.Environment.IsDevelopment())
 {
 }
 
-//app.UseAuthorization();
+// Add trace context middleware early in the pipeline
+app.UseTraceContext();
 
 app.UseAuthentication();
 app.UseAuthorization();
-
 app.UseCors("AllowAll");
-
 app.MapControllers();
 
 app.Run();

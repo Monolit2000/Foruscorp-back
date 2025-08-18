@@ -38,5 +38,23 @@ namespace Foruscorp.Trucks.Domain.Drivers
 
         public static Contact Create(string fullName, string phone, string email, string telegramLink)
             => new Contact(fullName, phone, email, telegramLink);
+
+
+        public void Update(string fullName = null, string phone = null, string email = null, string telegramLink = null)
+        {
+            if (!string.IsNullOrWhiteSpace(fullName) && FullName != fullName)
+                FullName = fullName;
+
+            if (!string.IsNullOrWhiteSpace(phone) && Phone != phone)
+                Phone = phone;
+
+            if (!string.IsNullOrWhiteSpace(email) && Email != email)
+                Email = email;
+
+            if (!string.IsNullOrWhiteSpace(telegramLink) && TelegramLink != telegramLink)
+                TelegramLink = telegramLink;
+        }
     }
+
+
 }

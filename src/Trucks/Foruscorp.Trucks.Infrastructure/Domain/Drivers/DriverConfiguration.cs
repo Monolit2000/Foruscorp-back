@@ -20,6 +20,7 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.UserId)
                 .IsRequired(false);
 
+
             //builder.Property(d => d.FullName)
             //    .IsRequired()
             //    .HasMaxLength(100);
@@ -43,10 +44,15 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.Drivers
             builder.Property(d => d.Bonus)
                 .HasColumnType("decimal(18,2)");
 
-            builder.HasOne(u => u.Contact)
+            //builder.HasOne(u => u.Contact)
+            //       .WithOne()
+            //       .HasForeignKey<Driver>(u => u.ContactId)
+            //       .OnDelete(DeleteBehavior.Restrict);
+
+            builder.HasOne(u => u.DriverUser)
                    .WithOne()
-                   .HasForeignKey<Driver>(u => u.ContactId)
-                   .OnDelete(DeleteBehavior.Restrict);
+                   .HasForeignKey<Driver>(u => u.UserId)
+                   .OnDelete(DeleteBehavior.SetNull);
 
             //builder.OwnsOne(d => d.Contact, b =>
             //{

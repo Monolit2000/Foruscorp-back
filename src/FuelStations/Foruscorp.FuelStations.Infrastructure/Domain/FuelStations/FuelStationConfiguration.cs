@@ -16,6 +16,11 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
                 .HasColumnName("FuelStationId")
                 .ValueGeneratedOnAdd();
 
+            builder.Property(fs => fs.FuelStationProviderId)
+                .IsRequired(false);
+
+            builder.HasIndex(fs => fs.FuelStationProviderId);
+
             builder.Property(fs => fs.Address)
                 .IsRequired()
                 .HasMaxLength(500);
@@ -29,8 +34,6 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
             builder.Property(fs => fs.ProviderName)
                 .IsRequired(false);
-
-
 
             builder.OwnsOne(fs => fs.Coordinates, coordBuilder =>
             {
@@ -68,6 +71,10 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
                 priceBuilder.Property(fp => fp.Price)
                     .IsRequired();
+
+                priceBuilder.Property(fp => fp.CreatedAt);
+
+                priceBuilder.Property(fp => fp.UpdatedAt);
 
                 priceBuilder.Property(fp => fp.DiscountedPrice);
             });

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.Aplication.Companys
@@ -12,7 +13,6 @@ namespace Foruscorp.Trucks.Aplication.Companys
     public class CompanyDto
     {
         public Guid Id { get; set; }
-
         public string Name { get; set; }
 
         public DateTime CreatedAt { get; set; }
@@ -20,10 +20,8 @@ namespace Foruscorp.Trucks.Aplication.Companys
         public int DriversCount { get; set; }
         public int TrucksCount { get; set; }
 
-        //public DateTime UpdatedAt { get; set; }
+        public List<CompanyManagerDto> CompanyManagers { get; set; } = new List<CompanyManagerDto>();
 
-        //public List<TruckDto> Trucks { get; set; } = new();
-        //public List<DriverDto> Drivers { get; set; } = new();
     }
 
     public class CompanyManagerDto
@@ -31,6 +29,7 @@ namespace Foruscorp.Trucks.Aplication.Companys
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
         public Guid CompanyId { get; set; }
+        public string FullName { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }
@@ -50,6 +49,8 @@ namespace Foruscorp.Trucks.Aplication.Companys
                 CreatedAt = company.CreatedAt,
                 DriversCount = company.Drivers.Count,
                 TrucksCount = company.Trucks.Count,
+                CompanyManagers = company.CompanyManagers?
+                    .Select(cm => cm.ToCompanyManagerDto()).ToList() ?? new List<CompanyManagerDto>(),
                 //UpdatedAt = company.UpdatedAt,
                 //Trucks = company.Trucks.Select(t => new TruckDto
                 //{
@@ -60,7 +61,7 @@ namespace Foruscorp.Trucks.Aplication.Companys
                 //}).ToList(),
                 //Drivers = company.Drivers.Select(d => new DriverDto
                 //{
-                //    Id = d.Id,
+                //    Id = d.Id, 
                 //    FullName = d.FullName,
                 //    LicenseNumber = d.LicenseNumber
                 //}).ToList()
@@ -81,6 +82,8 @@ namespace Foruscorp.Trucks.Aplication.Companys
                 CreatedAt = company.CreatedAt,
                 DriversCount = driversCount,
                 TrucksCount = trucksCount,
+                CompanyManagers = company.CompanyManagers?
+                    .Select(cm => cm.ToCompanyManagerDto()).ToList() ?? new List<CompanyManagerDto>(),
                 //UpdatedAt = company.UpdatedAt,
                 //Trucks = company.Trucks.Select(t => new TruckDto
                 //{
@@ -95,6 +98,18 @@ namespace Foruscorp.Trucks.Aplication.Companys
                 //    FullName = d.FullName,
                 //    LicenseNumber = d.LicenseNumber
                 //}).ToList()
+            };
+        }
+
+        public static CompanyManagerDto ToCompanyManagerDto(this CompanyManager companyManager)
+        {
+            return new CompanyManagerDto
+            {
+                Id = companyManager.Id,
+                UserId = companyManager.UserId,
+                CompanyId = companyManager.CompanyId,
+                FullName = companyManager.User?.Contact?.FullName ?? string.Empty,
+                CreatedAt = companyManager.CreatedAt,
             };
         }
     }
