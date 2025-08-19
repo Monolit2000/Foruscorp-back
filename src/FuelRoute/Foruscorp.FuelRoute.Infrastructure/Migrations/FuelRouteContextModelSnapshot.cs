@@ -45,7 +45,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsCompleted")
+                    b.Property<bool>("IsComplet")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);

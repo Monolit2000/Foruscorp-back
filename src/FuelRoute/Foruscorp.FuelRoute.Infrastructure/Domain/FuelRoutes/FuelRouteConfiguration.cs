@@ -36,7 +36,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.RemainingFuel)
                 .IsRequired();
 
-            builder.Property(fr => fr.IsCompleted)
+            builder.Property(fr => fr.IsComplet)
                 .IsRequired()
                 .HasDefaultValue(false);
 

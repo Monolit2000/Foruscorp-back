@@ -5,13 +5,13 @@
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class Update_Compleate_route : Migration
+    public partial class IsCompleat : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.AddColumn<bool>(
-                name: "IsCompleted",
+                name: "IsComplet",
                 schema: "FuelRoutes",
                 table: "FuelRoutes",
                 type: "boolean",
@@ -23,7 +23,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(
-                name: "IsCompleted",
+                name: "IsComplet",
                 schema: "FuelRoutes",
                 table: "FuelRoutes");
         }

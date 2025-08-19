@@ -39,7 +39,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CompleteRoute
                 return Result.Fail($"Fuel route with ID {request.RouteId} is not accepted yet");
             }
 
-            if (fuelRoute.IsCompleted)
+            if (fuelRoute.IsComplet)
             {
                 logger.LogWarning("Fuel route with ID {RouteId} is already completed", request.RouteId);
                 return Result.Fail($"Fuel route with ID {request.RouteId} is already completed");

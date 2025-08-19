@@ -12,8 +12,8 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelRouteContext))]
-    [Migration("20250819165505_Update_Compleate_route")]
-    partial class Update_Compleate_route
+    [Migration("20250819175356_IsCompleat")]
+    partial class IsCompleat
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -48,7 +48,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsCompleted")
+                    b.Property<bool>("IsComplet")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
                         .HasDefaultValue(false);
