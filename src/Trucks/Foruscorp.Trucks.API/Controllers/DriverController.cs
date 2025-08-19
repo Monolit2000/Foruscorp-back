@@ -36,7 +36,7 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAllDriverDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpGet("driver/{id:guid}")]
         public async Task<ActionResult<TruckDto>> GetDriverById(
