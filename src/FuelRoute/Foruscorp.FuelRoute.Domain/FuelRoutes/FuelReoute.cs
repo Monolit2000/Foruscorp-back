@@ -39,6 +39,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public bool IsAccepted { get; private set; }
 
+        public bool IsDeclined { get; private set; }
+        public DateTime? DeclinedAt { get; private set; }
 
         public bool IsComplet { get; private set; }
         public byte[] RowVersion { get; set; }
@@ -149,6 +151,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
             IsAccepted = false;
             IsSended = false;
+            IsDeclined = true;
+            DeclinedAt = DateTime.UtcNow;
             UpdateChangedAt();
         }
 

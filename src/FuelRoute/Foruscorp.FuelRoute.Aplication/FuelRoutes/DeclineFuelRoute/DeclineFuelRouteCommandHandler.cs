@@ -32,6 +32,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute
                 return Result.Fail($"Fuel route with ID {request.RouteId} is already completed and cannot be declined");
             }
 
+            if (fuelRoute.IsDeclined)
+            {
+                logger.LogWarning("Fuel route with ID {RouteId} is already declined", request.RouteId);
+                return Result.Fail($"Fuel route with ID {request.RouteId} is already declined");
+            }
+
             try
             {
                 // Mark the route as declined using the domain method
