@@ -142,6 +142,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             UpdateChangedAt();
         }
 
+        public void DeclineRoute()
+        {
+            if (IsComplet)
+                throw new InvalidOperationException("Cannot decline a route that is already completed");
+
+            IsAccepted = false;
+            IsSended = false;
+            UpdateChangedAt();
+        }
+
         public void CompleteRoute()
         {
             if (!IsAccepted)

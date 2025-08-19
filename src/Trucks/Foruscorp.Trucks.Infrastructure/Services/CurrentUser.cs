@@ -20,7 +20,7 @@ namespace Foruscorp.Trucks.Infrastructure.Services
         {
             var user = contextAccessor.HttpContext?.User;
             if (user == null || !user.Identity?.IsAuthenticated == true)
-                throw new UnauthorizedAccessException("User is not authenticated");
+                throw new UnauthorizedAccessException("User is not authenticated"); 
 
             var id = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (!Guid.TryParse(id, out var parsedId))
