@@ -66,9 +66,8 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
             }
             catch (Exception ex)
             {
-                throw ex;
-                //_logger.LogError(ex, "Error parsing PDF transactions from file: {FileName}", request.File?.FileName);
-                //return Result.Fail($"Error parsing PDF transactions: {ex.Message}");
+                _logger.LogError(ex, "Error parsing PDF transactions from file: {FileName}", request.File?.FileName);
+                return Result.Fail($"Error parsing PDF transactions: {ex.Message}");
             }
         }
 
