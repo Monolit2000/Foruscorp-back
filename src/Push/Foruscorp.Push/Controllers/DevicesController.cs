@@ -1,5 +1,6 @@
 ﻿using Foruscorp.Push.Features.Devices.RegisterDevice;
 using Foruscorp.Push.Features.Devices.UpdateDeviceToken;
+using Foruscorp.Push.Features.Devices.DeleteDevice;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
@@ -33,6 +34,16 @@ namespace Foruscorp.Push.Controllers
         {
             var cmd = cmdBody with { DeviceId = cmdBody.DeviceId };
             await _mediator.Send(cmd);
+            return NoContent();
+        }
+
+        [HttpDelete("delete")]
+        public async Task<IActionResult> DeleteDevice([FromBody] DeleteDeviceCommand command)
+        {
+            var result = await _mediator.Send(command);
+            if (result.IsFailed)
+                return BadRequest(result.Errors.FirstOrDefault()?.Message ?? "Failed to delete device.");
+
             return NoContent();
         }
     }
