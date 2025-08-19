@@ -3,6 +3,7 @@ using System;
 using Foruscorp.TrucksTracking.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 {
     [DbContext(typeof(TuckTrackingContext))]
-    partial class TuckTrackingContextModelSnapshot : ModelSnapshot
+    [Migration("20250819123701_Update_Trunssaction_romuve_Summaries")]
+    partial class Update_Trunssaction_romuve_Summaries
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,15 +91,18 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.Property<string>("Driver")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<string>("Invoice")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("Location")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
                     b.Property<string>("Odometer")
                         .IsRequired()
@@ -105,11 +111,13 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.Property<string>("State")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<string>("TranDate")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
 
                     b.Property<string>("TranTime")
                         .IsRequired()
@@ -121,7 +129,8 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.Property<string>("Unit")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.HasKey("Id");
 
@@ -144,31 +153,34 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<double>("Amount")
-                        .HasColumnType("double precision");
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<string>("DB")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(10)
+                        .HasColumnType("character varying(10)");
 
                     b.Property<Guid?>("FillId")
                         .HasColumnType("uuid");
 
                     b.Property<double>("Quantity")
-                        .HasColumnType("double precision");
+                        .HasColumnType("decimal(18,4)");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<double>("UnitPrice")
-                        .HasColumnType("double precision");
+                        .HasColumnType("decimal(18,4)");
 
                     b.HasKey("Id");
 
@@ -188,14 +200,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
 
                     b.Property<string>("Card")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.Property<string>("Group")
                         .IsRequired()
-                        .HasColumnType("text");
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
 
                     b.Property<bool>("IsProcessed")
                         .HasColumnType("boolean");

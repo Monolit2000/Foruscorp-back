@@ -1,4 +1,5 @@
 using FluentResults;
+using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
 using Foruscorp.TrucksTracking.Domain.Transactions;
 using MediatR;
@@ -17,11 +18,14 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
     {
         private readonly IPdfTransactionService _pdfTransactionService;
         private readonly ILogger<ParsePdfTransactionsCommandHandler> _logger;
+        private readonly ITruckTrackingContext _truckTrackingContext;
 
         public ParsePdfTransactionsCommandHandler(
             IPdfTransactionService pdfTransactionService,
-            ILogger<ParsePdfTransactionsCommandHandler> logger)
+            ILogger<ParsePdfTransactionsCommandHandler> logger,
+            ITruckTrackingContext truckTrackingContext)
         {
+            _truckTrackingContext = truckTrackingContext;
             _pdfTransactionService = pdfTransactionService;
             _logger = logger;
         }
@@ -50,6 +54,9 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
                     return Result.Ok(new List<TransactionDto>());
                 }
 
+                await _truckTrackingContext.Transactions.AddRangeAsync(transactions, cancellationToken);
+                await _truckTrackingContext.SaveChangesAsync(cancellationToken);
+
                 var transactionDtos = transactions.Select(MapToDto).ToList();
 
                 _logger.LogInformation("Successfully parsed {TransactionCount} transactions from PDF file: {FileName}", 
@@ -59,8 +66,9 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error parsing PDF transactions from file: {FileName}", request.File?.FileName);
-                return Result.Fail($"Error parsing PDF transactions: {ex.Message}");
+                throw ex;
+                //_logger.LogError(ex, "Error parsing PDF transactions from file: {FileName}", request.File?.FileName);
+                //return Result.Fail($"Error parsing PDF transactions: {ex.Message}");
             }
         }
 

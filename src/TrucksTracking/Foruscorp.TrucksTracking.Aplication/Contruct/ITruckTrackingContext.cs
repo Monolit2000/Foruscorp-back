@@ -1,5 +1,6 @@
 ﻿using Foruscorp.TrucksTracking.Domain.FuelStationPlans;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Domain.Transactions;
 using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.TrucksTracking.Aplication.Contruct
@@ -10,6 +11,7 @@ namespace Foruscorp.TrucksTracking.Aplication.Contruct
         DbSet<TruckTracker> TruckTrackers { get; set; }
         DbSet<TruckLocation> TruckLocations { get; set; }
         DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }
+        DbSet<Transaction> Transactions { get; set; }
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
     }
 }
