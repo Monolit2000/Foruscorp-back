@@ -36,6 +36,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.RemainingFuel)
                 .IsRequired();
 
+            builder.Property(fr => fr.IsCompleted)
+                .IsRequired()
+                .HasDefaultValue(false);
+
 
             //builder.OwnsMany(fr => fr.RouteSections, routeSectionBuilder =>
             //{

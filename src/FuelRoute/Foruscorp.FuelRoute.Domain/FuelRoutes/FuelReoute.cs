@@ -38,6 +38,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public double RemainingFuel { get; set; } = 0.0; 
 
         public bool IsAccepted { get; private set; }
+        public bool IsCompleted { get; private set; }
         public byte[] RowVersion { get; set; }
 
         private FuelRoute() { } //For EF core 
@@ -136,6 +137,18 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public void MarkAsAccepted()
         {
             IsAccepted = true;
+            UpdateChangedAt();
+        }
+
+        public void CompleteRoute()
+        {
+            if (!IsAccepted)
+                throw new InvalidOperationException("Cannot complete a route that has not been accepted");
+
+            if (IsCompleted)
+                throw new InvalidOperationException("Route is already completed");
+
+            IsCompleted = true;
             UpdateChangedAt();
         }
 

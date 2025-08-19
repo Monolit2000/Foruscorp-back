@@ -59,9 +59,9 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-    app.UseSwagger();
-    app.UseSwaggerUI();
-    app.ApplyFuelStationContextMigrations();
+app.UseSwagger();
+app.UseSwaggerUI();
+app.ApplyFuelStationContextMigrations();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
