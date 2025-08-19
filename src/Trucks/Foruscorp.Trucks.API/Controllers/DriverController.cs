@@ -29,7 +29,7 @@ namespace Foruscorp.Trucks.API.Controllers
 
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
-        [HttpPost("Сreate")]
+        [HttpPost("Create")]
         public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(createDriverCommand, cancellationToken);
