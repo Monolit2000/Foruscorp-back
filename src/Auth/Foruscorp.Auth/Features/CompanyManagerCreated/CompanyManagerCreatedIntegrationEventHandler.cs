@@ -31,6 +31,7 @@ namespace Foruscorp.Auth.Features.CompanyManagerCreated
                     : $"manager_{message.UserId}";
 
                 var user = User.CreateCompanyManager(message.UserId, email, username);
+                user.SetCompanyId(message.CompanyId);
 
                 var passwordHasher = new PasswordHasher<User>();
                 user.PasswordHash = passwordHasher.HashPassword(user, "1234");
