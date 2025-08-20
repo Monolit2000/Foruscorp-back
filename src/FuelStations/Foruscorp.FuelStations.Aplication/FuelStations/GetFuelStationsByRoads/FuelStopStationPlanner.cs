@@ -310,18 +310,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Ограничиваем максимальной вместимостью бака
             var maxRefill = parameters.TankCapacity + FuelStopCalculator.TankRestrictions - lastStop.CurrentFuelLiters;
             
-            // Применяем минимальный порог дозаправки
-            if (requiredRefill > 0 && requiredRefill < FuelStopCalculator.MinRefillAmount)
-            {
-                if (maxRefill >= FuelStopCalculator.MinRefillAmount)
-                {
-                    requiredRefill = FuelStopCalculator.MinRefillAmount;
-                }
-                else
-                {
-                    requiredRefill = 0; // Не дозаправляемся, если не можем достичь минимума
-                }
-            }
+            // Для последней остановки НЕ применяем минимальный порог дозаправки
+            // Позволяем дозаправляться любым количеством для достижения finishFuel
 
             if (requiredRefill >= 0 && requiredRefill <= maxRefill)
             {
@@ -525,8 +515,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             else if (refill == 0 && freeSpace < RefillIncrement)
                 refill = freeSpace;
 
-            // Применяем минимальный порог дозаправки
-            if (refill > 0 && refill < MinRefillAmount)
+            // Применяем минимальный порог дозаправки только если это НЕ последняя остановка
+            if (!isLastRefuel && refill > 0 && refill < MinRefillAmount)
             {
                 // Если дозаправка меньше минимальной, либо увеличиваем до минимума, либо отменяем
                 if (freeSpace >= MinRefillAmount)
