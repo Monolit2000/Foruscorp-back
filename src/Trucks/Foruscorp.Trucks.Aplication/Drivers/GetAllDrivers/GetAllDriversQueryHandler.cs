@@ -15,6 +15,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
             var drivers = await context.Drivers
                 .AsNoTracking()
                 .Include(d => d.Truck)
+                .Include(d => d.Bonuses)
                 .Include(d => d.DriverUser)
                     .ThenInclude(u => u.Contact)
                 .ToListAsync(cancellationToken);
