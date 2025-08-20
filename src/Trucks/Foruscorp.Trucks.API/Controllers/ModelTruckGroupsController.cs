@@ -1,5 +1,6 @@
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.FormModelTruckGroupsForAllTrucks;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetAllModelTruckGroups;
+using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetModelTruckGroupById;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupFuelCapacity;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeight;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeightFuelCapacity;
@@ -60,6 +61,28 @@ namespace Foruscorp.Trucks.API.Controllers
             var result = await _mediator.Send(new GetAllModelTruckGroupsQuery());
 
             return Ok(result);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ModelTruckGroupDto>> GetModelTruckGroupById(Guid id)
+        {
+            try
+            {
+                var query = new GetModelTruckGroupByIdQuery(id);
+                var result = await _mediator.Send(query);
+
+                if (result == null)
+                {
+                    return NotFound($"ModelTruckGroup with ID {id} not found");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting ModelTruckGroup by ID: {Id}", id);
+                return StatusCode(500, "An error occurred while retrieving ModelTruckGroup");
+            }
         }
 
 
