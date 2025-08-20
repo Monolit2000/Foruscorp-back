@@ -268,15 +268,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             var allowedRefill = Math.Min(requiredInfo.RefillLiters, parameters.TankCapacity - currentState.RemainingFuel);
 
-            // Для обязательных остановок также применяем минимальный порог
-            if (allowedRefill > 0 && allowedRefill < FuelStopCalculator.MinRefillAmount)
-            {
-                var freeSpace = parameters.TankCapacity - currentState.RemainingFuel;
-                if (freeSpace >= FuelStopCalculator.MinRefillAmount)
-                {
-                    allowedRefill = FuelStopCalculator.MinRefillAmount;
-                }
-            }
+
 
             var preRefuelFuel = currentState.RemainingFuel;
             currentState.RemainingFuel += allowedRefill;
@@ -310,18 +302,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Ограничиваем максимальной вместимостью бака
             var maxRefill = parameters.TankCapacity - lastStop.CurrentFuelLiters;
 
-            // Применяем минимальный порог дозаправки
-            if (requiredRefill > 0 && requiredRefill < FuelStopCalculator.MinRefillAmount)
-            {
-                if (maxRefill >= FuelStopCalculator.MinRefillAmount)
-                {
-                    requiredRefill = FuelStopCalculator.MinRefillAmount;
-                }
-                else
-                {
-                    requiredRefill = 0; // Не дозаправляемся, если не можем достичь минимума
-                }
-            }
+
 
             if (requiredRefill >= 0 && requiredRefill <= maxRefill)
             {
@@ -352,7 +333,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
     public class FuelStopCalculator
     {
-        public const double MinRefillAmount = 70.0;
         private const double MinStopDistanceKm = 1200.0;
         private const double RefillIncrement = 5.0;
 
@@ -448,8 +428,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (stationInfo.ForwardDistanceKm <= previousKm || stationInfo.ForwardDistanceKm > maxReachKm)
                 return false;
 
-            if (useMinDistance)
-                return true;
 
             return maxDistanceWithoutRefuel < MinStopDistanceKm ||
                    stationInfo.ForwardDistanceKm - previousKm >= MinStopDistanceKm;
@@ -524,20 +502,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             else if (refill == 0 && freeSpace < RefillIncrement)
                 refill = freeSpace;
 
-            // Применяем минимальный порог дозаправки
-            if (refill > 0 && refill < MinRefillAmount)
-            {
-                // Если дозаправка меньше минимальной, либо увеличиваем до минимума, либо отменяем
-                if (freeSpace >= MinRefillAmount)
-                {
-                    refill = MinRefillAmount;
-                }
-                else
-                {
-                    // Если места недостаточно для минимальной дозаправки, отменяем остановку
-                    refill = 0;
-                }
-            }
+
 
             return Math.Min(refill, freeSpace);
         }
