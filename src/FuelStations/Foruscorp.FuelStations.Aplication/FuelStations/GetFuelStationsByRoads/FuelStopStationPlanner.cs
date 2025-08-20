@@ -300,11 +300,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Ограничиваем максимальной вместимостью бака
             var maxRefill = parameters.TankCapacity - lastStop.CurrentFuelLiters;
 
-
-
-            if (requiredRefill >= 0 && requiredRefill <= maxRefill)
+            if (requiredRefill > 0 && requiredRefill <= maxRefill)
             {
                 lastStop.RefillLiters = requiredRefill;
+            }
+            else
+            {
+                // Если дозаправка 0 или меньше, удаляем последнюю остановку
+                stopPlan.RemoveAt(stopPlan.Count - 1);
             }
         }
 
@@ -408,6 +411,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .OrderBy(si => si.ForwardDistanceKm) // Сначала ближайшие
                 .ThenBy(si => si.PricePerLiter) // Затем по цене
                 .ToList();
+
+
+
 
             return candidates.FirstOrDefault();
         }
