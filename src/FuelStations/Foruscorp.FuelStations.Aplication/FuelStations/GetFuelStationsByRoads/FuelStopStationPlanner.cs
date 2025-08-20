@@ -216,8 +216,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     requiredInfo.ForwardDistanceKm,
                     parameters,
                     usedStationIds,
-                    currentState,
-                    useMinDistance: false);
+                    currentState);
 
                 requiredStops.AddRange(intermediateStops);
 
@@ -241,8 +240,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 routeAnalysis.TotalDistanceKm,
                 parameters,
                 usedStationIds,
-                currentState,
-                useMinDistance: true);
+                currentState);
         }
 
         private List<RequiredStationInfo> CreateRequiredStationInfos(
@@ -341,8 +339,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double targetKm,
             FuelPlanningParameters parameters,
             HashSet<Guid> usedStationIds,
-            FuelState currentState,
-            bool useMinDistance)
+            FuelState currentState)
         {
             var stops = new List<FuelStopPlan>();
 
@@ -353,7 +350,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 if (currentState.RemainingFuel >= neededFuel)
                     break;
 
-                var nextStop = FindNextStop(stationInfos, parameters, usedStationIds, currentState, useMinDistance);
+                var nextStop = FindNextStop(stationInfos, parameters, usedStationIds, currentState);
                 if (nextStop == null)
                     break;
 
@@ -400,18 +397,30 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             List<StationInfo> stationInfos,
             FuelPlanningParameters parameters,
             HashSet<Guid> usedStationIds,
-            FuelState currentState,
-            bool useMinDistance)
+            FuelState currentState)
         {
             var maxDistanceWithoutRefuel = currentState.RemainingFuel / parameters.FuelConsumptionPerKm;
             var maxReachKm = currentState.PreviousKm + maxDistanceWithoutRefuel;
 
             var candidates = stationInfos
-                .Where(si => IsValidCandidate(si, currentState.PreviousKm, maxReachKm, usedStationIds, maxDistanceWithoutRefuel, useMinDistance))
-                .OrderBy(si => si.PricePerLiter)
+                .Where(si => IsValidCandidate(si, currentState.PreviousKm, maxReachKm, usedStationIds, maxDistanceWithoutRefuel))
+                .Where(si => WillHaveMinimumReserve(si, currentState, parameters))
+                .OrderBy(si => si.ForwardDistanceKm) // Сначала ближайшие
+                .ThenBy(si => si.PricePerLiter) // Затем по цене
                 .ToList();
 
             return candidates.FirstOrDefault();
+        }
+
+        private bool WillHaveMinimumReserve(StationInfo stationInfo, FuelState currentState, FuelPlanningParameters parameters)
+        {
+            var distanceToStation = stationInfo.ForwardDistanceKm - currentState.PreviousKm;
+            var fuelUsedToStation = distanceToStation * parameters.FuelConsumptionPerKm;
+            var fuelAtStation = currentState.RemainingFuel - fuelUsedToStation;
+            
+            // Проверяем, что при приезде на станцию в баке будет не меньше 20%
+            var minimumReserve = parameters.TankCapacity * 0.20;
+            return fuelAtStation >= minimumReserve;
         }
 
         private bool IsValidCandidate(
@@ -419,8 +428,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double previousKm,
             double maxReachKm,
             HashSet<Guid> usedStationIds,
-            double maxDistanceWithoutRefuel,
-            bool useMinDistance)
+            double maxDistanceWithoutRefuel)
         {
             if (stationInfo.Station == null || usedStationIds.Contains(stationInfo.Station.Id))
                 return false;
@@ -428,7 +436,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (stationInfo.ForwardDistanceKm <= previousKm || stationInfo.ForwardDistanceKm > maxReachKm)
                 return false;
 
-
+            // Всегда применяем ограничение по минимальному расстоянию
             return maxDistanceWithoutRefuel < MinStopDistanceKm ||
                    stationInfo.ForwardDistanceKm - previousKm >= MinStopDistanceKm;
         }
