@@ -36,7 +36,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             // Анализ маршрута и станций
             var routeAnalysis = _routeAnalyzer.AnalyzeRoute(route, stationsAlongRoute, totalRouteDistanceKm);
-            
+
             // Планирование остановок
             var stopPlan = _refuelingPlanner.CreateStopPlan(
                 routeAnalysis,
@@ -50,10 +50,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     RoadSectionId = roadSectionId ?? string.Empty
                 });
 
-            return new StopPlanInfo 
-            { 
-                StopPlan = stopPlan.Stops, 
-                Finish = stopPlan.FinishInfo 
+            return new StopPlanInfo
+            {
+                StopPlan = stopPlan.Stops,
+                Finish = stopPlan.FinishInfo
             };
         }
 
@@ -61,7 +61,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             if (finishFuel < 0 || finishFuel > tankCapacity)
                 throw new ArgumentException($"finishFuel must be between 0 and tankCapacity ({tankCapacity} liters).");
-            
+
             if (totalRouteDistanceKm <= 0)
                 throw new ArgumentException("totalRouteDistanceKm must be positive.");
         }
@@ -109,24 +109,24 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private double CalculateForwardDistance(List<GeoPoint> route, GeoPoint stationCoords)
         {
             double cumulativeDistance = 0.0;
-            
+
             for (int i = 0; i < route.Count - 1; i++)
             {
                 var segmentStart = route[i];
                 var segmentEnd = route[i + 1];
-                
+
                 var segmentLength = GeoCalculator.CalculateHaversineDistance(segmentStart, segmentEnd);
                 var distanceToSegment = GeoCalculator.DistanceFromPointToSegmentKm(stationCoords, segmentStart, segmentEnd);
-                
+
                 if (distanceToSegment <= SearchRadiusKm)
                 {
                     var projectionDistance = GeoCalculator.DistanceAlongSegment(segmentStart, segmentEnd, stationCoords);
                     return cumulativeDistance + projectionDistance;
                 }
-                
+
                 cumulativeDistance += segmentLength;
             }
-            
+
             return double.MaxValue;
         }
 
@@ -177,9 +177,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             // Планирование промежуточных остановок до конца маршрута
             var intermediateStops = PlanIntermediateStops(
-                routeAnalysis, 
-                parameters, 
-                usedStationIds, 
+                routeAnalysis,
+                parameters,
+                usedStationIds,
                 currentState);
             stopPlan.AddRange(intermediateStops);
 
@@ -246,7 +246,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
         private List<RequiredStationInfo> CreateRequiredStationInfos(
-            RouteAnalysis routeAnalysis, 
+            RouteAnalysis routeAnalysis,
             List<RequiredStationDto> requiredStops)
         {
             return requiredStops
@@ -267,7 +267,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             FuelState currentState)
         {
             var allowedRefill = Math.Min(requiredInfo.RefillLiters, parameters.TankCapacity - currentState.RemainingFuel);
-            
+
             // Для обязательных остановок также применяем минимальный порог
             if (allowedRefill > 0 && allowedRefill < FuelStopCalculator.MinRefillAmount)
             {
@@ -277,7 +277,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     allowedRefill = FuelStopCalculator.MinRefillAmount;
                 }
             }
-            
+
             var preRefuelFuel = currentState.RemainingFuel;
             currentState.RemainingFuel += allowedRefill;
 
@@ -295,23 +295,26 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             var lastStop = stopPlan.Last();
             var fuelToFinish = (totalDistance - lastStop.StopAtKm) * parameters.FuelConsumptionPerKm;
-            
+
             // Рассчитываем необходимое топливо для достижения finishFuel
             var requiredFuelAtFinish = fuelToFinish + parameters.FinishFuel;
             var requiredRefill = requiredFuelAtFinish - lastStop.CurrentFuelLiters;
-            
-            // Учитываем минимальный запас топлива (20% от бака)
-            var minimumReserve = parameters.TankCapacity * FuelStopCalculator.MinimumFuelReservePercent;
-            var requiredReserveRefill = Math.Max(0, minimumReserve - lastStop.CurrentFuelLiters);
-            
-            // Используем максимальное из требуемой дозаправки для finishFuel и минимального запаса
-            requiredRefill = Math.Max(requiredRefill, requiredReserveRefill);
-            
+
             // Ограничиваем максимальной вместимостью бака
             var maxRefill = parameters.TankCapacity + FuelStopCalculator.TankRestrictions - lastStop.CurrentFuelLiters;
-            
-            // Для последней остановки НЕ применяем минимальный порог дозаправки
-            // Позволяем дозаправляться любым количеством для достижения finishFuel
+
+            // Применяем минимальный порог дозаправки
+            if (requiredRefill > 0 && requiredRefill < FuelStopCalculator.MinRefillAmount)
+            {
+                if (maxRefill >= FuelStopCalculator.MinRefillAmount)
+                {
+                    requiredRefill = FuelStopCalculator.MinRefillAmount;
+                }
+                else
+                {
+                    requiredRefill = 0; // Не дозаправляемся, если не можем достичь минимума
+                }
+            }
 
             if (requiredRefill >= 0 && requiredRefill <= maxRefill)
             {
@@ -326,8 +329,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 // Если нет остановок, рассчитываем топливо от начального состояния
                 var fuelUsed = totalDistance * parameters.FuelConsumptionPerKm;
                 var finalFuel = parameters.CurrentFuelLiters - fuelUsed;
-                
-                // Возвращаем фактический остаток топлива, но не меньше желаемого finishFuel
                 return Math.Max(finalFuel, parameters.FinishFuel);
             }
 
@@ -337,7 +338,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var fuelUsedToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
             var actualFinalFuel = fuelAfterLastStop - fuelUsedToFinish;
 
-            // Возвращаем фактический остаток топлива, но не меньше желаемого finishFuel
+            // Возвращаем максимальное из фактического топлива и желаемого finishFuel
             return Math.Max(actualFinalFuel, parameters.FinishFuel);
         }
     }
@@ -345,10 +346,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     public class FuelStopCalculator
     {
         public const double TankRestrictions = 40.0;
-        public const double MinRefillAmount = 70.0; 
+        public const double MinRefillAmount = 70.0;
         private const double MinStopDistanceKm = 1200.0;
         private const double RefillIncrement = 5.0;
-        public const double MinimumFuelReservePercent = 0.20; // 20% от бака
 
         public List<FuelStopPlan> PlanStopsUntilTarget(
             List<StationInfo> stationInfos,
@@ -363,7 +363,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             while (currentState.PreviousKm < targetKm)
             {
                 var neededFuel = CalculateNeededFuel(targetKm, currentState.PreviousKm, parameters);
-                
+
                 if (currentState.RemainingFuel >= neededFuel)
                     break;
 
@@ -372,7 +372,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     break;
 
                 var stopPlan = CreateStopPlan(nextStop, parameters, currentState);
-                
+
                 // Добавляем остановку только если дозаправка больше нуля
                 if (stopPlan.RefillLiters > 0)
                 {
@@ -399,14 +399,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private double CalculateNeededFuel(double targetKm, double currentKm, FuelPlanningParameters parameters)
         {
             var distanceFuel = (targetKm - currentKm) * parameters.FuelConsumptionPerKm;
-            
+
             // Учитываем finishFuel только если это конечная точка маршрута
             var finishFuel = targetKm >= parameters.TotalDistanceKm ? parameters.FinishFuel : 0;
-            
-            // Добавляем минимальный запас топлива (20% от бака)
-            var minimumReserve = parameters.TankCapacity * MinimumFuelReservePercent;
-            
-            return distanceFuel + finishFuel + minimumReserve;
+
+            return distanceFuel + finishFuel;
         }
 
         private StationInfo? FindNextStop(
@@ -444,7 +441,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (useMinDistance)
                 return true;
 
-            return maxDistanceWithoutRefuel < MinStopDistanceKm || 
+            return maxDistanceWithoutRefuel < MinStopDistanceKm ||
                    stationInfo.ForwardDistanceKm - previousKm >= MinStopDistanceKm;
         }
 
@@ -489,25 +486,18 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             var freeSpace = effectiveCapacity - remainingFuel;
             var rawRefill = freeSpace;
-            
+
             // Если это последняя остановка, учитываем finishFuel
             if (isLastRefuel)
             {
                 var fuelNeededToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
                 var requiredFuelAtFinish = fuelNeededToFinish + parameters.FinishFuel;
                 var requiredRefill = requiredFuelAtFinish - remainingFuel;
-                
+
                 // Используем максимальное из обычной дозаправки и требуемой для finishFuel
                 rawRefill = Math.Max(rawRefill, requiredRefill);
             }
-            
-            // Учитываем минимальный запас топлива (20% от бака)
-            var minimumReserve = parameters.TankCapacity * MinimumFuelReservePercent;
-            var requiredReserveRefill = Math.Max(0, minimumReserve - remainingFuel);
-            
-            // Используем максимальное из обычной дозаправки и требуемой для минимального запаса
-            rawRefill = Math.Max(rawRefill, requiredReserveRefill);
-            
+
             var refill = Math.Floor(rawRefill / RefillIncrement) * RefillIncrement;
 
             if (refill == 0 && freeSpace >= RefillIncrement)
@@ -515,8 +505,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             else if (refill == 0 && freeSpace < RefillIncrement)
                 refill = freeSpace;
 
-            // Применяем минимальный порог дозаправки только если это НЕ последняя остановка
-            if (!isLastRefuel && refill > 0 && refill < MinRefillAmount)
+            // Применяем минимальный порог дозаправки
+            if (refill > 0 && refill < MinRefillAmount)
             {
                 // Если дозаправка меньше минимальной, либо увеличиваем до минимума, либо отменяем
                 if (freeSpace >= MinRefillAmount)
