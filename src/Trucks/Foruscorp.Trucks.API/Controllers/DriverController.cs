@@ -29,14 +29,14 @@ namespace Foruscorp.Trucks.API.Controllers
 
 
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
-        [HttpPost("Сreate")]
+        [HttpPost("Create")]
         public async Task<ActionResult> CreateDriver(CreateDriverCommand createDriverCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(createDriverCommand, cancellationToken);
             return Ok(result);
         }
 
-        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DriverDto))]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetAllDriverDto))]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpGet("driver/{id:guid}")]
         public async Task<ActionResult<TruckDto>> GetDriverById(

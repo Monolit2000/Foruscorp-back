@@ -1,14 +1,18 @@
+using FluentResults;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.FormModelTruckGroupsForAllTrucks;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetAllModelTruckGroups;
+using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetModelTruckGroupById;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupFuelCapacity;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeight;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeightFuelCapacity;
 using Foruscorp.Trucks.Aplication.Trucks.Commands;
 using Foruscorp.Trucks.Aplication.Trucks.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.API.Controllers
@@ -60,6 +64,30 @@ namespace Foruscorp.Trucks.API.Controllers
             var result = await _mediator.Send(new GetAllModelTruckGroupsQuery());
 
             return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ModelTruckGroupByIdDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpGet("{id}")]
+        public async Task<ActionResult<ModelTruckGroupByIdDto>> GetModelTruckGroupById(Guid id)
+        {
+            try
+            {
+                var query = new GetModelTruckGroupByIdQuery(id);
+                var result = await _mediator.Send(query);
+
+                if (result == null)
+                {
+                    return NotFound($"ModelTruckGroup with ID {id} not found");
+                }
+
+                return Ok(result);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while getting ModelTruckGroup by ID: {Id}", id);
+                return StatusCode(500, "An error occurred while retrieving ModelTruckGroup");
+            }
         }
 
 

@@ -64,10 +64,21 @@ namespace Foruscorp.Auth.Controllers
             return Ok("Logged out successfully");
         }
 
+        [HttpPost("logout-mobile")]
+        public async Task<IActionResult> LogoutMobileAsync([FromBody] MobileLogoutRequest request)
+        {
+            var result = await authService.LogoutMobileAsync(request.ExpoToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok("Mobile logout successful");
+        }
 
 
 
-        [Authorize] // îáÿçàòåëüíàÿ àâòîðèçàöèÿ
+
+        [Authorize] 
         [HttpGet("me")]
         public ActionResult<string> GetCurrentUserId()
         {

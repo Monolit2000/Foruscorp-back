@@ -1,6 +1,8 @@
 ﻿using Foruscorp.TrucksTracking.Aplication.Contruct;
 using Foruscorp.TrucksTracking.Domain.FuelStationPlans;
 using Foruscorp.TrucksTracking.Domain.Trucks;
+using Foruscorp.TrucksTracking.Domain.Transactions;
+using Foruscorp.TrucksTracking.Domain.Reports;
 using Microsoft.EntityFrameworkCore;
 
 namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
@@ -12,7 +14,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Percistence
         public DbSet<TruckLocation> TruckLocations { get; set; }
         public DbSet<TruckFuel> TruckFuels { get; set; }
         public DbSet<Route> Routes { get; set; }    
-        public DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }    
+        public DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<ReportLoadAttempt> ReportLoadAttempts { get; set; }    
 
 
 

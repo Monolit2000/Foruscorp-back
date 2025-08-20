@@ -1,6 +1,7 @@
 using Foruscorp.BuildingBlocks.Domain;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Foruscorp.TrucksTracking.Domain.Transactions
 {
@@ -10,7 +11,10 @@ namespace Foruscorp.TrucksTracking.Domain.Transactions
         public string Card { get; private set; }
         public string Group { get; private set; }
         public DateTime CreatedAt { get; private set; }
+        public bool IsProcessed { get; private set; } = false; 
         public List<Fill> Fills { get; private set; }
+
+        [NotMapped]
         public Dictionary<string, object> Summaries { get; private set; }
 
         private Transaction()
@@ -67,7 +71,7 @@ namespace Foruscorp.TrucksTracking.Domain.Transactions
         public string City { get; private set; }
         public string State { get; private set; }
         public DateTime CreatedAt { get; private set; }
-        public List<Item> Items { get; private set; }
+        public virtual List<Item> Items { get; private set; }
 
         private Fill()
         {

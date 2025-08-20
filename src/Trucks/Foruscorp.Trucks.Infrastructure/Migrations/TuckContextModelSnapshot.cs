@@ -90,7 +90,7 @@ namespace Foruscorp.Trucks.Infrastructure.Migrations
                     b.HasIndex("UserId", "CompanyId")
                         .IsUnique();
 
-                    b.ToTable("CompanyManager", "Tuck");
+                    b.ToTable("CompanyManagers", "Tuck");
                 });
 
             modelBuilder.Entity("Foruscorp.Trucks.Domain.DriverFuelHistorys.DriverFuelHistory", b =>

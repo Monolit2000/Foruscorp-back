@@ -73,6 +73,182 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.ToTable("NearFuelStationPlans", "TuckTracking");
                 });
 
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Reports.ReportLoadAttempt", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ErrorMessage")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)");
+
+                    b.Property<int>("FailedFiles")
+                        .HasColumnType("integer");
+
+                    b.Property<bool>("IsSuccessful")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("SuccessfullyProcessedFiles")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TotalFiles")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CompletedAt");
+
+                    b.HasIndex("IsSuccessful");
+
+                    b.HasIndex("StartedAt");
+
+                    b.ToTable("ReportLoadAttempts", "TuckTracking");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Fill", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("City")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Driver")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Invoice")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Location")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Odometer")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<string>("State")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TranDate")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("TranTime")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)");
+
+                    b.Property<Guid?>("TransactionId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Driver");
+
+                    b.HasIndex("Invoice");
+
+                    b.HasIndex("TransactionId");
+
+                    b.HasIndex("Unit");
+
+                    b.ToTable("Fills", "TuckTracking");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Item", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Amount")
+                        .HasColumnType("double precision");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Currency")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DB")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("FillId")
+                        .HasColumnType("uuid");
+
+                    b.Property<double>("Quantity")
+                        .HasColumnType("double precision");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<double>("UnitPrice")
+                        .HasColumnType("double precision");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("FillId");
+
+                    b.HasIndex("Type");
+
+                    b.ToTable("Items", "TuckTracking");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Transaction", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Card")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Group")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsProcessed")
+                        .HasColumnType("boolean");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Card");
+
+                    b.HasIndex("CreatedAt");
+
+                    b.HasIndex("Group");
+
+                    b.ToTable("Transactions", "TuckTracking");
+                });
+
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
                     b.Property<Guid>("Id")
@@ -223,6 +399,67 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.Navigation("RecordedOnLocation");
                 });
 
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Reports.ReportLoadAttempt", b =>
+                {
+                    b.OwnsMany("Foruscorp.TrucksTracking.Domain.Reports.FileProcessingResult", "FileResults", b1 =>
+                        {
+                            b1.Property<Guid>("Id")
+                                .ValueGeneratedOnAdd()
+                                .HasColumnType("uuid");
+
+                            b1.Property<string>("ErrorMessage")
+                                .HasMaxLength(2000)
+                                .HasColumnType("character varying(2000)");
+
+                            b1.Property<string>("FileName")
+                                .IsRequired()
+                                .HasMaxLength(500)
+                                .HasColumnType("character varying(500)");
+
+                            b1.Property<bool>("IsSuccess")
+                                .HasColumnType("boolean");
+
+                            b1.Property<DateTime>("ProcessedAt")
+                                .HasColumnType("timestamp with time zone");
+
+                            b1.Property<Guid>("ReportLoadAttemptId")
+                                .HasColumnType("uuid");
+
+                            b1.HasKey("Id");
+
+                            b1.HasIndex("FileName");
+
+                            b1.HasIndex("IsSuccess");
+
+                            b1.HasIndex("ProcessedAt");
+
+                            b1.HasIndex("ReportLoadAttemptId");
+
+                            b1.ToTable("ReportFileProcessingResults", "TuckTracking");
+
+                            b1.WithOwner()
+                                .HasForeignKey("ReportLoadAttemptId");
+                        });
+
+                    b.Navigation("FileResults");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Fill", b =>
+                {
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Transactions.Transaction", null)
+                        .WithMany("Fills")
+                        .HasForeignKey("TransactionId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Item", b =>
+                {
+                    b.HasOne("Foruscorp.TrucksTracking.Domain.Transactions.Fill", null)
+                        .WithMany("Items")
+                        .HasForeignKey("FillId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.Route", b =>
                 {
                     b.HasOne("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", null)
@@ -294,6 +531,16 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.Navigation("CurrentRoute");
 
                     b.Navigation("CurrentTruckLocation");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Fill", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Transactions.Transaction", b =>
+                {
+                    b.Navigation("Fills");
                 });
 
             modelBuilder.Entity("Foruscorp.TrucksTracking.Domain.Trucks.TruckTracker", b =>

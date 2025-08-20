@@ -1,4 +1,5 @@
 ﻿using Foruscorp.Trucks.Domain.Users;
+using Foruscorp.Trucks.Domain.Drivers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,25 @@ namespace Foruscorp.Trucks.Domain.Companys
         public static CompanyManager Create(Guid userId, Guid companyId)
         {
             return new CompanyManager(userId, companyId);
+        }
+
+        public static CompanyManager CreateNew(string name, string phone, string email, string telegramLink, Guid companyId)
+        {
+            var userId = Guid.NewGuid();
+            var user = User.CreateNew(userId, name);
+            
+            if (!string.IsNullOrWhiteSpace(name) || !string.IsNullOrWhiteSpace(phone) || 
+                !string.IsNullOrWhiteSpace(email) || !string.IsNullOrWhiteSpace(telegramLink))
+            {
+                var contact = Contact.Create(name, phone, email, telegramLink);
+                user.Contact = contact;
+                user.ContactId = contact.Id;
+            }
+            
+            var companyManager = new CompanyManager(userId, companyId);
+            companyManager.User = user;
+            
+            return companyManager;
         }
     }
 }

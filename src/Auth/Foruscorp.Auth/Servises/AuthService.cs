@@ -84,6 +84,73 @@ namespace Foruscorp.Auth.Servises
             });
         }
 
+        public async Task<Result> LogoutMobileAsync(string expoToken)
+        {
+            try
+            {
+                var http = httpContextAccessor.HttpContext
+                    ?? throw new InvalidOperationException("No HttpContext");
+
+                var refreshCookie = http.Request.Cookies["refreshToken"];
+                Guid? userId = null;
+
+                if (!string.IsNullOrEmpty(refreshCookie))
+                {
+                    var current = await context.RefreshTokens
+                        .FirstOrDefaultAsync(t => t.Token == refreshCookie);
+
+                    if (current != null)
+                    {
+                        userId = current.UserId;
+                        if (!current.IsRevoked)
+                        {
+                            current.IsRevoked = true;
+                        }
+                    }
+                }
+
+                if (userId == null)
+                {
+                    var claim = http.User?.FindFirst(ClaimTypes.NameIdentifier)
+                                ?? http.User?.FindFirst("sub");
+                    if (claim != null && Guid.TryParse(claim.Value, out var parsed))
+                        userId = parsed;
+                }
+
+                if (userId == null)
+                {
+                    return Result.Fail("User not found or not authenticated");
+                }
+
+                // Revoke the current refresh token
+                await context.SaveChangesAsync();
+
+                // Delete the refresh token cookie
+                http.Response.Cookies.Delete("refreshToken", new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = false,
+                    SameSite = SameSiteMode.Lax,
+                    Path = "/Auth/refresh",
+                    Domain = null
+                });
+
+                // Publish integration event for device deletion
+                await publishEndpoint.Publish(new UserLogoutIntegrationEvent
+                {
+                    UserId = userId.Value,
+                    ExpoToken = expoToken,
+                    LogoutAt = DateTime.UtcNow
+                });
+
+                return Result.Ok();
+            }
+            catch (Exception ex)
+            {
+                return Result.Fail($"Error during mobile logout: {ex.Message}");
+            }
+        }
+
 
 
         public async Task<Result<LoginResponce>> LoginAsync(UserLoginDto request)

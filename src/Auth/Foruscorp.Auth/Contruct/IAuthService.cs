@@ -13,5 +13,6 @@ namespace Foruscorp.Auth.Contruct
         Task<RefreshTokenResponce> RefreshAsync();
         Task<string> GenerateRefreshToken(Guid userId);
         Task LogoutAsync(bool allDevices = false);
+        Task<Result> LogoutMobileAsync(string expoToken);
     }
 }

@@ -25,6 +25,7 @@ namespace Foruscorp.Trucks.Infrastructure.Persistence
         public DbSet<RouteOffer> RouteOffers { get; set; }
 
         public DbSet<Company> Companys { get; set; }
+        public DbSet<CompanyManager> CompanyManagers { get; set; }
         public DbSet<Contact> Contacts { get; set; }
 
         public TruckContext(DbContextOptions<TruckContext> options) : base(options)

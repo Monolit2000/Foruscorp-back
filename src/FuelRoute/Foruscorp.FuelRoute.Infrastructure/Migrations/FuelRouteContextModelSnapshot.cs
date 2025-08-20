@@ -39,11 +39,24 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<int>("CurrentVersion")
                         .HasColumnType("integer");
 
+                    b.Property<DateTime?>("DeclinedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid?>("DestinationLocationId")
                         .HasColumnType("uuid");
 
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
+
+                    b.Property<bool>("IsComplet")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
+
+                    b.Property<bool>("IsDeclined")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false);
 
                     b.Property<bool>("IsSended")
                         .HasColumnType("boolean");

@@ -11,6 +11,8 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CompleteRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
@@ -166,6 +168,32 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             if (result.IsSuccess)
                 return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("complete-route")]
+        public async Task<IActionResult> CompleteRoute(CompleteRouteCommand completeRouteCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(completeRouteCommand, cancellationToken);
+
+            if (result.IsSuccess)
+                return Ok(result.Successes);
+
+            return BadRequest(result.Errors);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("decline-fuel-route")]
+        public async Task<IActionResult> DeclineFuelRoute(DeclineFuelRouteCommand declineFuelRouteCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(declineFuelRouteCommand, cancellationToken);
+
+            if (result.IsSuccess)
+                return Ok(result.Successes);
 
             return BadRequest(result.Errors);
         }

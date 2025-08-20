@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Contruct;
+using Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -10,10 +11,10 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.GetDriverById
 {
-    public record GetDriverByIdQuery(Guid DriverId) : IRequest<Result<DriverDto>>;
-    public class GetDriverByIdQueryHandler (ITruckContext context) : IRequestHandler<GetDriverByIdQuery, Result<DriverDto>>
+    public record GetDriverByIdQuery(Guid DriverId) : IRequest<Result<GetAllDriverDto>>;
+    public class GetDriverByIdQueryHandler (ITruckContext context) : IRequestHandler<GetDriverByIdQuery, Result<GetAllDriverDto>>
     {
-        public async Task<Result<DriverDto>> Handle(GetDriverByIdQuery request, CancellationToken cancellationToken)
+        public async Task<Result<GetAllDriverDto>> Handle(GetDriverByIdQuery request, CancellationToken cancellationToken)
         {
             var driver = await context.Drivers
                 .AsNoTracking()
@@ -25,7 +26,7 @@ namespace Foruscorp.Trucks.Aplication.Drivers.GetDriverById
             if (driver == null)
                 return Result.Fail($"Driver with ID {request.DriverId} not found.");
 
-            return driver.ToDriverDto();
+            return driver.ToGetAlDriverDto();
         }
     }
 }

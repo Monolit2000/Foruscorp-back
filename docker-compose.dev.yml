@@ -1,0 +1,227 @@
+x-db: &db-env
+  ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+
+x-mq: &mq-env
+  MessageBroker__HostName: "rabbitmq://rabbitmq"
+  MessageBroker__Username: "guest"
+  MessageBroker__Password: "guest"
+
+x-otel: &otel-env  
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+
+x-common: &common-env
+  ASPNETCORE_ENVIRONMENT: "Development"
+
+services:
+  foruscorp.gateway:
+    container_name: foruscorp-gateway-dev
+    build:
+      context: .
+      dockerfile: src/Gateway/Foruscorp.Gateway/Dockerfile
+    volumes:
+      - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
+    ports:
+      - "5000:5000"
+      - "5011:5011"
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      ASPNETCORE_HTTP_PORTS: "5000"
+      ASPNETCORE_HTTPS_PORTS: "5011"
+      <<: *otel-env
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.auth:
+    container_name: auth-api-dev
+    build:
+      context: .
+      dockerfile: src/Auth/Foruscorp.Auth/Dockerfile
+    ports:
+      - "5007:5007"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+    depends_on:
+      - rabbitmq
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.push:
+    container_name: push-api-dev
+    build:
+      context: .
+      dockerfile: src/Push/Foruscorp.Push/Dockerfile
+    ports:
+      - "5010:5010"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.fuelstations.api:
+    container_name: fuelstations-api-dev
+    build:
+      context: .
+      dockerfile: src/FuelStations/Foruscorp.FuelStations.API/Dockerfile
+    ports:
+      - "5002:5002"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+    depends_on:
+      - rabbitmq
+      - redis
+      - foruscorp.db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.trucks.api:
+    container_name: trucks-api-dev
+    build:
+      context: .
+      dockerfile: src/Trucks/Foruscorp.Trucks.API/Dockerfile
+    ports:
+      - "5003:5003"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.truckstracking.api:
+    container_name: truckstracking-api-dev
+    build:
+      context: .
+      dockerfile: src/TrucksTracking/Foruscorp.TrucksTracking.API/Dockerfile
+    ports:
+      - "5001:5001"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.fuelroutes.api.1:
+    container_name: fuelroutes-api-1-dev
+    build:
+      context: .
+      dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+    ports:
+      - "5004:5004"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5004
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.fuelroutes.api.2:
+    container_name: fuelroutes-api-2-dev
+    build:
+      context: .
+      dockerfile: src/FuelRoute/Foruscorp.FuelRoute.API/Dockerfile
+    ports:
+      - "5005:5005"
+    environment:
+      <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5005
+    depends_on:
+      - rabbitmq
+      - redis
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - foruscorp-docker-network
+
+  aspire-dashboard:
+    container_name: aspire-dashboard-dev
+    image: mcr.microsoft.com/dotnet/aspire-dashboard:9.0
+    ports:
+      - "18888:18888"
+      - "4317:4317"
+    environment:
+      DOTNET_ENVIRONMENT: "Development"
+      Dashboard__Otlp__EndpointUrl: "http://aspire-dashboard:4317"
+      Dashboard__Frontend__AuthMode: "Unsecured"
+      DOTNET_DASHBOARD_UNSECURED_ALLOW_ANONYMOUS: "true"
+    networks:
+      - foruscorp-docker-network
+    depends_on:
+      - rabbitmq
+      - foruscorp.truckstracking.api
+      - foruscorp.fuelstations.api
+      - foruscorp.trucks.api
+
+  rabbitmq:
+    container_name: rabbitmq-dev
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: "guest"
+      RABBITMQ_DEFAULT_PASS: "guest"
+    volumes:
+      - rabbitmq-data-dev:/var/lib/rabbitmq
+    networks:
+      - foruscorp-docker-network
+
+  foruscorp.db:
+    container_name: foruscorp-postgres-dev
+    image: postgres:latest
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_USER: "postgres"
+      POSTGRES_PASSWORD: "your_secure_password"
+      POSTGRES_DB: "ForuscorpDB"
+    volumes:
+      - postgres-data-dev:/var/lib/postgresql/data
+    networks:
+      - foruscorp-docker-network
+
+  redis:
+    container_name: foruscorp-redis-dev
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data-dev:/data
+    networks:
+      - foruscorp-docker-network
+
+networks:
+  foruscorp-docker-network:
+    driver: bridge
+
+volumes:
+  redis-data-dev:
+    driver: local
+  postgres-data-dev:
+    driver: local
+  rabbitmq-data-dev:
+    driver: local

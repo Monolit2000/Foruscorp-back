@@ -28,13 +28,23 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.ChangedAt)
                 .IsRequired();
 
-
             builder.Property(fr => fr.RowVersion)
                 .IsRowVersion()
                 .IsConcurrencyToken();
 
             builder.Property(fr => fr.RemainingFuel)
                 .IsRequired();
+
+            builder.Property(fr => fr.IsComplet)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            builder.Property(fr => fr.IsDeclined)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            builder.Property(fr => fr.DeclinedAt)
+                .IsRequired(false);
 
 
             //builder.OwnsMany(fr => fr.RouteSections, routeSectionBuilder =>

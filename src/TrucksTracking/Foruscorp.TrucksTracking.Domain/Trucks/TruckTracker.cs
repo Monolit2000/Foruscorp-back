@@ -63,6 +63,12 @@ namespace Foruscorp.TrucksTracking.Domain.Trucks
             return route;
         }
 
+        public void ClearCurrentRoute()
+        {
+            CurrentRouteId = null;
+            CurrentRoute = null;
+        }
+
         public void UpdateTruckTracker(Guid truckId, string providerTruckId)
         {
             TruckId = truckId;
