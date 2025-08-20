@@ -183,16 +183,19 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 currentState);
             stopPlan.AddRange(intermediateStops);
 
-            // Корректировка последней остановки
+            // Корректировка последней остановки для достижения finishFuel
             if (stopPlan.Any())
             {
                 AdjustLastStop(stopPlan, routeAnalysis.TotalDistanceKm, parameters);
             }
 
+            // Рассчитываем финальное топливо с учетом finishFuel
+            var finalFuel = CalculateFinalFuel(stopPlan, routeAnalysis.TotalDistanceKm, parameters);
+
             return new StopPlanResult
             {
                 Stops = stopPlan,
-                FinishInfo = new FinishInfo { RemainingFuelLiters = currentState.RemainingFuel }
+                FinishInfo = new FinishInfo { RemainingFuelLiters = finalFuel }
             };
         }
 
@@ -292,13 +295,51 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             var lastStop = stopPlan.Last();
             var fuelToFinish = (totalDistance - lastStop.StopAtKm) * parameters.FuelConsumptionPerKm;
-            var requiredRefill = fuelToFinish + parameters.FinishFuel - lastStop.CurrentFuelLiters;
+            
+            // Рассчитываем необходимое топливо для достижения finishFuel
+            var requiredFuelAtFinish = fuelToFinish + parameters.FinishFuel;
+            var requiredRefill = requiredFuelAtFinish - lastStop.CurrentFuelLiters;
+            
+            // Ограничиваем максимальной вместимостью бака
             var maxRefill = parameters.TankCapacity + FuelStopCalculator.TankRestrictions - lastStop.CurrentFuelLiters;
+            
+            // Применяем минимальный порог дозаправки
+            if (requiredRefill > 0 && requiredRefill < FuelStopCalculator.MinRefillAmount)
+            {
+                if (maxRefill >= FuelStopCalculator.MinRefillAmount)
+                {
+                    requiredRefill = FuelStopCalculator.MinRefillAmount;
+                }
+                else
+                {
+                    requiredRefill = 0; // Не дозаправляемся, если не можем достичь минимума
+                }
+            }
 
             if (requiredRefill >= 0 && requiredRefill <= maxRefill)
             {
                 lastStop.RefillLiters = requiredRefill;
             }
+        }
+
+        private double CalculateFinalFuel(List<FuelStopPlan> stopPlan, double totalDistance, FuelPlanningParameters parameters)
+        {
+            if (!stopPlan.Any())
+            {
+                // Если нет остановок, рассчитываем топливо от начального состояния
+                var fuelUsed = totalDistance * parameters.FuelConsumptionPerKm;
+                var finalFuel = parameters.CurrentFuelLiters - fuelUsed;
+                return Math.Max(finalFuel, parameters.FinishFuel);
+            }
+
+            var lastStop = stopPlan.Last();
+            var fuelAfterLastStop = lastStop.CurrentFuelLiters + lastStop.RefillLiters;
+            var distanceToFinish = totalDistance - lastStop.StopAtKm;
+            var fuelUsedToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
+            var actualFinalFuel = fuelAfterLastStop - fuelUsedToFinish;
+
+            // Возвращаем максимальное из фактического топлива и желаемого finishFuel
+            return Math.Max(actualFinalFuel, parameters.FinishFuel);
         }
     }
 
@@ -358,7 +399,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private double CalculateNeededFuel(double targetKm, double currentKm, FuelPlanningParameters parameters)
         {
             var distanceFuel = (targetKm - currentKm) * parameters.FuelConsumptionPerKm;
-            var finishFuel = targetKm == parameters.TotalDistanceKm ? parameters.FinishFuel : 0;
+            
+            // Учитываем finishFuel только если это конечная точка маршрута
+            var finishFuel = targetKm >= parameters.TotalDistanceKm ? parameters.FinishFuel : 0;
+            
             return distanceFuel + finishFuel;
         }
 
@@ -412,7 +456,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var preRefuelFuel = currentState.RemainingFuel;
             var isLastRefuel = stationInfo.ForwardDistanceKm + GetExtraRange(parameters) >= parameters.TotalDistanceKm;
             var effectiveCapacity = GetEffectiveCapacity(currentState.IsFirstStop, isLastRefuel, parameters.TankCapacity);
-            var refillAmount = CalculateRefillAmount(effectiveCapacity, currentState.RemainingFuel, parameters);
+            var refillAmount = CalculateRefillAmount(effectiveCapacity, currentState.RemainingFuel, parameters, isLastRefuel, parameters.TotalDistanceKm - stationInfo.ForwardDistanceKm);
 
             currentState.RemainingFuel += refillAmount;
             currentState.PreviousKm = stationInfo.ForwardDistanceKm;
@@ -438,10 +482,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             return (isFirstStop || isLastRefuel) ? tankCapacity + TankRestrictions : tankCapacity;
         }
 
-        private double CalculateRefillAmount(double effectiveCapacity, double remainingFuel, FuelPlanningParameters parameters)
+        private double CalculateRefillAmount(double effectiveCapacity, double remainingFuel, FuelPlanningParameters parameters, bool isLastRefuel, double distanceToFinish)
         {
             var freeSpace = effectiveCapacity - remainingFuel;
             var rawRefill = freeSpace;
+            
+            // Если это последняя остановка, учитываем finishFuel
+            if (isLastRefuel)
+            {
+                var fuelNeededToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
+                var requiredFuelAtFinish = fuelNeededToFinish + parameters.FinishFuel;
+                var requiredRefill = requiredFuelAtFinish - remainingFuel;
+                
+                // Используем максимальное из обычной дозаправки и требуемой для finishFuel
+                rawRefill = Math.Max(rawRefill, requiredRefill);
+            }
+            
             var refill = Math.Floor(rawRefill / RefillIncrement) * RefillIncrement;
 
             if (refill == 0 && freeSpace >= RefillIncrement)
