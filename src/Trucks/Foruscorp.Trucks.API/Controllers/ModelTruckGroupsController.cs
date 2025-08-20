@@ -1,3 +1,4 @@
+using FluentResults;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.FormModelTruckGroupsForAllTrucks;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetAllModelTruckGroups;
 using Foruscorp.Trucks.Aplication.ModelTruckGroups.GetModelTruckGroupById;
@@ -7,9 +8,11 @@ using Foruscorp.Trucks.Aplication.ModelTruckGroups.SetTruckGroupWeightFuelCapaci
 using Foruscorp.Trucks.Aplication.Trucks.Commands;
 using Foruscorp.Trucks.Aplication.Trucks.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.API.Controllers
@@ -63,8 +66,10 @@ namespace Foruscorp.Trucks.API.Controllers
             return Ok(result);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ModelTruckGroupByIdDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpGet("{id}")]
-        public async Task<ActionResult<ModelTruckGroupDto>> GetModelTruckGroupById(Guid id)
+        public async Task<ActionResult<ModelTruckGroupByIdDto>> GetModelTruckGroupById(Guid id)
         {
             try
             {

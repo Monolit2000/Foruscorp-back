@@ -7,17 +7,17 @@ using System.Threading.Tasks;
 
 namespace Foruscorp.Trucks.Aplication.ModelTruckGroups.GetModelTruckGroupById
 {
-    public record GetModelTruckGroupByIdQuery(Guid Id) : IRequest<ModelTruckGroupDto?>;
+    public record GetModelTruckGroupByIdQuery(Guid Id) : IRequest<ModelTruckGroupByIdDto?>;
 
-    public class GetModelTruckGroupByIdQueryHandler(ITruckContext truckContext) : IRequestHandler<GetModelTruckGroupByIdQuery, ModelTruckGroupDto?>
+    public class GetModelTruckGroupByIdQueryHandler(ITruckContext truckContext) : IRequestHandler<GetModelTruckGroupByIdQuery, ModelTruckGroupByIdDto?>
     {
-        public async Task<ModelTruckGroupDto?> Handle(GetModelTruckGroupByIdQuery request, CancellationToken cancellationToken)
+        public async Task<ModelTruckGroupByIdDto?> Handle(GetModelTruckGroupByIdQuery request, CancellationToken cancellationToken)
         {
             var modelTruckGroup = await truckContext.ModelTruckGroups
                 .Include(mtg => mtg.Trucks)
                 .AsNoTracking()
                 .Where(mtg => mtg.Id == request.Id)
-                .Select(mtg => new ModelTruckGroupDto
+                .Select(mtg => new ModelTruckGroupByIdDto
                 {
                     Id = mtg.Id,
                     TruckGroupName = mtg.TruckGrouName,
@@ -37,7 +37,7 @@ namespace Foruscorp.Trucks.Aplication.ModelTruckGroups.GetModelTruckGroupById
         }
     }
 
-    public class ModelTruckGroupDto
+    public class ModelTruckGroupByIdDto
     {
         public Guid Id { get; set; }
         public string TruckGroupName { get; set; }
