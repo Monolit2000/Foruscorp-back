@@ -334,7 +334,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
     public class FuelStopCalculator
     {
-        private const double MinStopDistanceKm = 1200.0;
+        private const double MinStopDistanceKm = 1300.0;
         private const double RefillIncrement = 5.0;
 
         public List<FuelStopPlan> PlanStopsUntilTarget(
@@ -454,8 +454,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 return false;
 
             // Применяем текущее ограничение по минимальному расстоянию
-            return maxDistanceWithoutRefuel < currentMinDistance ||
-                   stationInfo.ForwardDistanceKm - previousKm >= currentMinDistance;
+            return stationInfo.ForwardDistanceKm - previousKm >= currentMinDistance;
         }
 
         private FuelStopPlan CreateStopPlan(
