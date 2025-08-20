@@ -239,13 +239,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     {
         private const double ReferenceWeightLb = 40000.0;
         private const double ReferenceConsumptionGPerKm = 0.089;
-        private const double TankRestrictions = 40.0;
 
         public FuelParameters CalculateFuelParameters(GetFuelStationsByRoadsQuery request)
         {
             var tankCapacityG = 200.0;
             var initialFuelPercent = tankCapacityG * (request.CurrentFuel / 100.0);
-            tankCapacityG = tankCapacityG - TankRestrictions;
 
             return new FuelParameters
             {
