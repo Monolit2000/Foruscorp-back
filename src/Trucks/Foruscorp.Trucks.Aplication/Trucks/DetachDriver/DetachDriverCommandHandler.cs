@@ -26,12 +26,14 @@ namespace Foruscorp.Trucks.Aplication.Trucks.DetachDriver
             if (truck == null)
                 return Result.Fail($"Truck with id {command.TruckId} not found.");
 
-            //var driver = await context.Drivers
-            //    .FirstOrDefaultAsync(d => d.Id == command.DriverId, cancellationToken);
-            //if (driver == null)
-            //    return Result.Fail($"Driver with id {command.DriverId} not found.");
+            var driver = await context.Drivers
+                .FirstOrDefaultAsync(d => d.Id == command.DriverId, cancellationToken);
+            if (driver == null)
+                return Result.Fail($"Driver with id {command.DriverId} not found.");
 
             truck.DetachDriver();
+
+            driver.DetachTruck();
 
             await context.SaveChangesAsync(cancellationToken);
 

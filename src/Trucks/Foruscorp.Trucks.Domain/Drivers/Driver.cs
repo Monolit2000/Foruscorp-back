@@ -3,6 +3,7 @@ using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Drivers.Events;
 using Foruscorp.Trucks.Domain.RouteOffers;
 using Foruscorp.Trucks.Domain.Trucks;
+using Foruscorp.Trucks.Domain.Trucks.Events;
 using Foruscorp.Trucks.Domain.Users;
 
 namespace Foruscorp.Trucks.Domain.Drivers
@@ -144,6 +145,13 @@ namespace Foruscorp.Trucks.Domain.Drivers
             return bonus;
         }
 
+        public void DetachTruck()
+        {
+            if (TruckId == null)
+                return;
+
+            Truck = null;
+        }
         public DriverBonus DecreaseBonus(int amount, string reason)
         {
             if (TotalBonus - amount < 0)
