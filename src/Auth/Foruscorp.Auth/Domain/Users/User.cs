@@ -31,6 +31,14 @@ namespace Foruscorp.Auth.Domain.Users
             return user;
         }
 
+        public static User CreateCompanyManager(Guid userId, string email, string userName)
+        {
+            var user = new User(email, userName);
+            user.Id = userId;
+            user.SetCompanyManagerRole();
+            return user;
+        }
+
         public void SetCompanyId(Guid companyId)
         {
             CompanyId = companyId;
@@ -43,6 +51,16 @@ namespace Foruscorp.Auth.Domain.Users
                 Id = Guid.NewGuid(),
                 UserId = Id,
                 Role = UserRoleType.Driver
+            });
+        }
+
+        public void SetCompanyManagerRole()
+        {
+            Roles.Add(new UserRole
+            {
+                Id = Guid.NewGuid(),
+                UserId = Id,
+                Role = UserRoleType.Admin
             });
         }
     }

@@ -21,6 +21,8 @@ namespace Foruscorp.Trucks.Aplication.Contruct
         DbSet<DriverBonus> DriverBonuses { get; set; }
         DbSet<RouteOffer> RouteOffers { get; set; }
         DbSet<Company> Companys { get; set; }
+        DbSet<CompanyManager> CompanyManagers { get; set; }
+        DbSet<Contact> Contacts { get; set; }
 
         DbSet<ModelTruckGroup> ModelTruckGroups { get; set; }
         DbSet<DriverFuelHistory> DriverFuelHistories { get; set; }

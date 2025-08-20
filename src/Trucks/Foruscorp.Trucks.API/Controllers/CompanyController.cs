@@ -1,6 +1,7 @@
 ﻿using FluentResults;
 using Foruscorp.Trucks.Aplication.Companys;
 using Foruscorp.Trucks.Aplication.Companys.CreateCompany;
+using Foruscorp.Trucks.Aplication.Companys.CreateCompanyManager;
 using Foruscorp.Trucks.Aplication.Companys.GetCompanyById;
 using Foruscorp.Trucks.Aplication.Companys.GetCompanys;
 using Foruscorp.Trucks.Aplication.Companys.SetCompanyManager;
@@ -45,6 +46,19 @@ namespace Foruscorp.Trucks.API.Controllers
                 return BadRequest(result.Errors);
 
             return Ok(result);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CompanyManagerDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("create-company-manager")]
+        public async Task<ActionResult> CreateCompanyManager(CreateCompanyManagerCommand createCompanyManagerCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(createCompanyManagerCommand, cancellationToken);
+
+            if (result.IsFailed)
+                return BadRequest(result.Errors);
+
+            return Ok(result.Value);
         }
 
 
