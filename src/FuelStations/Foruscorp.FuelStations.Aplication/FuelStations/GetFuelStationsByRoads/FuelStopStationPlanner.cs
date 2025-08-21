@@ -334,7 +334,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
     public class FuelStopCalculator
     {
-        private const double MinStopDistanceKm = 1300.0;
+        private const double MinStopDistanceKm = 200.0;
         private const double RefillIncrement = 5.0;
 
         public List<FuelStopPlan> PlanStopsUntilTarget(
@@ -412,8 +412,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var candidates = stationInfos
                     .Where(si => IsValidCandidate(si, currentState.PreviousKm, maxReachKm, usedStationIds, maxDistanceWithoutRefuel, currentMinDistance))
                     .Where(si => WillHaveMinimumReserve(si, currentState, parameters))
-                    .OrderBy(si => si.ForwardDistanceKm) // Сначала ближайшие
-                    .ThenBy(si => si.PricePerLiter) // Затем по цене
+                    .OrderBy(si => si.PricePerLiter) // Сначала ближайшие
+                    //.ThenBy(si => si.PricePerLiter) // Затем по цене
                     .ToList();
 
                 if (candidates.Any())
@@ -422,7 +422,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 }
 
                 // Уменьшаем минимальное расстояние на 100 км
-                currentMinDistance -= 100.0;
+                currentMinDistance -= 50.0;
             }
 
             return null;
@@ -447,12 +447,17 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double maxDistanceWithoutRefuel,
             double currentMinDistance)
         {
+
+            if (!usedStationIds.Any())
+                return true;
+
             if (stationInfo.Station == null || usedStationIds.Contains(stationInfo.Station.Id))
                 return false;
 
             if (stationInfo.ForwardDistanceKm <= previousKm || stationInfo.ForwardDistanceKm > maxReachKm)
                 return false;
 
+            //return true;
             // Применяем текущее ограничение по минимальному расстоянию
             return stationInfo.ForwardDistanceKm - previousKm >= currentMinDistance;
         }
