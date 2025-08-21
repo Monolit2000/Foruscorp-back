@@ -29,7 +29,7 @@ services:
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000"
-      # - "5011:5011"
+      - "5011:5011"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
       ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
