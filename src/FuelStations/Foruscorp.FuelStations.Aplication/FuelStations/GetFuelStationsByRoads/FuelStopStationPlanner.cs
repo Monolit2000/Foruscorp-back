@@ -1,6 +1,9 @@
 using Foruscorp.FuelStations.Domain.FuelStations;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using NetTopologySuite.LinearReferencing;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
@@ -288,7 +291,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             // Рассчитываем необходимое топливо для достижения finishFuel
             var requiredFuelAtFinish = fuelToFinish + parameters.FinishFuel;
-            var requiredRefill = requiredFuelAtFinish - lastStop.CurrentFuelLiters;
+            var requiredRefill = requiredFuelAtFinish - lastStop.CurrentFuelLiters; /*+ lastStop.RefillLiters;*/
 
             // Учитываем минимальный запас топлива (20% от бака) для безопасности
             var minimumReserve = parameters.TankCapacity * 0.20; // 20% от бака
@@ -418,8 +421,84 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                 if (candidates.Any())
                 {
-                    return candidates.FirstOrDefault();
+                    var current = candidates.FirstOrDefault();
+
+
+                    //var distance = nextStop.ForwardDistanceKm - currentState.PreviousKm;
+                    //         currentState.RemainingFuel -= distance * parameters.FuelConsumptionPerKm;
+
+                 
+
+                    //postUsedStationIds.Add(current.Station!.Id);
+
+
+                    if (current == null)
+                        return current;
+
+
+
+                    //var postFuelState = new FuelState
+                    //{
+                    //    RemainingFuel = currentState.RemainingFuel,
+                    //    PreviousKm = currentState.PreviousKm,
+                    //    IsFirstStop = currentState.IsFirstStop
+                    //};
+
+                    //var postparametrs = new FuelPlanningParameters
+                    //{
+                    //    CurrentFuelLiters = parameters.CurrentFuelLiters,
+                    //    TankCapacity = parameters.TankCapacity,
+                    //    FuelConsumptionPerKm = parameters.FuelConsumptionPerKm,
+                    //    FinishFuel = parameters.FinishFuel,
+                    //    TotalDistanceKm = parameters.TotalDistanceKm,
+                    //    RequiredStops = parameters.RequiredStops,
+                    //    RoadSectionId = parameters.RoadSectionId
+                    //};
+
+                    //var stopPlan = CreateStopPlan(current, postparametrs, postFuelState);
+
+                    //// Добавляем остановку только если дозаправка больше нуля
+                    //if (stopPlan.RefillLiters > 0)
+                    //{
+                    //    //stops.Add(stopPlan);
+                    //    postUsedStationIds.Add(current.Station!.Id);
+                    //}
+                    //else
+                    //{
+                    //    // Если дозаправка нулевая, просто проезжаем мимо станции
+                    //    var distance = current.ForwardDistanceKm - postFuelState.PreviousKm;
+                    //    postFuelState.RemainingFuel -= distance * postparametrs.FuelConsumptionPerKm;
+                    //    postFuelState.PreviousKm = current.ForwardDistanceKm;
+                    //}
+
+
+                    var virtualStopPlan = CreateVirtualStopPlan(usedStationIds, current, currentState, parameters);
+
+                    if (virtualStopPlan == null)
+                        return current;
+
+                    var postMaxDistanceWithoutRefuel = virtualStopPlan.FuelState.RemainingFuel / virtualStopPlan.PostParameters.FuelConsumptionPerKm;
+                    var postMaxReachKm = virtualStopPlan.FuelState.PreviousKm + maxDistanceWithoutRefuel;
+                    var postCurrentMinDistance = MinStopDistanceKm;
+
+
+                    var postCandidates = stationInfos
+                            .Where(si => IsValidCandidate(si, current.ForwardDistanceKm, postMaxReachKm, virtualStopPlan.PostUsedStationIds, postMaxDistanceWithoutRefuel, postCurrentMinDistance))
+                            .Where(si => WillHaveMinimumReserve(si, virtualStopPlan.FuelState, virtualStopPlan.PostParameters))
+                            .Where(si => si.PricePerLiter <= current.PricePerLiter) // Только станции впереди
+                            .OrderBy(si => si.PricePerLiter) // Сначала ближайшие
+                                                             //.ThenBy(si => si.PricePerLiter) // Затем по цене
+                            .ToList();
+
+                    var postCandidate = postCandidates.FirstOrDefault();
+
+                    var virtualStopPlan2 = CreateVirtualStopPlan(virtualStopPlan.PostUsedStationIds, postCandidate, virtualStopPlan.FuelState, virtualStopPlan.PostParameters);
+
+                    return current;
                 }
+
+
+
 
                 // Уменьшаем минимальное расстояние на 100 км
                 currentMinDistance -= 50.0;
@@ -427,6 +506,68 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             return null;
         }
+
+
+        private VirtualFuelStopPlan CreateVirtualStopPlan(HashSet<Guid> usedStationIds, StationInfo stationInfo, FuelState currentState, FuelPlanningParameters parameters)
+        {
+
+            var postUsedStationIds = new HashSet<Guid>(usedStationIds);
+
+            var postFuelState = new FuelState
+            {
+                RemainingFuel = currentState.RemainingFuel,
+                PreviousKm = currentState.PreviousKm,
+                IsFirstStop = currentState.IsFirstStop
+            };
+
+            var postparametrs = new FuelPlanningParameters
+            {
+                CurrentFuelLiters = parameters.CurrentFuelLiters,
+                TankCapacity = parameters.TankCapacity,
+                FuelConsumptionPerKm = parameters.FuelConsumptionPerKm,
+                FinishFuel = parameters.FinishFuel,
+                TotalDistanceKm = parameters.TotalDistanceKm,
+                RequiredStops = parameters.RequiredStops,
+                RoadSectionId = parameters.RoadSectionId
+            };
+
+            var stopPlan = CreateStopPlan(stationInfo, postparametrs, postFuelState);
+
+            // Добавляем остановку только если дозаправка больше нуля
+            if (stopPlan.RefillLiters > 0)
+            {
+                //stops.Add(stopPlan);
+                postUsedStationIds.Add(stationInfo.Station!.Id);
+            }
+            else
+            {
+                // Если дозаправка нулевая, просто проезжаем мимо станции
+                var distance = stationInfo.ForwardDistanceKm - postFuelState.PreviousKm;
+                postFuelState.RemainingFuel -= distance * postparametrs.FuelConsumptionPerKm;
+                postFuelState.PreviousKm = stationInfo.ForwardDistanceKm;
+
+                return null;
+            }
+
+            return new VirtualFuelStopPlan()
+                {
+                StopPlan = stopPlan,
+                PostParameters = postparametrs,
+                PostUsedStationIds = postUsedStationIds,
+                FuelState = postFuelState
+            };
+        }
+
+
+        public class VirtualFuelStopPlan
+        {
+            public FuelStopPlan StopPlan { get; set; } 
+            public FuelPlanningParameters PostParameters { get; set; }
+            public HashSet<Guid> PostUsedStationIds { get; set; }
+            public FuelState FuelState { get; set; }
+        }
+
+
 
         private bool WillHaveMinimumReserve(StationInfo stationInfo, FuelState currentState, FuelPlanningParameters parameters)
         {
