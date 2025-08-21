@@ -471,6 +471,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                                    si.ForwardDistanceKm > currentState.PreviousKm &&
                                    si.ForwardDistanceKm <= firstStopMaxReach &&
                                    si.ForwardDistanceKm - currentState.PreviousKm >= firstStopCurrentMinDistance)
+                        .Where(si => WillHaveMinimumReserve(si, currentState, parameters)) // Проверяем минимальный запас
                         .ToList();
 
                     if (availableStations.Any())
@@ -495,34 +496,45 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (currentState.RemainingFuel >= fuelNeededToFinish)
                 return null;
 
-            // Находим все доступные станции в пределах досягаемости с учетом минимального расстояния
-            var reachableStations = stationInfos
-                .Where(si => si.Station != null && 
-                           !usedStationIds.Contains(si.Station.Id) &&
-                           si.ForwardDistanceKm > currentState.PreviousKm &&
-                           si.ForwardDistanceKm <= subsequentMaxReach &&
-                           si.ForwardDistanceKm - currentState.PreviousKm >= MinStopDistanceKm) // Минимальное расстояние
-                .ToList();
-
-            if (!reachableStations.Any())
-                return null;
-
-            // Получаем цену последней заправки
-            var lastStationPrice = GetLastStationPrice(stationInfos, usedStationIds);
-
-            // Ищем более дешевые станции
-            var cheaperStations = reachableStations
-                .Where(si => si.PricePerLiter < lastStationPrice)
-                .OrderBy(si => si.PricePerLiter)
-                .ToList();
-
-            if (cheaperStations.Any())
+            // Пытаемся найти станции с уменьшением минимального расстояния
+            var subsequentCurrentMinDistance = MinStopDistanceKm;
+            while (subsequentCurrentMinDistance >= 0)
             {
-                return cheaperStations.First();
+                // Находим все доступные станции в пределах досягаемости с учетом текущего минимального расстояния
+                var reachableStations = stationInfos
+                    .Where(si => si.Station != null && 
+                               !usedStationIds.Contains(si.Station.Id) &&
+                               si.ForwardDistanceKm > currentState.PreviousKm &&
+                               si.ForwardDistanceKm <= subsequentMaxReach &&
+                               si.ForwardDistanceKm - currentState.PreviousKm >= subsequentCurrentMinDistance)
+                    .Where(si => WillHaveMinimumReserve(si, currentState, parameters)) // Проверяем минимальный запас
+                    .ToList();
+
+                if (reachableStations.Any())
+                {
+                    // Получаем цену последней заправки
+                    var lastStationPrice = GetLastStationPrice(stationInfos, usedStationIds);
+
+                    // Ищем более дешевые станции
+                    var cheaperStations = reachableStations
+                        .Where(si => si.PricePerLiter < lastStationPrice)
+                        .OrderBy(si => si.PricePerLiter)
+                        .ToList();
+
+                    if (cheaperStations.Any())
+                    {
+                        return cheaperStations.First();
+                    }
+
+                    // Если более дешевых нет, выбираем самую дешевую из доступных
+                    return reachableStations.OrderBy(si => si.PricePerLiter).First();
+                }
+
+                // Уменьшаем минимальное расстояние на 10 км
+                subsequentCurrentMinDistance -= 10.0;
             }
 
-            // Если более дешевых нет, выбираем самую дешевую из доступных
-            return reachableStations.OrderBy(si => si.PricePerLiter).First();
+            return null;
         }
 
         private StationInfo? FindNextStop(
@@ -595,7 +607,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             
             // Проверяем, что при приезде на станцию в баке будет не меньше 20%
             var minimumReserve = parameters.TankCapacity * 0.20;
-            return fuelAtStation >= minimumReserve;
+            
+            // Если топлива будет меньше минимального запаса, возвращаем false
+            if (fuelAtStation < minimumReserve)
+            {
+                return false;
+            }
+            
+            return true;
         }
 
         private double GetLastStationPrice(List<StationInfo> stationInfos, HashSet<Guid> usedStationIds)
@@ -659,6 +678,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             else
             {
                 currentState.RemainingFuel -= fuelUsed;
+            }
+            
+            // Дополнительная проверка: убеждаемся, что при приезде на станцию у нас будет минимум 20% от бака
+            var minimumReserve = parameters.TankCapacity * 0.20;
+            if (currentState.RemainingFuel < minimumReserve)
+            {
+                // Если топлива меньше минимального запаса, это означает ошибку в алгоритме
+                // В нормальной ситуации этого не должно происходить
+                currentState.RemainingFuel = minimumReserve;
             }
 
             var preRefuelFuel = currentState.RemainingFuel;
