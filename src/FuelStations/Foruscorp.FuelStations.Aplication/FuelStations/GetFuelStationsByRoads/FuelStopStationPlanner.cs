@@ -456,6 +456,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                         .OrderBy(si => si.PricePerLiter)
                         .ToList();
                     
+                    // Устанавливаем флаг аварийной остановки
+                    currentState.WasEmergencyStop = true;
+                    
                     return emergencyStations.FirstOrDefault();
                 }
                 
@@ -734,6 +737,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             currentState.RemainingFuel += refillAmount;
             currentState.PreviousKm = stationInfo.ForwardDistanceKm;
             currentState.IsFirstStop = false;
+            currentState.WasEmergencyStop = false; // Сбрасываем флаг аварийной остановки
 
             return new FuelStopPlan
             {
@@ -767,6 +771,59 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Для первой остановки используем специальную логику
             if (currentState.IsFirstStop)
             {
+                // Проверяем, была ли это аварийная остановка
+                if (currentState.WasEmergencyStop)
+                {
+                    // Если это была аварийная остановка, заправляемся только на необходимое количество
+                    // Рассчитываем, сколько топлива нужно для доезда до следующей заправки или до конца маршрута
+                    var nextStation = allStationInfos
+                        .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm)
+                        .OrderBy(si => si.ForwardDistanceKm)
+                        .FirstOrDefault();
+
+                    if (nextStation != null)
+                    {
+                        // Если есть следующая заправка, заправляемся настолько, чтобы доехать до неё + 20% запаса
+                        var distanceToNext = nextStation.ForwardDistanceKm - currentStation.ForwardDistanceKm;
+                        var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
+                        var minimumReserveAtNext = parameters.TankCapacity * 0.20;
+                        var requiredRefill = fuelNeededToNext + minimumReserveAtNext - currentState.RemainingFuel;
+                        
+                        var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        var refill = Math.Min(Math.Max(requiredRefill, 0), maxRefill);
+                        
+                        // Проверяем минимальную дозаправку (не менее 20 литров)
+                        if (refill > 0 && refill < 20.0)
+                        {
+                            refill = 20.0;
+                            if (refill > maxRefill)
+                            {
+                                refill = maxRefill;
+                            }
+                        }
+                        
+                        return refill;
+                    }
+                    else
+                    {
+                        // Если следующей заправки нет, заправляемся до полного бака
+                        var emergencyFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        
+                        // Проверяем минимальную дозаправку (не менее 20 литров)
+                        if (emergencyFullTankRefill > 0 && emergencyFullTankRefill < 20.0)
+                        {
+                            emergencyFullTankRefill = 20.0;
+                            if (emergencyFullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
+                            {
+                                emergencyFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                            }
+                        }
+                        
+                        return emergencyFullTankRefill;
+                    }
+                }
+                
+                // Обычная логика для первой остановки (когда топлива достаточно)
                 // Ищем следующую более дешевую заправку в пределах досягаемости с полным баком
                 var firstStopMaxRange = parameters.TankCapacity / parameters.FuelConsumptionPerKm;
                 var firstStopMaxReach = currentStation.ForwardDistanceKm + firstStopMaxRange;
@@ -815,20 +872,53 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     firstStopCurrentMinDistance -= 10.0;
                 }
 
-                // Если более дешевых заправок нет, заправляемся до полного бака
-                var firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                
-                // Проверяем минимальную дозаправку (не менее 20 литров)
-                if (firstStopFullTankRefill > 0 && firstStopFullTankRefill < 20.0)
+                // Если более дешевых заправок нет, заправляемся только на необходимое количество
+                // Рассчитываем, сколько топлива нужно для доезда до следующей заправки или до конца маршрута
+                var nextStationNormal = allStationInfos
+                    .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm)
+                    .OrderBy(si => si.ForwardDistanceKm)
+                    .FirstOrDefault();
+
+                if (nextStationNormal != null)
                 {
-                    firstStopFullTankRefill = 20.0;
-                    if (firstStopFullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
+                    // Если есть следующая заправка, заправляемся настолько, чтобы доехать до неё + 20% запаса
+                    var distanceToNext = nextStationNormal.ForwardDistanceKm - currentStation.ForwardDistanceKm;
+                    var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
+                    var minimumReserveAtNext = parameters.TankCapacity * 0.20;
+                    var requiredRefill = fuelNeededToNext + minimumReserveAtNext - currentState.RemainingFuel;
+                    
+                    var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                    var refill = Math.Min(Math.Max(requiredRefill, 0), maxRefill);
+                    
+                    // Проверяем минимальную дозаправку (не менее 20 литров)
+                    if (refill > 0 && refill < 20.0)
                     {
-                        firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        refill = 20.0;
+                        if (refill > maxRefill)
+                        {
+                            refill = maxRefill;
+                        }
                     }
+                    
+                    return refill;
                 }
-                
-                return firstStopFullTankRefill;
+                else
+                {
+                    // Если следующей заправки нет, заправляемся до полного бака
+                    var firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                    
+                    // Проверяем минимальную дозаправку (не менее 20 литров)
+                    if (firstStopFullTankRefill > 0 && firstStopFullTankRefill < 20.0)
+                    {
+                        firstStopFullTankRefill = 20.0;
+                        if (firstStopFullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
+                        {
+                            firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        }
+                    }
+                    
+                    return firstStopFullTankRefill;
+                }
             }
 
             // Для последующих остановок (не первой)
@@ -981,6 +1071,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public double RemainingFuel { get; set; }
         public double PreviousKm { get; set; }
         public bool IsFirstStop { get; set; } = true;
+        public bool WasEmergencyStop { get; set; } = false;
     }
 
     public class RequiredStationInfo
