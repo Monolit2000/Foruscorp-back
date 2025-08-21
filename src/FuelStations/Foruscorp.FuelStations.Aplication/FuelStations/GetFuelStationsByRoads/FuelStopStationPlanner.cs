@@ -461,19 +461,29 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 
                 var firstStopMaxReach = currentState.PreviousKm + (availableFuel / parameters.FuelConsumptionPerKm);
                 
-                var availableStations = stationInfos
-                    .Where(si => si.Station != null && 
-                               !usedStationIds.Contains(si.Station.Id) &&
-                               si.ForwardDistanceKm > currentState.PreviousKm &&
-                               si.ForwardDistanceKm <= firstStopMaxReach &&
-                               si.ForwardDistanceKm - currentState.PreviousKm >= MinStopDistanceKm) // Минимальное расстояние
-                    .ToList();
+                // Пытаемся найти станции с уменьшением минимального расстояния
+                var firstStopCurrentMinDistance = MinStopDistanceKm;
+                while (firstStopCurrentMinDistance >= 0)
+                {
+                    var availableStations = stationInfos
+                        .Where(si => si.Station != null && 
+                                   !usedStationIds.Contains(si.Station.Id) &&
+                                   si.ForwardDistanceKm > currentState.PreviousKm &&
+                                   si.ForwardDistanceKm <= firstStopMaxReach &&
+                                   si.ForwardDistanceKm - currentState.PreviousKm >= firstStopCurrentMinDistance)
+                        .ToList();
 
-                if (!availableStations.Any())
-                    return null;
+                    if (availableStations.Any())
+                    {
+                        // Выбираем самую дешевую заправку из доступных
+                        return availableStations.OrderBy(si => si.PricePerLiter).First();
+                    }
 
-                // Выбираем самую дешевую заправку из доступных
-                return availableStations.OrderBy(si => si.PricePerLiter).First();
+                    // Уменьшаем минимальное расстояние на 10 км
+                    firstStopCurrentMinDistance -= 10.0;
+                }
+
+                return null;
             }
 
             // Для последующих остановок реализуем логику поиска более дешевых заправок
@@ -733,58 +743,64 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var firstStopMaxRange = parameters.TankCapacity / parameters.FuelConsumptionPerKm;
                 var firstStopMaxReach = currentStation.ForwardDistanceKm + firstStopMaxRange;
 
-                // Ищем более дешевые станции в пределах досягаемости с полным баком
-                var firstStopCheaperStations = allStationInfos
-                    .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm && 
-                               si.ForwardDistanceKm <= firstStopMaxReach &&
-                               si.PricePerLiter < currentStation.PricePerLiter &&
-                               si.ForwardDistanceKm - currentStation.ForwardDistanceKm >= MinStopDistanceKm)
-                    .OrderBy(si => si.PricePerLiter)
-                    .ToList();
+                // Пытаемся найти более дешевые станции с уменьшением минимального расстояния
+                var firstStopCurrentMinDistance = MinStopDistanceKm;
+                while (firstStopCurrentMinDistance >= 0)
+                {
+                    // Ищем более дешевые станции в пределах досягаемости с полным баком
+                    var firstStopCheaperStations = allStationInfos
+                        .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm && 
+                                   si.ForwardDistanceKm <= firstStopMaxReach &&
+                                   si.PricePerLiter < currentStation.PricePerLiter &&
+                                   si.ForwardDistanceKm - currentStation.ForwardDistanceKm >= firstStopCurrentMinDistance)
+                        .OrderBy(si => si.PricePerLiter)
+                        .ToList();
 
-                if (firstStopCheaperStations.Any())
-                {
-                    // Если найдена более дешевая заправка, заправляемся ровно настолько, чтобы доехать до неё
-                    var nextCheaperStation = firstStopCheaperStations.First();
-                    var distanceToNext = nextCheaperStation.ForwardDistanceKm - currentStation.ForwardDistanceKm;
-                    var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
-                    
-                    // Добавляем небольшой запас (10% от бака) для безопасности
-                    var safetyReserve = parameters.TankCapacity * 0.10;
-                    var optimalRefill = fuelNeededToNext + safetyReserve - currentState.RemainingFuel;
-                    
-                    var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                    var refill = Math.Min(Math.Max(optimalRefill, 0), maxRefill);
-                    
-                    // Проверяем минимальную дозаправку (не менее 20 литров)
-                    if (refill > 0 && refill < 20.0)
+                    if (firstStopCheaperStations.Any())
                     {
-                        refill = 20.0;
-                        if (refill > maxRefill)
+                        // Если найдена более дешевая заправка, заправляемся ровно настолько, чтобы доехать до неё
+                        var nextCheaperStation = firstStopCheaperStations.First();
+                        var distanceToNext = nextCheaperStation.ForwardDistanceKm - currentStation.ForwardDistanceKm;
+                        var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
+                        
+                        // Добавляем 20% от бака как минимальный запас при приезде на следующую заправку
+                        var minimumReserveAtNext = parameters.TankCapacity * 0.20;
+                        var optimalRefill = fuelNeededToNext + minimumReserveAtNext - currentState.RemainingFuel;
+                        
+                        var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        var refill = Math.Min(Math.Max(optimalRefill, 0), maxRefill);
+                        
+                        // Проверяем минимальную дозаправку (не менее 20 литров)
+                        if (refill > 0 && refill < 20.0)
                         {
-                            refill = maxRefill;
+                            refill = 20.0;
+                            if (refill > maxRefill)
+                            {
+                                refill = maxRefill;
+                            }
                         }
+                        
+                        return refill;
                     }
-                    
-                    return refill;
+
+                    // Уменьшаем минимальное расстояние на 10 км
+                    firstStopCurrentMinDistance -= 10.0;
                 }
-                else
+
+                // Если более дешевых заправок нет, заправляемся до полного бака
+                var firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                
+                // Проверяем минимальную дозаправку (не менее 20 литров)
+                if (firstStopFullTankRefill > 0 && firstStopFullTankRefill < 20.0)
                 {
-                    // Если более дешевых заправок нет, заправляемся до полного бака
-                    var fullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                    
-                    // Проверяем минимальную дозаправку (не менее 20 литров)
-                    if (fullTankRefill > 0 && fullTankRefill < 20.0)
+                    firstStopFullTankRefill = 20.0;
+                    if (firstStopFullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
                     {
-                        fullTankRefill = 20.0;
-                        if (fullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
-                        {
-                            fullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                        }
+                        firstStopFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
                     }
-                    
-                    return fullTankRefill;
                 }
+                
+                return firstStopFullTankRefill;
             }
 
             // Для последующих остановок (не первой)
@@ -792,58 +808,64 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var subsequentMaxRange = parameters.TankCapacity / parameters.FuelConsumptionPerKm;
             var subsequentMaxReach = currentStation.ForwardDistanceKm + subsequentMaxRange;
 
-            // Ищем более дешевые станции в пределах досягаемости с полным баком
-            var subsequentCheaperStations = allStationInfos
-                .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm && 
-                           si.ForwardDistanceKm <= subsequentMaxReach &&
-                           si.PricePerLiter < currentStation.PricePerLiter &&
-                           si.ForwardDistanceKm - currentStation.ForwardDistanceKm >= MinStopDistanceKm) // Минимальное расстояние
-                .OrderBy(si => si.PricePerLiter)
-                .ToList();
+            // Пытаемся найти более дешевые станции с уменьшением минимального расстояния
+            var subsequentCurrentMinDistance = MinStopDistanceKm;
+            while (subsequentCurrentMinDistance >= 0)
+            {
+                // Ищем более дешевые станции в пределах досягаемости с полным баком
+                var subsequentCheaperStations = allStationInfos
+                    .Where(si => si.ForwardDistanceKm > currentStation.ForwardDistanceKm && 
+                               si.ForwardDistanceKm <= subsequentMaxReach &&
+                               si.PricePerLiter < currentStation.PricePerLiter &&
+                               si.ForwardDistanceKm - currentStation.ForwardDistanceKm >= subsequentCurrentMinDistance)
+                    .OrderBy(si => si.PricePerLiter)
+                    .ToList();
 
-            if (subsequentCheaperStations.Any())
-            {
-                // Если найдена более дешевая заправка, заправляемся ровно настолько, чтобы доехать до неё
-                var nextCheaperStation = subsequentCheaperStations.First();
-                var distanceToNext = nextCheaperStation.ForwardDistanceKm - currentStation.ForwardDistanceKm;
-                var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
-                
-                // Добавляем небольшой запас (10% от бака) для безопасности
-                var safetyReserve = parameters.TankCapacity * 0.10;
-                var optimalRefill = fuelNeededToNext + safetyReserve - currentState.RemainingFuel;
-                
-                var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                var refill = Math.Min(Math.Max(optimalRefill, 0), maxRefill);
-                
-                // Проверяем минимальную дозаправку (не менее 20 литров)
-                if (refill > 0 && refill < 20.0)
-                {
-                    refill = 20.0;
-                    if (refill > maxRefill)
+                                    if (subsequentCheaperStations.Any())
                     {
-                        refill = maxRefill;
+                        // Если найдена более дешевая заправка, заправляемся ровно настолько, чтобы доехать до неё
+                        var nextCheaperStation = subsequentCheaperStations.First();
+                        var distanceToNext = nextCheaperStation.ForwardDistanceKm - currentStation.ForwardDistanceKm;
+                        var fuelNeededToNext = distanceToNext * parameters.FuelConsumptionPerKm;
+                        
+                        // Добавляем 20% от бака как минимальный запас при приезде на следующую заправку
+                        var minimumReserveAtNext = parameters.TankCapacity * 0.20;
+                        var optimalRefill = fuelNeededToNext + minimumReserveAtNext - currentState.RemainingFuel;
+                        
+                        var maxRefill = parameters.TankCapacity - currentState.RemainingFuel;
+                        var refill = Math.Min(Math.Max(optimalRefill, 0), maxRefill);
+                        
+                        // Проверяем минимальную дозаправку (не менее 20 литров)
+                        if (refill > 0 && refill < 20.0)
+                        {
+                            refill = 20.0;
+                            if (refill > maxRefill)
+                            {
+                                refill = maxRefill;
+                            }
+                        }
+                        
+                        return refill;
                     }
-                }
-                
-                return refill;
+
+                // Уменьшаем минимальное расстояние на 10 км
+                subsequentCurrentMinDistance -= 10.0;
             }
-            else
+
+            // Если более дешевых заправок нет, заправляемся до полного бака
+            var subsequentFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
+            
+            // Проверяем минимальную дозаправку (не менее 20 литров)
+            if (subsequentFullTankRefill > 0 && subsequentFullTankRefill < 20.0)
             {
-                // Если более дешевых заправок нет, заправляемся до полного бака
-                var fullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                
-                // Проверяем минимальную дозаправку (не менее 20 литров)
-                if (fullTankRefill > 0 && fullTankRefill < 20.0)
+                subsequentFullTankRefill = 20.0;
+                if (subsequentFullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
                 {
-                    fullTankRefill = 20.0;
-                    if (fullTankRefill > parameters.TankCapacity - currentState.RemainingFuel)
-                    {
-                        fullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
-                    }
+                    subsequentFullTankRefill = parameters.TankCapacity - currentState.RemainingFuel;
                 }
-                
-                return fullTankRefill;
             }
+            
+            return subsequentFullTankRefill;
         }
 
 
