@@ -14,7 +14,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     {
         public double RemainingFuelLiters { get; set; }
     }
-
+    
     public class FuelStopPlan
     {
         public FuelStation Station { get; set; } = null!;
@@ -53,5 +53,13 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public List<FuelStopPlan> StopPlan { get; set; } = new List<FuelStopPlan>();
         public List<FuelStationDto> StationsWithoutAlgorithm { get; set; } = new List<FuelStationDto>();
         public FinishInfo Finish { get; set; } = new FinishInfo();
+    }
+
+    public class OptimalRouteInfo
+    {
+        public double TotalCost { get; set; }
+        public List<FuelStationDto> OptimalStations { get; set; } = new List<FuelStationDto>();
+        public string AlgorithmUsed { get; set; } = "BitMask DP";
+        public int StationsConsidered { get; set; }
     }
 }

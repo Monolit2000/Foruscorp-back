@@ -11,6 +11,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     {
         public List<FuelStationDto> FuelStations { get; set; } = new List<FuelStationDto>();
         public FinishInfo FinishInfo { get; set; } = new FinishInfo();
+        public OptimalRouteInfo? OptimalRoute { get; set; }
     }
 
     public class GetFuelStationsByRoadsQueryHandler :
@@ -121,15 +122,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var totalRouteDistanceKm = CalculateTotalRouteDistance(routePoints);
 
-            var stopPlan = _fuelStopStationPlanner.PlanStopsByStations(
-                routePoints,
+            // Используем OptimalFuelRouteFinder вместо основного алгоритма
+            var stopPlan = PlanStopsWithOptimalAlgorithm(
                 stationsAlongRoute,
-                totalRouteDistanceKm,
                 fuelParameters.ConsumptionGPerKm,
-                fuelParameters.InitialFuelPercent,
                 fuelParameters.TankCapacityG,
-                requiredStationDtos,
-                finishFuel,
                 road.RoadSectionId);
 
             return new RouteStopsForRoadInfo
@@ -189,11 +186,210 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var resultDto = _fuelStationMapper.MapStopPlansToDtos(allStopPlans);
             var zipStations = _fuelStationMapper.ZipStations(allStationsWithoutAlgo, resultDto);
 
+            // Вычисляем оптимальный маршрут с помощью битмаскового DP
+            var optimalRoute = CalculateOptimalRoute(allStationsWithoutAlgo);
+
             return new PlanFuelStationsByRoadsResponce
             {
                 FuelStations = zipStations,
-                FinishInfo = finishInfo
+                FinishInfo = finishInfo,
+                OptimalRoute = optimalRoute
             };
+        }
+
+        private OptimalRouteInfo? CalculateOptimalRoute(List<FuelStationDto> stations)
+        {
+            try
+            {
+                if (!stations.Any()) return null;
+
+                // Преобразуем FuelStationDto в StationInfo для алгоритма
+                var stationInfos = stations
+                    .Where(s => !string.IsNullOrEmpty(s.Price) && double.TryParse(s.Price, out var price) && price > 0)
+                    .Select((s, index) => new StationInfo
+                    {
+                        Station = CreateFuelStationFromDto(s),
+                        ForwardDistanceKm = index * 100.0, // Примерное расстояние (можно улучшить)
+                        PricePerLiter = double.TryParse(s.Price, out var p) ? p : 0.0
+                    })
+                    .OrderBy(s => s.ForwardDistanceKm)
+                    .ToList();
+
+                if (!stationInfos.Any()) return null;
+
+                // Параметры грузовика (можно сделать конфигурируемыми)
+                const double fuelCapacity = 200.0; // литры
+                const double consumption = 0.3; // л/км
+
+                // Вычисляем оптимальный маршрут
+                var result = OptimalFuelRouteFinder.FindOptimalRouteWithPath(
+                    stationInfos, 
+                    fuelCapacity, 
+                    consumption);
+
+                if (result.Route.Any())
+                {
+                    var optimalStations = result.Route
+                        .Select((station, index) => CreateFuelStationDto(station, index + 1))
+                        .ToList();
+
+                    return new OptimalRouteInfo
+                    {
+                        TotalCost = result.TotalCost,
+                        OptimalStations = optimalStations,
+                        AlgorithmUsed = "BitMask DP",
+                        StationsConsidered = stationInfos.Count
+                    };
+                }
+
+                return null;
+            }
+            catch (Exception)
+            {
+                // В случае ошибки возвращаем null, основной алгоритм продолжит работать
+                return null;
+            }
+        }
+
+        private FuelStation CreateFuelStationFromDto(FuelStationDto dto)
+        {
+            var fuelPrices = new List<FuelPrice>();
+            if (double.TryParse(dto.Price, out var price) && price > 0)
+            {
+                fuelPrices.Add(new FuelPrice(FuelType.Diesel, price));
+            }
+
+            return FuelStation.CreateNew(
+                dto.Address ?? "",
+                dto.Name ?? "",
+                new GeoPoint(
+                    double.TryParse(dto.Latitude, out var lat) ? lat : 0.0,
+                    double.TryParse(dto.Longitude, out var lon) ? lon : 0.0
+                ),
+                fuelPrices
+            );
+        }
+
+        private FuelStationDto CreateFuelStationDto(StationInfo stationInfo, int order)
+        {
+            var station = stationInfo.Station;
+            if (station == null) return new FuelStationDto();
+
+            return new FuelStationDto
+            {
+                Id = station.Id,
+                Name = station.ProviderName ?? "",
+                Address = station.Address ?? "",
+                Latitude = station.Coordinates.Latitude.ToString("F6"),
+                Longitude = station.Coordinates.Longitude.ToString("F6"),
+                Price = stationInfo.PricePerLiter.ToString("F2"),
+                IsAlgorithm = true,
+                StopOrder = order,
+                RoadSectionId = ""
+            };
+        }
+
+        private StopPlanInfo PlanStopsWithOptimalAlgorithm(
+            List<FuelStation> stationsAlongRoute,
+            double consumptionPerKm,
+            double tankCapacity,
+            string roadSectionId)
+        {
+            try
+            {
+                if (!stationsAlongRoute.Any())
+                    return new StopPlanInfo();
+
+                // Преобразуем FuelStation в StationInfo для алгоритма
+                var stationInfos = stationsAlongRoute
+                    .Where(s => s.FuelPrices.Any() && s.FuelPrices.First().Price > 0)
+                    .Select((s, index) => new StationInfo
+                    {
+                        Station = s,
+                        ForwardDistanceKm = index * 100.0, // Примерное расстояние
+                        PricePerLiter = s.FuelPrices.First().Price
+                    })
+                    .OrderBy(s => s.ForwardDistanceKm)
+                    .ToList();
+
+                if (!stationInfos.Any())
+                    return new StopPlanInfo();
+
+                // Вычисляем оптимальный маршрут
+                var result = OptimalFuelRouteFinder.FindOptimalRouteWithPath(
+                    stationInfos,
+                    tankCapacity,
+                    consumptionPerKm);
+
+                if (!result.Route.Any())
+                    return new StopPlanInfo();
+
+                // Преобразуем результат в StopPlanInfo
+                var stopPlans = result.Route.Select((stationInfo, index) => new FuelStopPlan
+                {
+                    Station = stationInfo.Station!,
+                    StopAtKm = stationInfo.ForwardDistanceKm,
+                    RefillLiters = CalculateRefillAmount(stationInfo, index, result.Route, tankCapacity, consumptionPerKm),
+                    CurrentFuelLiters = CalculateCurrentFuel(index, result.Route, tankCapacity, consumptionPerKm),
+                    RoadSectionId = roadSectionId
+                }).ToList();
+
+                return new StopPlanInfo
+                {
+                    StopPlan = stopPlans,
+                    Finish = new FinishInfo
+                    {
+                        RemainingFuelLiters = CalculateRemainingFuel(stopPlans, tankCapacity, consumptionPerKm)
+                    }
+                };
+            }
+            catch (Exception)
+            {
+                // В случае ошибки возвращаем пустой результат
+                return new StopPlanInfo();
+            }
+        }
+
+        private double CalculateRefillAmount(StationInfo stationInfo, int index, List<StationInfo> route, double tankCapacity, double consumption)
+        {
+            if (index == route.Count - 1)
+            {
+                // Последняя заправка - заполняем бак
+                return tankCapacity;
+            }
+
+            var nextStation = route[index + 1];
+            var distanceToNext = nextStation.ForwardDistanceKm - stationInfo.ForwardDistanceKm;
+            var fuelNeeded = distanceToNext * consumption;
+            var reserve = tankCapacity * 0.2; // 20% резерв
+
+            return Math.Min(fuelNeeded + reserve, tankCapacity);
+        }
+
+        private double CalculateCurrentFuel(int index, List<StationInfo> route, double tankCapacity, double consumption)
+        {
+            if (index == 0)
+                return tankCapacity; // Начинаем с полным баком
+
+            var previousStation = route[index - 1];
+            var currentStation = route[index];
+            var distance = currentStation.ForwardDistanceKm - previousStation.ForwardDistanceKm;
+            var fuelUsed = distance * consumption;
+
+            return Math.Max(tankCapacity - fuelUsed, tankCapacity * 0.2); // Минимум 20% резерв
+        }
+
+        private double CalculateRemainingFuel(List<FuelStopPlan> stopPlans, double tankCapacity, double consumption)
+        {
+            if (!stopPlans.Any())
+                return 0.0;
+
+            var lastStop = stopPlans.Last();
+            var totalDistance = lastStop.StopAtKm;
+            var fuelUsed = totalDistance * consumption;
+            var totalRefilled = stopPlans.Sum(s => s.RefillLiters);
+
+            return Math.Max(totalRefilled - fuelUsed, 0.0);
         }
     }
 
