@@ -37,6 +37,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             // Анализ маршрута и станций
             var routeAnalysis = _routeAnalyzer.AnalyzeRoute(route, stationsAlongRoute, totalRouteDistanceKm);
 
+            //var planer = new OptimalFuelStrategyFinder();
+
+            var testResult = OptimalFuelStrategyFinder.CalculateOptimalStops(routeAnalysis.StationInfos, totalRouteDistanceKm, tankCapacity, fuelConsumptionPerKm, finishFuel);
+
+
             // Планирование остановок
             var stopPlan = _refuelingPlanner.CreateStopPlan(
                 routeAnalysis,
