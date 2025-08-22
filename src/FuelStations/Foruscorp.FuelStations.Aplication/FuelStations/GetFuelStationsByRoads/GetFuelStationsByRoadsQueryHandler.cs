@@ -121,6 +121,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var totalRouteDistanceKm = CalculateTotalRouteDistance(routePoints);
 
+
             var stopPlan = _fuelStopStationPlanner.PlanStopsByStations(
                 routePoints,
                 stationsAlongRoute,

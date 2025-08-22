@@ -168,6 +168,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
         public StopPlanResult CreateStopPlan(RouteAnalysis routeAnalysis, FuelPlanningParameters parameters)
         {
+
+
+            var planner = new ChainOptimizationPlanner();
+
+            var asdsadasd = planner.FindOptimalChain(routeAnalysis.StationInfos, parameters, parameters.CurrentFuelLiters, 0);
+
+               
+
             var stopPlan = new List<FuelStopPlan>();
             var usedStationIds = new HashSet<Guid>();
             var currentState = new FuelState
