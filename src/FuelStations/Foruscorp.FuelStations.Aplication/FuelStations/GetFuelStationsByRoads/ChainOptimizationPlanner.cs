@@ -10,38 +10,59 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     /// </summary>
     public class ChainOptimizationPlanner
     {
-        private const int MaxChainLength = 5; // Ограничиваем длину цепочки для производительности
+        private const int MaxChainLength = 10000000; // Ограничиваем длину цепочки для производительности
         private const double PriceThreshold = 0.1; // Минимальная разница в цене для рассмотрения альтернативы
 
         /// <summary>
-        /// Находит оптимальную цепочку заправок
+        /// Находит оптимальную цепочку заправок и возвращает план остановок
         /// </summary>
-        public List<StationInfo> FindOptimalChain(
+        public StopPlanInfo FindOptimalChain(
             List<StationInfo> stations,
             FuelPlanningParameters parameters,
             double currentFuel,
             double currentPosition)
         {
-            var reachableStations = GetReachableStations(stations, currentPosition, currentFuel, parameters);
-            
+            var reachableStations = stations;/*GetReachableStations(stations, currentPosition, currentFuel, parameters);*/
+
+
             if (!reachableStations.Any())
-                return new List<StationInfo>();
+                return new StopPlanInfo { StopPlan = new List<FuelStopPlan>(), Finish = new FinishInfo() };
 
             // Если заправок мало, используем простой алгоритм
             if (reachableStations.Count <= 3)
             {
-                return new List<StationInfo> { reachableStations.OrderBy(s => s.PricePerLiter).First() };
+                var bestStation = reachableStations.OrderBy(s => s.PricePerLiter).First();
+                var stopPlan = CreateStopPlanFromStation(bestStation, parameters, currentFuel, currentPosition);
+                return new StopPlanInfo 
+                { 
+                    StopPlan = new List<FuelStopPlan> { stopPlan }, 
+                    Finish = CalculateFinishInfo(stopPlan, parameters) 
+                };
             }
 
             // Анализируем цепочки заправок
             var chains = AnalyzeChains(reachableStations, parameters, currentFuel, currentPosition);
             
             if (!chains.Any())
-                return new List<StationInfo> { reachableStations.OrderBy(s => s.PricePerLiter).First() };
+            {
+                var bestStation = reachableStations.OrderBy(s => s.PricePerLiter).First();
+                var stopPlan = CreateStopPlanFromStation(bestStation, parameters, currentFuel, currentPosition);
+                return new StopPlanInfo 
+                { 
+                    StopPlan = new List<FuelStopPlan> { stopPlan }, 
+                    Finish = CalculateFinishInfo(stopPlan, parameters) 
+                };
+            }
 
-            // Выбираем самую выгодную цепочку
-            var bestChain = chains.OrderBy(c => c.TotalCost).First();
-            return bestChain.Stations;
+            // Выбираем самую выгодную цепочку, предпочитая полные цепочки
+            var bestChain = SelectBestChain(chains, parameters);
+            var stopPlans = CreateStopPlansFromChain(bestChain, parameters, currentFuel, currentPosition);
+            
+            return new StopPlanInfo 
+            { 
+                StopPlan = stopPlans, 
+                Finish = CalculateFinishInfo(stopPlans, parameters) 
+            };
         }
 
         private List<StationInfo> GetReachableStations(
@@ -70,8 +91,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var chains = new List<FuelChain>();
             var visited = new HashSet<Guid>();
 
+            var taken = reachableStations;
+
             // Начинаем с каждой доступной заправки
-            foreach (var startStation in reachableStations.Take(5)) // Ограничиваем количество начальных точек
+            foreach (var startStation in taken) // Ограничиваем количество начальных точек
             {
                 var chain = new FuelChain
                 {
@@ -95,13 +118,27 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             HashSet<Guid> visited,
             int depth)
         {
-            if (depth > MaxChainLength)
+            var lastStation = currentChain.Stations.Last();
+            
+            // Проверяем, можем ли мы доехать до финиша с текущим топливом
+            var distanceToFinish = parameters.TotalDistanceKm - lastStation.ForwardDistanceKm;
+            var fuelNeededToFinish = distanceToFinish * parameters.FuelConsumptionPerKm + parameters.FinishFuel;
+            
+            if (currentChain.RemainingFuel >= fuelNeededToFinish)
             {
+                // Можем доехать до финиша - цепочка завершена
                 allChains.Add(currentChain.Clone());
                 return;
             }
 
-            var lastStation = currentChain.Stations.Last();
+            if (depth > MaxChainLength)
+            {
+                // Достигли максимальной глубины, но не можем доехать до финиша
+                // Добавляем цепочку как есть (неполную)
+                allChains.Add(currentChain.Clone());
+                return;
+            }
+
             var maxRange = parameters.TankCapacity / parameters.FuelConsumptionPerKm;
             var maxReach = lastStation.ForwardDistanceKm + maxRange;
 
@@ -117,7 +154,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             if (!nextStations.Any())
             {
-                // Цепочка завершена
+                // Нет доступных заправок, но не можем доехать до финиша
+                // Добавляем цепочку как есть (неполную)
                 allChains.Add(currentChain.Clone());
                 return;
             }
@@ -143,15 +181,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 newChain.CurrentPosition = nextStation.ForwardDistanceKm;
                 newChain.Stations.Add(nextStation);
 
-                // Проверяем, стоит ли продолжать эту цепочку
-                if (ShouldContinueChain(newChain, allStations, parameters))
-                {
-                    ExploreChain(newChain, allStations, parameters, allChains, visited, depth + 1);
-                }
-                else
-                {
-                    allChains.Add(newChain);
-                }
+                // Продолжаем исследование цепочки
+                //ExploreChain(newChain, allStations, parameters, allChains, visited, depth + 1);
             }
         }
 
@@ -186,9 +217,231 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                            s.PricePerLiter < lastStation.PricePerLiter - PriceThreshold)
                 .Any();
 
-            return cheaperAhead;
+                         return cheaperAhead;
+         }
+
+        /// <summary>
+        /// Выбирает лучшую цепочку, предпочитая полные цепочки
+        /// </summary>
+        private FuelChain SelectBestChain(List<FuelChain> chains, FuelPlanningParameters parameters)
+        {
+            // Разделяем цепочки на полные и неполные
+            var completeChains = new List<FuelChain>();
+            var incompleteChains = new List<FuelChain>();
+
+            foreach (var chain in chains)
+            {
+                if (chain.Stations.Any())
+                {
+                    var lastStation = chain.Stations.Last();
+                    var distanceToFinish = parameters.TotalDistanceKm - lastStation.ForwardDistanceKm;
+                    var fuelNeededToFinish = distanceToFinish * parameters.FuelConsumptionPerKm + parameters.FinishFuel;
+                    
+                    if (chain.RemainingFuel >= fuelNeededToFinish)
+                    {
+                        completeChains.Add(chain);
+                    }
+                    else
+                    {
+                        incompleteChains.Add(chain);
+                    }
+                }
+                else
+                {
+                    incompleteChains.Add(chain);
+                }
+            }
+
+            // Предпочитаем полные цепочки
+            if (completeChains.Any())
+            {
+                return completeChains.OrderBy(c => c.TotalCost).First();
+            }
+
+            // Если полных цепочек нет, выбираем из неполных
+            if (incompleteChains.Any())
+            {
+                return incompleteChains.OrderBy(c => c.TotalCost).First();
+            }
+
+            // Если цепочек нет вообще, возвращаем пустую
+            return new FuelChain();
         }
-    }
+
+        /// <summary>
+        /// Создает план остановки из одной заправки
+        /// </summary>
+        private FuelStopPlan CreateStopPlanFromStation(
+            StationInfo station,
+            FuelPlanningParameters parameters,
+            double currentFuel,
+            double currentPosition)
+        {
+            var distance = station.ForwardDistanceKm - currentPosition;
+            var fuelUsed = distance * parameters.FuelConsumptionPerKm;
+            var remainingFuel = currentFuel - fuelUsed;
+            
+            // Рассчитываем оптимальное количество топлива для дозаправки
+            var refillAmount = CalculateOptimalRefillForSingleStation(station, remainingFuel, parameters);
+            
+            return new FuelStopPlan
+            {
+                Station = station.Station!,
+                StopAtKm = station.ForwardDistanceKm,
+                RefillLiters = refillAmount,
+                CurrentFuelLiters = remainingFuel,
+                RoadSectionId = parameters.RoadSectionId
+            };
+        }
+
+        /// <summary>
+        /// Создает планы остановок из цепочки заправок
+        /// </summary>
+        private List<FuelStopPlan> CreateStopPlansFromChain(
+            FuelChain chain,
+            FuelPlanningParameters parameters,
+            double initialFuel,
+            double initialPosition)
+        {
+            var stopPlans = new List<FuelStopPlan>();
+            
+            // Если цепочка пустая, возвращаем пустой список
+            if (!chain.Stations.Any())
+            {
+                return stopPlans;
+            }
+            
+            var currentFuel = initialFuel;
+            var currentPosition = initialPosition;
+
+            for (int i = 0; i < chain.Stations.Count; i++)
+            {
+                var station = chain.Stations[i];
+                var distance = station.ForwardDistanceKm - currentPosition;
+                var fuelUsed = distance * parameters.FuelConsumptionPerKm;
+                
+                // Проверяем, что у нас достаточно топлива
+                if (currentFuel < fuelUsed)
+                {
+                    currentFuel = 0;
+                }
+                else
+                {
+                    currentFuel -= fuelUsed;
+                }
+                
+                // Рассчитываем количество топлива для дозаправки
+                double refillAmount = 0;
+                if (i < chain.Stations.Count - 1)
+                {
+                    // Для промежуточных остановок рассчитываем оптимальное количество
+                    var nextStation = chain.Stations[i + 1];
+                    refillAmount = CalculateOptimalRefillForChain(station, nextStation, currentFuel, parameters);
+                }
+                else
+                {
+                    // Для последней остановки проверяем, можем ли доехать до финиша
+                    var distanceToFinish = parameters.TotalDistanceKm - station.ForwardDistanceKm;
+                    var fuelNeededToFinish = distanceToFinish * parameters.FuelConsumptionPerKm + parameters.FinishFuel;
+                    
+                    if (currentFuel + refillAmount >= fuelNeededToFinish)
+                    {
+                        // Можем доехать до финиша, заправляемся минимально необходимое
+                        refillAmount = Math.Max(0, fuelNeededToFinish - currentFuel);
+                    }
+                    else
+                    {
+                        // Не можем доехать до финиша, заправляемся до полного бака
+                        refillAmount = CalculateOptimalRefillForSingleStation(station, currentFuel, parameters);
+                    }
+                }
+
+                var stopPlan = new FuelStopPlan
+                {
+                    Station = station.Station!,
+                    StopAtKm = station.ForwardDistanceKm,
+                    RefillLiters = refillAmount,
+                    CurrentFuelLiters = currentFuel,
+                    RoadSectionId = parameters.RoadSectionId
+                };
+
+                stopPlans.Add(stopPlan);
+                
+                // Обновляем состояние для следующей остановки
+                currentFuel += refillAmount;
+                currentPosition = station.ForwardDistanceKm;
+            }
+
+            return stopPlans;
+        }
+
+        /// <summary>
+        /// Рассчитывает оптимальное количество топлива для дозаправки на одной заправке
+        /// </summary>
+        private double CalculateOptimalRefillForSingleStation(
+            StationInfo station,
+            double remainingFuel,
+            FuelPlanningParameters parameters)
+        {
+            // Для упрощения, заправляемся до полного бака
+            // В реальной реализации здесь можно добавить логику поиска более дешевых заправок
+            var fullTankRefill = parameters.TankCapacity - remainingFuel;
+            return Math.Max(fullTankRefill, 0);
+        }
+
+        /// <summary>
+        /// Рассчитывает информацию о финальном состоянии
+        /// </summary>
+        private FinishInfo CalculateFinishInfo(FuelStopPlan stopPlan, FuelPlanningParameters parameters)
+        {
+            var fuelAfterRefill = stopPlan.CurrentFuelLiters + stopPlan.RefillLiters;
+            var distanceToFinish = parameters.TotalDistanceKm - stopPlan.StopAtKm;
+            var fuelUsedToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
+            var finalFuel = fuelAfterRefill - fuelUsedToFinish;
+            
+            return new FinishInfo 
+            { 
+                RemainingFuelLiters = Math.Max(finalFuel, parameters.FinishFuel) 
+            };
+        }
+
+        /// <summary>
+        /// Рассчитывает информацию о финальном состоянии для списка остановок
+        /// </summary>
+        private FinishInfo CalculateFinishInfo(List<FuelStopPlan> stopPlans, FuelPlanningParameters parameters)
+        {
+            if (!stopPlans.Any())
+            {
+                // Если нет остановок, рассчитываем топливо от начального состояния
+                var fuelUsed = parameters.TotalDistanceKm * parameters.FuelConsumptionPerKm;
+                var finalFuelFinish = parameters.CurrentFuelLiters - fuelUsed;
+                return new FinishInfo { RemainingFuelLiters = Math.Max(finalFuelFinish, parameters.FinishFuel) };
+            }
+
+            // Симулируем прохождение всех остановок
+            var currentFuel = parameters.CurrentFuelLiters;
+            var currentPosition = 0.0;
+
+            foreach (var stop in stopPlans)
+            {
+                // Расходуем топливо до остановки
+                var distanceToStop = stop.StopAtKm - currentPosition;
+                var fuelUsed = distanceToStop * parameters.FuelConsumptionPerKm;
+                currentFuel -= fuelUsed;
+                
+                // Заправляемся
+                currentFuel += stop.RefillLiters;
+                currentPosition = stop.StopAtKm;
+            }
+
+            // Расходуем топливо до финиша
+            var distanceToFinish = parameters.TotalDistanceKm - currentPosition;
+            var fuelUsedToFinish = distanceToFinish * parameters.FuelConsumptionPerKm;
+            var finalFuel = currentFuel - fuelUsedToFinish;
+
+            return new FinishInfo { RemainingFuelLiters = Math.Max(finalFuel, parameters.FinishFuel) };
+        }
+     }
 
     /// <summary>
     /// Представляет цепочку заправок с расчетом общей стоимости
@@ -224,7 +477,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             _chainPlanner = new ChainOptimizationPlanner();
         }
 
-        public StationInfo? FindNextOptimalStop(
+        public StopPlanInfo FindNextOptimalStop(
             List<StationInfo> stationInfos,
             FuelPlanningParameters parameters,
             HashSet<Guid> usedStationIds,
@@ -240,7 +493,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var optimalChain = _chainPlanner.FindOptimalChain(
                 availableStations, parameters, currentState.RemainingFuel, currentState.PreviousKm);
 
-            return optimalChain.FirstOrDefault();
+            return optimalChain;
         }
     }
 }
