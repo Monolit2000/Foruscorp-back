@@ -123,7 +123,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var newSDSD = new RefactoredFuelStopStationPlanner();
 
-            var stopPlan = newSDSD.PlanStopsByStations(
+            var stopPlan = newSDSD.PlanStopsWithComprehensiveOptimization(
                 routePoints,
                 stationsAlongRoute,
                 totalRouteDistanceKm,
@@ -131,8 +131,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 fuelParameters.InitialFuelPercent,
                 fuelParameters.TankCapacityG,
                 requiredStationDtos,
-                finishFuel,
-                road.RoadSectionId);
+                finishFuel);
 
 
 

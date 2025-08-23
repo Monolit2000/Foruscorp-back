@@ -170,9 +170,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
 
 
-            var planner = new ChainOptimizationPlanner();
+            //var planner = new ChainOptimizationPlanner();
 
-            var asdsadasd = planner.FindOptimalChain(routeAnalysis.StationInfos, parameters, parameters.CurrentFuelLiters, 0);
+            //var asdsadasd = planner.FindOptimalChain(routeAnalysis.StationInfos, parameters, parameters.CurrentFuelLiters, 0);
 
                
 
