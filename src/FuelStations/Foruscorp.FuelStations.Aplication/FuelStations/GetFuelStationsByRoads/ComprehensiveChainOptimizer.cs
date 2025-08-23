@@ -13,6 +13,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
     {
         private readonly IChainCostCalculator _costCalculator;
         private readonly IChainValidator _validator;
+        
+        // 🔧 Настройки оптимизации
+        public int MaxCheapStationsPerStep { get; set; } = 16;  // Максимум дешевых станций на каждом шаге
+        public bool EnableCheapStationOptimization { get; set; } = true;  // Включить/выключить оптимизацию
 
         public ComprehensiveChainOptimizer(
             IChainCostCalculator costCalculator = null,
@@ -145,7 +149,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
         /// <summary>
-        /// Рекурсивная генерация комбинаций станций
+        /// Рекурсивная генерация комбинаций станций с оптимизацией по дешевым станциям
         /// </summary>
         private void GenerateCombinationsRecursive(
             List<StationInfo> allStations,
@@ -166,19 +170,101 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 return;
             }
 
-            // Рекурсивно добавляем станции
-            for (int i = startIndex; i < allStations.Count; i++)
+            // 🚀 ОПТИМИЗАЦИЯ: Находим самые дешевые достижимые станции на полном баке
+            List<StationInfo> stationsToProcess;
+            
+            if (EnableCheapStationOptimization)
             {
-                var station = allStations[i];
-                
-                // Проверяем, что станция подходит для добавления в цепочку
-                if (CanAddStationToChain(currentChain, station, context))
-                {
-                    currentChain.Add(station);
-                    GenerateCombinationsRecursive(allStations, targetLength, currentChain, i + 1, result, context);
-                    currentChain.RemoveAt(currentChain.Count - 1); 
-                }
+                stationsToProcess = GetAffordableCheapestStations(
+                    allStations, currentChain, startIndex, context, MaxCheapStationsPerStep);
             }
+            else
+            {
+                // Классический подход - все станции
+                stationsToProcess = allStations
+                    .Skip(startIndex)
+                    .Where(station => CanAddStationToChain(currentChain, station, context))
+                    .ToList();
+            }
+
+            Console.WriteLine($"     Найдено {stationsToProcess.Count} доступных станций из {allStations.Count - startIndex}");
+
+            // Рекурсивно добавляем только отобранные станции
+            foreach (var station in stationsToProcess)
+            {
+                currentChain.Add(station);
+                
+                // Находим новый startIndex для следующей рекурсии
+                var nextStartIndex = allStations.FindIndex(s => s.ForwardDistanceKm > station.ForwardDistanceKm);
+                if (nextStartIndex == -1) nextStartIndex = allStations.Count;
+                
+                GenerateCombinationsRecursive(allStations, targetLength, currentChain, nextStartIndex, result, context);
+                currentChain.RemoveAt(currentChain.Count - 1); 
+            }
+        }
+
+        /// <summary>
+        /// 💡 НОВЫЙ МЕТОД: Находит самые дешевые станции, до которых трак может доехать на полном баке
+        /// </summary>
+        private List<StationInfo> GetAffordableCheapestStations(
+            List<StationInfo> allStations,
+            List<StationInfo> currentChain,
+            int startIndex,
+            FuelPlanningContext context,
+            int maxCheapStations)
+        {
+            // Определяем текущую позицию
+            var currentPosition = currentChain.Any() ? currentChain.Last().ForwardDistanceKm : 0.0;
+            
+            // Рассчитываем максимальное расстояние на полном баке
+            var maxRangeOnFullTank = context.TankCapacity / context.FuelConsumptionPerKm;
+            var maxReachableDistance = currentPosition + maxRangeOnFullTank;
+
+            Console.WriteLine($"       Текущая позиция: {currentPosition:F0}км");
+            Console.WriteLine($"       Запас хода на полном баке: {maxRangeOnFullTank:F0}км");
+            Console.WriteLine($"       Максимально достижимая дистанция: {maxReachableDistance:F0}км");
+
+            // Фильтруем станции по достижимости на полном баке
+            var reachableStations = allStations
+                .Skip(startIndex)
+                .Where(station => 
+                {
+                    // Базовые проверки
+                    if (station.ForwardDistanceKm <= currentPosition) return false;
+                    if (station.ForwardDistanceKm > maxReachableDistance) return false;
+                    
+                    // Проверяем, что станция подходит для добавления в цепочку
+                    return CanAddStationToChain(currentChain, station, context);
+                })
+                .ToList();
+
+            Console.WriteLine($"       Достижимых станций: {reachableStations.Count}");
+
+            if (!reachableStations.Any())
+            {
+                Console.WriteLine($"       ⚠️ Нет достижимых станций!");
+                return new List<StationInfo>();
+            }
+
+            // Выбираем самые дешевые станции из достижимых
+            var cheapestStations = reachableStations
+                .OrderBy(s => s.PricePerLiter)                    // Сортируем по цене
+                .ThenBy(s => s.ForwardDistanceKm)                 // При равной цене - ближайшие
+                .Take(maxCheapStations)                           // Берем только 16 самых дешевых
+                .OrderBy(s => s.ForwardDistanceKm)                // Сортируем обратно по расстоянию
+                .ToList();
+
+            Console.WriteLine($"       Отобрано {cheapestStations.Count} самых дешевых:");
+            foreach (var station in cheapestStations.Take(5)) // Показываем первые 5
+            {
+                Console.WriteLine($"         • {station.Station?.ProviderName}: {station.ForwardDistanceKm:F0}км, ${station.PricePerLiter:F2}/л");
+            }
+            if (cheapestStations.Count > 5)
+            {
+                Console.WriteLine($"         ... и ещё {cheapestStations.Count - 5} станций");
+            }
+
+            return cheapestStations;
         }
 
         /// <summary>
