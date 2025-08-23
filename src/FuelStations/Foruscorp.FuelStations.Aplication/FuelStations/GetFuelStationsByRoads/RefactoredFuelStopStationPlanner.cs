@@ -197,8 +197,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             IStationSelector stationSelector = null,
             IRefillCalculator refillCalculator = null)
         {
-            _stationSelector = stationSelector ?? new OptimalStationSelector();
             _refillCalculator = refillCalculator ?? new SmartRefillCalculator();
+            _stationSelector = stationSelector ?? new OptimalStationSelector(_refillCalculator);
         }
 
         /// <summary>
@@ -315,8 +315,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
     public class OptimalStationSelector : IStationSelector
     {
+        private readonly IRefillCalculator _refillCalculator;
+
+        public OptimalStationSelector(IRefillCalculator refillCalculator = null)
+        {
+            _refillCalculator = refillCalculator ?? new SmartRefillCalculator();
+        }
+
         /// <summary>
-        /// РЕКУРСИЯ 3: Рекурсивный поиск оптимальной станции с использованием lookahead
+        /// РЕКУРСИЯ 3: Рекурсивный поиск оптимальной станции с использованием общей стоимости заправки
         /// </summary>
         public StationInfo? SelectOptimalStation(
             List<StationInfo> candidates,
@@ -328,39 +335,51 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             // Для первой остановки используем специальную логику
             if (currentState.CurrentPosition == 0.0)
-                return SelectFirstStationRecursively(candidates, 0);
+                return SelectFirstStationRecursively(candidates, 0, currentState, context);
 
-            // Для последующих остановок ищем более дешевые станции
-            return SelectCheapestStationRecursively(candidates, 0, null, double.MaxValue);
+            // Для последующих остановок ищем станции с минимальной общей стоимостью заправки
+            return SelectCheapestByTotalCostRecursively(candidates, 0, null, double.MaxValue, currentState, context);
         }
 
         /// <summary>
-        /// Рекурсивный выбор первой станции (ищем самую дешевую)
+        /// Рекурсивный выбор первой станции (ищем с минимальной общей стоимостью заправки)
         /// </summary>
-        private StationInfo? SelectFirstStationRecursively(List<StationInfo> candidates, int index)
+        private StationInfo? SelectFirstStationRecursively(
+            List<StationInfo> candidates, 
+            int index, 
+            NewFuelState currentState, 
+            FuelPlanningContext context)
         {
             // Базовый случай: проверили все кандидаты
             if (index >= candidates.Count)
                 return null;
 
             var current = candidates[index];
-            var next = SelectFirstStationRecursively(candidates, index + 1);
+            var next = SelectFirstStationRecursively(candidates, index + 1, currentState, context);
 
-            // Если следующей нет или текущая дешевле
-            if (next == null || current.PricePerLiter < next.PricePerLiter)
+            // Рассчитываем общую стоимость для текущей станции
+            var currentTotalCost = CalculateTotalRefillCost(current, currentState, context);
+            
+            if (next == null)
                 return current;
 
-            return next;
+            // Рассчитываем общую стоимость для следующей станции
+            var nextTotalCost = CalculateTotalRefillCost(next, currentState, context);
+
+            // Выбираем станцию с минимальной общей стоимостью
+            return currentTotalCost <= nextTotalCost ? current : next;
         }
 
         /// <summary>
-        /// Рекурсивный поиск самой дешевой станции
+        /// Рекурсивный поиск станции с минимальной общей стоимостью заправки
         /// </summary>
-        private StationInfo? SelectCheapestStationRecursively(
+        private StationInfo? SelectCheapestByTotalCostRecursively(
             List<StationInfo> candidates, 
             int index, 
             StationInfo? currentBest, 
-            double bestPrice)
+            double bestTotalCost,
+            NewFuelState currentState,
+            FuelPlanningContext context)
         {
             // Базовый случай: проверили все кандидаты
             if (index >= candidates.Count)
@@ -368,16 +387,38 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var candidate = candidates[index];
             
-            // Обновляем лучший вариант если нашли более дешевую станцию
-            if (candidate.PricePerLiter < bestPrice)
+            // Рассчитываем общую стоимость заправки для кандидата
+            var candidateTotalCost = CalculateTotalRefillCost(candidate, currentState, context);
+            
+            // Обновляем лучший вариант если нашли станцию с меньшей общей стоимостью
+            if (candidateTotalCost < bestTotalCost)
             {
-                return SelectCheapestStationRecursively(
-                    candidates, index + 1, candidate, candidate.PricePerLiter);
+                return SelectCheapestByTotalCostRecursively(
+                    candidates, index + 1, candidate, candidateTotalCost, currentState, context);
             }
 
             // Продолжаем поиск с текущим лучшим вариантом
-            return SelectCheapestStationRecursively(
-                candidates, index + 1, currentBest, bestPrice);
+            return SelectCheapestByTotalCostRecursively(
+                candidates, index + 1, currentBest, bestTotalCost, currentState, context);
+        }
+
+        /// <summary>
+        /// Расчет общей стоимости заправки на станции (цена × количество литров)
+        /// </summary>
+        private double CalculateTotalRefillCost(
+            StationInfo station, 
+            NewFuelState currentState, 
+            FuelPlanningContext context)
+        {
+            // Создаем список всех станций для передачи в калькулятор
+            var allStations = new List<StationInfo> { station };
+            
+            // Рассчитываем оптимальное количество дозаправки
+            var refillAmount = _refillCalculator.CalculateOptimalRefill(
+                station, currentState, context, allStations);
+            
+            // Возвращаем общую стоимость (цена за литр × количество литров)
+            return station.PricePerLiter * refillAmount;
         }
     }
 
@@ -400,7 +441,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             // Ищем следующие станции рекурсивно
             var nextCheaperStation = FindNextCheaperStationRecursively(
-                allStations, station, 0, context);
+                allStations, station, 0, context, currentState);
 
             if (nextCheaperStation != null)
             {
@@ -414,13 +455,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         }
 
         /// <summary>
-        /// РЕКУРСИЯ 4: Рекурсивный поиск следующей более дешевой станции
+        /// РЕКУРСИЯ 4: Рекурсивный поиск следующей станции с меньшей общей стоимостью заправки
         /// </summary>
         private StationInfo? FindNextCheaperStationRecursively(
             List<StationInfo> allStations,
             StationInfo currentStation,
             int index,
-            FuelPlanningContext context)
+            FuelPlanningContext context,
+            NewFuelState currentState)
         {
             // Базовый случай: проверили все станции
             if (index >= allStations.Count)
@@ -432,18 +474,24 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (IsValidNextStation(candidate, currentStation, context))
             {
                 var remaining = FindNextCheaperStationRecursively(
-                    allStations, currentStation, index + 1, context);
+                    allStations, currentStation, index + 1, context, currentState);
 
-                // Возвращаем более дешевую из найденных
-                if (remaining == null || candidate.PricePerLiter < remaining.PricePerLiter)
-                    return candidate;
+                // Рассчитываем общую стоимость заправки для кандидата
+                var candidateTotalCost = CalculateTotalRefillCostForStation(candidate, currentStation, context);
                 
-                return remaining;
+                if (remaining == null)
+                    return candidate;
+
+                // Рассчитываем общую стоимость заправки для оставшейся лучшей станции
+                var remainingTotalCost = CalculateTotalRefillCostForStation(remaining, currentStation, context);
+
+                // Возвращаем станцию с меньшей общей стоимостью
+                return candidateTotalCost <= remainingTotalCost ? candidate : remaining;
             }
 
             // Продолжаем поиск
             return FindNextCheaperStationRecursively(
-                allStations, currentStation, index + 1, context);
+                allStations, currentStation, index + 1, context, currentState);
         }
 
         private bool IsValidNextStation(
@@ -453,10 +501,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             // Должна быть дальше по маршруту
             if (candidate.ForwardDistanceKm <= currentStation.ForwardDistanceKm)
-                return false;
-
-            // Должна быть дешевле
-            if (candidate.PricePerLiter >= currentStation.PricePerLiter)
                 return false;
 
             // Должна быть в пределах досягаемости с полным баком
@@ -469,7 +513,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (distanceBetweenStations < FuelPlanningConfig.MinStopDistanceKm)
                 return false;
 
-            return true;
+            // Проверяем, что общая стоимость заправки кандидата меньше текущей станции
+            var candidateTotalCost = CalculateTotalRefillCostForStation(candidate, currentStation, context);
+            var currentTotalCost = CalculateTotalRefillCostForStation(currentStation, currentStation, context);
+            
+            return candidateTotalCost < currentTotalCost;
         }
 
         private bool IsLastPossibleStop(
@@ -512,6 +560,65 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var refill = Math.Min(Math.Max(requiredRefill, FuelPlanningConfig.MinRefillLiters), maxRefill);
 
             return Math.Max(refill, 0);
+        }
+
+        /// <summary>
+        /// Расчет общей стоимости заправки на станции для сравнения кандидатов
+        /// </summary>
+        private double CalculateTotalRefillCostForStation(
+            StationInfo station,
+            StationInfo currentStation,
+            FuelPlanningContext context)
+        {
+            // Рассчитываем расстояние и топливо до станции
+            var distanceToStation = station.ForwardDistanceKm - currentStation.ForwardDistanceKm;
+            var fuelUsed = distanceToStation * context.FuelConsumptionPerKm;
+            
+            // Предполагаем, что приехали на текущую станцию с оптимальным количеством топлива
+            // Для упрощения используем 50% бака как базовое значение
+            var fuelAtCurrentStation = context.TankCapacity * 0.5;
+            var fuelAtCandidateStation = fuelAtCurrentStation - fuelUsed;
+
+            // Рассчитываем оптимальную дозаправку на кандидате
+            var refillAmount = CalculateOptimalRefillForCandidate(
+                fuelAtCandidateStation, station, context);
+
+            // Возвращаем общую стоимость
+            return station.PricePerLiter * refillAmount;
+        }
+
+        /// <summary>
+        /// Расчет оптимальной дозаправки для станции-кандидата
+        /// </summary>
+        private double CalculateOptimalRefillForCandidate(
+            double fuelAtArrival,
+            StationInfo station,
+            FuelPlanningContext context)
+        {
+            // Если топлива недостаточно, заправляемся до минимума или полного бака
+            if (fuelAtArrival < context.TankCapacity * FuelPlanningConfig.MinReserveFactor)
+            {
+                var refillToMinReserve = context.TankCapacity * FuelPlanningConfig.MinReserveFactor - fuelAtArrival;
+                return Math.Max(refillToMinReserve, FuelPlanningConfig.MinRefillLiters);
+            }
+
+            // Для остальных случаев используем стандартную логику
+            // Заправляемся минимально или до полного бака в зависимости от ситуации
+            var distanceToFinish = context.TotalDistanceKm - station.ForwardDistanceKm;
+            var fuelNeededToFinish = distanceToFinish * context.FuelConsumptionPerKm + context.FinishFuel;
+            
+            if (fuelAtArrival >= fuelNeededToFinish)
+            {
+                // Топлива достаточно до финиша, минимальная дозаправка
+                return FuelPlanningConfig.MinRefillLiters;
+            }
+            else
+            {
+                // Нужно дозаправиться для финиша
+                var requiredRefill = fuelNeededToFinish - fuelAtArrival;
+                var maxRefill = context.TankCapacity - fuelAtArrival;
+                return Math.Min(Math.Max(requiredRefill, FuelPlanningConfig.MinRefillLiters), maxRefill);
+            }
         }
     }
 
