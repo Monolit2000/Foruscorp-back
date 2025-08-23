@@ -121,8 +121,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var totalRouteDistanceKm = CalculateTotalRouteDistance(routePoints);
 
+            var newSDSD = new RefactoredFuelStopStationPlanner();
 
-            var stopPlan = _fuelStopStationPlanner.PlanStopsByStations(
+            var stopPlan = newSDSD.PlanStopsByStations(
                 routePoints,
                 stationsAlongRoute,
                 totalRouteDistanceKm,
@@ -132,6 +133,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 requiredStationDtos,
                 finishFuel,
                 road.RoadSectionId);
+
+
+
+
 
             return new RouteStopsForRoadInfo
             {

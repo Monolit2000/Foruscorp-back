@@ -6,7 +6,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
 {
     public class FuelStation : Entity, IAggregateRoot
     {
-        public readonly List<FuelPrice> FuelPrices = [];
+        public List<FuelPrice> FuelPrices = [];
 
         public Guid Id { get; private set; }
         public string FuelStationProviderId { get; set; }
