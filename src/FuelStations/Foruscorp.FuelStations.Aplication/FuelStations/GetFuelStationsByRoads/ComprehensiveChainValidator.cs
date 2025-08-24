@@ -175,9 +175,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 stepResult.FuelBefore = currentFuel;
                 stepResult.Distance = distance;
 
+                var fuelPercentAtArrival = (currentFuel / context.TankCapacity) * 100.0;
+
                 // Проверка 1: Можем ли дойти до станции с 20% запасом
 
-                if (!isFirst && fuelAtArrival < minReserve)
+                if (!isFirst || (isFirst && fuelPercentAtArrival > 30) && fuelAtArrival < minReserve)
                 {
                     result.IsValid = false;
                     result.FailureReason = $"Невозможно дойти до станции {station.Station?.ProviderName} " +
