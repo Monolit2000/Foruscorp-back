@@ -131,7 +131,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 fuelParameters.InitialFuelPercent,
                 fuelParameters.TankCapacityG,
                 requiredStationDtos,
-                finishFuel);
+                finishFuel,
+                road.RoadSectionId);
 
 
 

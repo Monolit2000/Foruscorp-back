@@ -33,7 +33,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double currentFuelLiters,
             double tankCapacity,
             List<RequiredStationDto> requiredStops,
-            double finishFuel)
+            double finishFuel, string RoadSectionId)
         {
             Console.WriteLine("🔍 ЗАПУСК КОМПЛЕКСНОГО АЛГОРИТМА ОПТИМИЗАЦИИ");
             Console.WriteLine("=====================================");
@@ -44,7 +44,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var result = chainOptimizer.FindOptimalChainComprehensive(
                 route, stationsAlongRoute, totalRouteDistanceKm, fuelConsumptionPerKm,
-                currentFuelLiters, tankCapacity, requiredStops, finishFuel);
+                currentFuelLiters, tankCapacity, requiredStops, finishFuel, RoadSectionId);
 
             Console.WriteLine("✅ КОМПЛЕКСНАЯ ОПТИМИЗАЦИЯ ЗАВЕРШЕНА");
             return result;

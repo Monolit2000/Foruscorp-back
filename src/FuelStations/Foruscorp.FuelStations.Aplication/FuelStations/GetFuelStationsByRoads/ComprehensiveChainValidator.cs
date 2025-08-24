@@ -160,6 +160,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var minReserve = context.TankCapacity * FuelPlanningConfig.MinReserveFactor;
             var costCalculator = new SmartChainCostCalculator();
 
+            bool isFirst = true;
+
             // Симулируем каждую остановку
             foreach (var station in chain.Stations)
             {
@@ -174,7 +176,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 stepResult.Distance = distance;
 
                 // Проверка 1: Можем ли дойти до станции с 20% запасом
-                if (fuelAtArrival < minReserve)
+
+                if (!isFirst && fuelAtArrival < minReserve)
                 {
                     result.IsValid = false;
                     result.FailureReason = $"Невозможно дойти до станции {station.Station?.ProviderName} " +

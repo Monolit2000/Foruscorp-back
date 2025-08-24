@@ -15,7 +15,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         private readonly IChainValidator _validator;
         
         // 🔧 Настройки оптимизации
-        public int MaxCheapStationsPerStep { get; set; } = 16;  // Максимум дешевых станций на каждом шаге
+        public int MaxCheapStationsPerStep { get; set; } = 17;  // Максимум дешевых станций на каждом шаге
         public bool EnableCheapStationOptimization { get; set; } = true;  // Включить/выключить оптимизацию
 
         public ComprehensiveChainOptimizer(
@@ -37,7 +37,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             double currentFuelLiters,
             double tankCapacity,
             List<RequiredStationDto> requiredStops,
-            double finishFuel)
+            double finishFuel, string RoadSectionId)
         {
             var context = new FuelPlanningContext
             {
@@ -48,7 +48,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 TankCapacity = tankCapacity,
                 FinishFuel = finishFuel,
                 RequiredStops = requiredStops,
-                RoadSectionId = "comprehensive-optimization"
+                RoadSectionId = RoadSectionId
             };
 
             // Создаем информацию о станциях с расстояниями
@@ -187,7 +187,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     .ToList();
             }
 
-            Console.WriteLine($"     Найдено {stationsToProcess.Count} доступных станций из {allStations.Count - startIndex}");
+            //Console.WriteLine($"     Найдено {stationsToProcess.Count} доступных станций из {allStations.Count - startIndex}");
 
             // Рекурсивно добавляем только отобранные станции
             foreach (var station in stationsToProcess)
@@ -215,14 +215,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         {
             // Определяем текущую позицию
             var currentPosition = currentChain.Any() ? currentChain.Last().ForwardDistanceKm : 0.0;
-            
+            var isFirstStation = !currentChain.Any();
+            var currentFuelPercentage = GetCurrentFuelPercentage(currentChain, context);
             // Рассчитываем максимальное расстояние на полном баке
             var maxRangeOnFullTank = context.TankCapacity / context.FuelConsumptionPerKm;
             var maxReachableDistance = currentPosition + maxRangeOnFullTank;
 
-            Console.WriteLine($"       Текущая позиция: {currentPosition:F0}км");
-            Console.WriteLine($"       Запас хода на полном баке: {maxRangeOnFullTank:F0}км");
-            Console.WriteLine($"       Максимально достижимая дистанция: {maxReachableDistance:F0}км");
+            //Console.WriteLine($"       Текущая позиция: {currentPosition:F0}км");
+            //Console.WriteLine($"       Запас хода на полном баке: {maxRangeOnFullTank:F0}км");
+            //Console.WriteLine($"       Максимально достижимая дистанция: {maxReachableDistance:F0}км");
 
             // Фильтруем станции по достижимости на полном баке
             var reachableStations = allStations
@@ -232,17 +233,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                     // Базовые проверки
                     if (station.ForwardDistanceKm <= currentPosition) return false;
                     if (station.ForwardDistanceKm > maxReachableDistance) return false;
-                    
+
+                    if (isFirstStation)
+                    {
+                        if (station.ForwardDistanceKm > (currentFuelPercentage * context.TankCapacity) / context.FuelConsumptionPerKm) return false;
+                    }
+
                     // Проверяем, что станция подходит для добавления в цепочку
                     return CanAddStationToChain(currentChain, station, context);
                 })
                 .ToList();
 
-            Console.WriteLine($"       Достижимых станций: {reachableStations.Count}");
+            //Console.WriteLine($"       Достижимых станций: {reachableStations.Count}");
 
             if (!reachableStations.Any())
             {
-                Console.WriteLine($"       ⚠️ Нет достижимых станций!");
+                //Console.WriteLine($"       ⚠️ Нет достижимых станций!");
                 return new List<StationInfo>();
             }
 
@@ -254,17 +260,38 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .OrderBy(s => s.ForwardDistanceKm)                // Сортируем обратно по расстоянию
                 .ToList();
 
-            Console.WriteLine($"       Отобрано {cheapestStations.Count} самых дешевых:");
-            foreach (var station in cheapestStations.Take(5)) // Показываем первые 5
-            {
-                Console.WriteLine($"         • {station.Station?.ProviderName}: {station.ForwardDistanceKm:F0}км, ${station.PricePerLiter:F2}/л");
-            }
-            if (cheapestStations.Count > 5)
-            {
-                Console.WriteLine($"         ... и ещё {cheapestStations.Count - 5} станций");
-            }
+            //Console.WriteLine($"       Отобрано {cheapestStations.Count} самых дешевых:");
+            //foreach (var station in cheapestStations.Take(5)) // Показываем первые 5
+            //{
+            //    Console.WriteLine($"         • {station.Station?.ProviderName}: {station.ForwardDistanceKm:F0}км, ${station.PricePerLiter:F2}/л");
+            //}
+            //if (cheapestStations.Count > 5)
+            //{
+            //    Console.WriteLine($"         ... и ещё {cheapestStations.Count - 5} станций");
+            //}
 
             return cheapestStations;
+        }
+
+        private double GetCurrentFuelPercentage(List<StationInfo> currentChain, FuelPlanningContext context)
+        {
+            var currentFuel = context.CurrentFuelLiters;
+            var currentPosition = 0.0;
+
+            // Симулируем расход топлива по цепочке
+            foreach (var station in currentChain)
+            {
+                var distance = station.ForwardDistanceKm - currentPosition;
+                var fuelUsed = distance * context.FuelConsumptionPerKm;
+                currentFuel -= fuelUsed;
+
+                // Добавляем заправку (упрощенный расчет - до полного бака)
+                currentFuel = context.TankCapacity;
+                currentPosition = station.ForwardDistanceKm;
+            }
+
+            // Если нет цепочки, используем текущее топливо
+            return currentFuel / context.TankCapacity;
         }
 
         /// <summary>
