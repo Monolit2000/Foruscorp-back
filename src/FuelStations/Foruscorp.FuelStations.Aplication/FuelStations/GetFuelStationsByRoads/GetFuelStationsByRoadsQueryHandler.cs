@@ -121,9 +121,22 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var totalRouteDistanceKm = CalculateTotalRouteDistance(routePoints);
 
-            var newSDSD = new RefactoredFuelStopStationPlanner();
+            //var newSDSD = new RefactoredFuelStopStationPlanner();
 
-            var stopPlan = newSDSD.PlanStopsWithComprehensiveOptimization(
+            //var stopPlan = newSDSD.PlanStopsWithComprehensiveOptimization(
+            //    routePoints,
+            //    stationsAlongRoute,
+            //    totalRouteDistanceKm,
+            //    fuelParameters.ConsumptionGPerKm,
+            //    fuelParameters.InitialFuelPercent,
+            //    fuelParameters.TankCapacityG,
+            //    requiredStationDtos,
+            //    finishFuel,
+            //    road.RoadSectionId);
+
+            var dijkstra = new DijkstraFuelOptimizer();
+
+            var stopPlan = dijkstra.FindOptimalRoute(
                 routePoints,
                 stationsAlongRoute,
                 totalRouteDistanceKm,
@@ -131,8 +144,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 fuelParameters.InitialFuelPercent,
                 fuelParameters.TankCapacityG,
                 requiredStationDtos,
-                finishFuel,
-                road.RoadSectionId);
+                finishFuel);
 
 
 
