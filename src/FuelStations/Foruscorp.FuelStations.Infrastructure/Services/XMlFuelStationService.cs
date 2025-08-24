@@ -79,7 +79,7 @@ public class XMlFuelStationService : IXMlFuelStationService
         }
         catch (Exception ex)
         {
-            return new List<XmlTaAndPetroStationParceModel>();
+            throw ex;
         }
     }
 

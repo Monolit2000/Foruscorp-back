@@ -62,10 +62,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                     {
                         // Обновляем существующую станцию
 
-                        if(existingStation.FuelStationProviderId == null)
+                        if( string.IsNullOrEmpty(existingStation.FuelStationProviderId))
                             existingStation.FuelStationProviderId = store.Number.ToString();
 
-                        existingStation.ProviderName = "Loves";
+                        existingStation.ProviderName = SystemProvider.Loves.ToString();
                         
                         // Обновляем адрес, если он изменился
                         var fullAddress = $"{store.Address1} {store.City}, {store.State} {store.Zip}".Trim();
@@ -86,7 +86,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         
                         var newFuelStation = FuelStation.CreateNew(
                             fullAddress,
-                            "Loves",
+                            SystemProvider.Loves.ToString(),
                             new GeoPoint(store.Latitude, store.Longitude)
                         );
 

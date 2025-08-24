@@ -1,5 +1,6 @@
 using FluentResults;
 using Foruscorp.FuelStations.Aplication.Contructs;
+using Foruscorp.FuelStations.Aplication.Contructs.Services;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
 using Foruscorp.FuelStations.Domain.FuelStations;
@@ -21,15 +22,18 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
         private readonly IMediator _mediator;
         private readonly IFuelStationContext _fuelStationContext;
         private readonly ILogger<LoadPricesCommandHandler> _logger;
+        private readonly IExcelConverterService _excelConverterService;
 
         public LoadPricesCommandHandler(
             IMediator mediator,
             IFuelStationContext fuelStationContext,
-            ILogger<LoadPricesCommandHandler> logger)
+            ILogger<LoadPricesCommandHandler> logger,
+            IExcelConverterService excelConverterService)
         {
             _mediator = mediator;
             _fuelStationContext = fuelStationContext;
             _logger = logger;
+            _excelConverterService = excelConverterService;
         }
 
         public async Task<Result> Handle(LoadPricesCommand request, CancellationToken cancellationToken)
@@ -61,26 +65,48 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
 
                 try
                 {
-                    var fileType = DetermineFileType(file.FileName);
+                    // Проверяем, нужно ли конвертировать XLS в XLSX
+                    IFormFile fileToProcess = file;
+                    if (_excelConverterService.IsXlsFile(file.FileName))
+                    {
+                        _logger.LogInformation("Converting XLS file to XLSX: {FileName}", file.FileName);
+                        try
+                        {
+                            fileToProcess = await _excelConverterService.ConvertXlsToXlsxAsync(file, cancellationToken);
+                            _logger.LogInformation("Successfully converted XLS to XLSX: {OriginalFileName} -> {ConvertedFileName}", 
+                                file.FileName, fileToProcess.FileName);
+                        }
+                        catch (Exception conversionEx)
+                        {
+                            _logger.LogError(conversionEx, "Failed to convert XLS file to XLSX: {FileName}", file.FileName);
+                            var conversionError = $"Failed to convert XLS file {file.FileName} to XLSX: {conversionEx.Message}";
+                            results.Add(Result.Fail(conversionError));
+                            processedFiles.Add(file.FileName);
+                            priceLoadAttempt.AddFileResult(file.FileName, false, conversionError);
+                            continue;
+                        }
+                    }
+
+                    var fileType = DetermineFileType(fileToProcess.FileName);
                     Result result;
 
                     switch (fileType)
                     {
                         case FileType.Lovers:
-                            _logger.LogInformation("Processing Love's price file: {FileName}", file.FileName);
-                            var loversCommand = new LoadLoversPriceCommand(file);
+                            _logger.LogInformation("Processing Love's price file: {FileName}", fileToProcess.FileName);
+                            var loversCommand = new LoadLoversPriceCommand(fileToProcess);
                             result = await _mediator.Send(loversCommand, cancellationToken);
                             break;
 
                         case FileType.TaAndPetro:
-                            _logger.LogInformation("Processing TA & Petro price file: {FileName}", file.FileName);
-                            var taAndPetroCommand = new LoadTaAndPetroPriceCommand(file);
+                            _logger.LogInformation("Processing TA & Petro price file: {FileName}", fileToProcess.FileName);
+                            var taAndPetroCommand = new LoadTaAndPetroPriceCommand(fileToProcess);
                             result = await _mediator.Send(taAndPetroCommand, cancellationToken);
                             break;
 
                         default:
-                            _logger.LogWarning("Unknown file type for file: {FileName}", file.FileName);
-                            result = Result.Fail($"Unknown file type for file: {file.FileName}");
+                            _logger.LogWarning("Unknown file type for file: {FileName}", fileToProcess.FileName);
+                            result = Result.Fail($"Unknown file type for file: {fileToProcess.FileName}");
                             break;
                     }
 
@@ -175,7 +201,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices
             // Дополнительная логика определения по расширению или другим признакам
             if (lowerFileName.EndsWith(".xlsx") || lowerFileName.EndsWith(".xls"))
             {
-                // Если это Excel файл, но не можем определить тип, возвращаем Unknown
+                // Если это Excel файл, но не можем определить тип по имени, возвращаем Unknown
                 return FileType.Unknown;
             }
 

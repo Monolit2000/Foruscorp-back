@@ -36,6 +36,7 @@ namespace Foruscorp.FuelStations.Infrastructure
 
             services.AddScoped<IXMlFuelStationService, XMlFuelStationService>();
             services.AddScoped<IFuelStationsService, FuelStationsService>();
+            services.AddScoped<IExcelConverterService, ExcelConverterService>();
             
             // Register HttpClient for Love's API service
             services.AddHttpClient<ILovesApiService, LovesApiService>();

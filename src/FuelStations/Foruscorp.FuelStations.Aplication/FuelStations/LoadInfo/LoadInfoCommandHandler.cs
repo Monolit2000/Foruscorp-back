@@ -42,7 +42,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo
             {
                 var fuelStation = fuelStations.FirstOrDefault(s =>
                     Math.Round(s.Coordinates.Longitude, 3) == Math.Round(model.Longitude, 3) &&
-                    Math.Round(s.Coordinates.Latitude, 3) == Math.Round(model.Latitude, 3));
+                    Math.Round(s.Coordinates.Latitude, 3) == Math.Round(model.Latitude, 3) ||
+                        (s.FuelStationProviderId != null && s.FuelStationProviderId == model.Id));
 
                 if (fuelStation is not null && (fuelStation.SystemFuelProvider == SystemProvider.TaPetro || fuelStation.SystemFuelProvider == SystemProvider.Unknown))
                 {
