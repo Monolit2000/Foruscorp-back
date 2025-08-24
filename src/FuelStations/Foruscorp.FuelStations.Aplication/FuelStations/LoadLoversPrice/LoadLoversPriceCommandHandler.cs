@@ -31,6 +31,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
 
             var fuelStations = await fuelStationContext
                 .FuelStations
+                .Where(s => s.SystemFuelProvider == SystemFuelProvider.Loves)
                 .Include(s => s.FuelPrices)
                 .ToListAsync(cancellationToken);
 
@@ -39,7 +40,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
 
             foreach (var station in fuelStations)
             {
-                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemProvider.Loves);
+                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemFuelProvider.Loves);
 
                 if (match is not null)
                 {
@@ -62,7 +63,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
                             (double)match.Discount));
 
                         fuelStationContext.FuelStations.Update(station);
-                        fuelStationContext.FuelStations.Update(station);
+                        updatedStations.Add(station);
                     }
                 }
                 else

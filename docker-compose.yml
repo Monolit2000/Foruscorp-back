@@ -9,11 +9,11 @@ x-mq: &mq-env
   MessageBroker__Password: "guest"
 
 x-otel: &otel-env  
-  OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
-  OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
-  # OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
-  # OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
-  # OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
+  # OTEL_EXPORTER_OTLP_ENDPOINT: "http://aspire-dashboard:18889"
+  # OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "https://otlp-gateway-prod-us-west-0.grafana.net/otlp"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_HEADERS: "Authorization=Basic MTMwNDg5ODpnbGNfZXlKdklqb2lNVFEzTWpVd01DSXNJbTRpT2lKemRHRmpheTB4TXpBME9EazRMVzkwYkhBdGQzSnBkR1V0WjNKaFptRnVZUzAwZFhOamIzSndJaXdpYXlJNklqYzFOalJoZUZGTGJUSkNNbFF3TlZVMmMzbG1WbGhITkNJc0ltMGlPbnNpY2lJNkluQnliMlF0ZFhNdGQyVnpkQzB3SW4xOQ=="
 
 x-common: &common-env
   ASPNETCORE_ENVIRONMENT: "Production"
@@ -29,13 +29,13 @@ services:
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000"
-      # - "5011:5011"
+      - "5011:5011"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
-      # ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
       ASPNETCORE_HTTP_PORTS: "5000"
-      # ASPNETCORE_HTTPS_PORTS: "5011"
+      ASPNETCORE_HTTPS_PORTS: "5011"
       <<: *otel-env
     networks:
       - foruscorp-docker-network

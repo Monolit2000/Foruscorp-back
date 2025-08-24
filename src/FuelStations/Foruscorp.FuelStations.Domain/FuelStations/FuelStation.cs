@@ -5,7 +5,7 @@ using Foruscorp.BuildingBlocks.Domain;
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
 
-    public enum SystemProvider
+    public enum SystemFuelProvider
     {
         Unknown = 0,
         TaPetro = 1,
@@ -20,7 +20,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public string FuelStationProviderId { get; set; }
         public string ProviderName { get; set; } 
         public string Address { get; private set; }
-        public SystemProvider SystemFuelProvider  { get; set; }
+        public SystemFuelProvider SystemFuelProvider  { get; set; }
         public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }
         public DateTime LastUpdated { get; set; }

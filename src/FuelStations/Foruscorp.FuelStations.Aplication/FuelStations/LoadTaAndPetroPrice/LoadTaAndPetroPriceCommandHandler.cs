@@ -30,7 +30,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
 
             var fuelStations = await fuelStationContext
                 .FuelStations
-                .Where(s => s.SystemFuelProvider == SystemProvider.TaPetro)
+                .Where(s => s.SystemFuelProvider == SystemFuelProvider.TaPetro)
                 .Include(s => s.FuelPrices)
                 .ToListAsync(cancellationToken);
 
@@ -39,7 +39,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
 
             foreach (var station in fuelStations)
             {
-                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemProvider.TaPetro);
+                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemFuelProvider.TaPetro);
 
                 if (match is not null)
                 {

@@ -2,6 +2,7 @@ using FluentResults;
 using Foruscorp.FuelStations.Aplication.Contructs;
 using Foruscorp.FuelStations.Aplication.Contructs.Services;
 using Foruscorp.FuelStations.Aplication.Contructs.Services.Models;
+using Foruscorp.FuelStations.Aplication.Contructs.Utilities;
 using Foruscorp.FuelStations.Domain.FuelStations;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
@@ -58,14 +59,14 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         (s.FuelStationProviderId != null && s.FuelStationProviderId == store.Name));
 
 
-                    if (existingStation is not null && (existingStation.SystemFuelProvider == SystemProvider.Loves || existingStation.SystemFuelProvider == SystemProvider.Unknown))
+                    if (existingStation is not null && (existingStation.SystemFuelProvider == SystemFuelProvider.Loves || existingStation.SystemFuelProvider == SystemFuelProvider.Unknown))
                     {
                         // Обновляем существующую станцию
 
                         if( string.IsNullOrEmpty(existingStation.FuelStationProviderId))
                             existingStation.FuelStationProviderId = store.Number.ToString();
 
-                        existingStation.ProviderName = SystemProvider.Loves.ToString();
+                        existingStation.ProviderName = SystemFuelProvider.Loves.ToString();
                         
                         // Обновляем адрес, если он изменился
                         var fullAddress = $"{store.Address1} {store.City}, {store.State} {store.Zip}".Trim();
@@ -73,7 +74,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         {
                             existingStation.UpdateLocation(fullAddress, new GeoPoint(store.Latitude, store.Longitude));
                         }
-                        existingStation.SystemFuelProvider = SystemProvider.Loves;
+                        existingStation.SystemFuelProvider = SystemFuelProvider.Loves;
 
                         existingStation.LastUpdated = DateTime.UtcNow;
 
@@ -86,27 +87,28 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         
                         var newFuelStation = FuelStation.CreateNew(
                             fullAddress,
-                            SystemProvider.Loves.ToString(),
+                            SystemFuelProvider.Loves.ToString(),
                             new GeoPoint(store.Latitude, store.Longitude)
                         );
 
                         newFuelStation.FuelStationProviderId = store.Number.ToString();
                         //newFuelStation.ProviderName = "Love's";
 
-                        newFuelStation.SystemFuelProvider = SystemProvider.Loves;
+                        newFuelStation.SystemFuelProvider = SystemFuelProvider.Loves;
 
                         newStationsList.Add(newFuelStation);
                     }
                 }
 
-                // Добавляем новые станции в базу данных
                 if (newStationsList.Any())
                 {
-                    await _fuelStationContext.FuelStations.AddRangeAsync(newStationsList, cancellationToken);
-                    _logger.LogInformation("Adding {NewStationCount} new Love's stations to database", newStationsList.Count);
+                    var deduplicatedStations = RemoveDuplicatesByCoordinates(newStationsList);
+                    
+                    await _fuelStationContext.FuelStations.AddRangeAsync(deduplicatedStations, cancellationToken);
+                    _logger.LogInformation("Adding {NewStationCount} new Love's stations to database (after deduplication: {DeduplicatedCount})", 
+                        newStationsList.Count, deduplicatedStations.Count);
                 }
 
-                // Сохраняем изменения
                 await _fuelStationContext.SaveChangesAsync(cancellationToken);
 
                 _logger.LogInformation("Successfully processed Love's stores. Added {NewCount} new stations, updated existing stations", 
@@ -119,6 +121,28 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                 _logger.LogError(ex, "Unexpected error occurred while processing Love's stores");
                 return Result.Fail($"Error processing Love's stores: {ex.Message}");
             }
+        }
+
+        private List<FuelStation> RemoveDuplicatesByCoordinates(List<FuelStation> stations)
+        {
+            return stations
+                .GroupBy(s => new 
+                { 
+                    Latitude = Math.Round(s.Coordinates.Latitude, 6), 
+                    Longitude = Math.Round(s.Coordinates.Longitude, 6) 
+                })
+                .Select(group => 
+                {
+                    return group
+                        .OrderBy(s => 
+                        {
+                            if (int.TryParse(s.FuelStationProviderId, out int id))
+                                return id;
+                            return int.MaxValue; 
+                        })
+                        .First();
+                })
+                .ToList();
         }
     }
 }

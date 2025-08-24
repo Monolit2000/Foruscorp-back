@@ -36,7 +36,7 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
 
             builder.Property(fs => fs.SystemFuelProvider)
                 .HasConversion<string>()
-                .HasDefaultValue(SystemProvider.Unknown);
+                .HasDefaultValue(SystemFuelProvider.Unknown);
 
             builder.Property(fs => fs.ProviderName)
                 .IsRequired(false);
