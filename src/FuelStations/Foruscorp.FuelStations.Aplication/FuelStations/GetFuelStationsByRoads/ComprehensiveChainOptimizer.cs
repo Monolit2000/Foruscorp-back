@@ -2,6 +2,7 @@ using Foruscorp.FuelStations.Domain.FuelStations;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Collections.Specialized.BitVector32;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
@@ -226,6 +227,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             //Console.WriteLine($"       Максимально достижимая дистанция: {maxReachableDistance:F0}км");
 
             // Фильтруем станции по достижимости на полном баке
+
             var reachableStations = allStations
                 .Skip(startIndex)
                 .Where(station => 
@@ -236,6 +238,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                     if (isFirstStation)
                     {
+
+                        var distance = station.ForwardDistanceKm - currentPosition;
+                        var fuelUsed = distance * context.FuelConsumptionPerKm;
+                        var fuelAtArrival = context.CurrentFuelLiters - fuelUsed;
+
+                        var minReserve = context.TankCapacity * FuelPlanningConfig.MinReserveFactor;
+
+                        if (fuelAtArrival < minReserve)
+                            return false;
+
                         if (station.ForwardDistanceKm > (currentFuelPercentage * context.TankCapacity) / context.FuelConsumptionPerKm) return false;
                     }
 

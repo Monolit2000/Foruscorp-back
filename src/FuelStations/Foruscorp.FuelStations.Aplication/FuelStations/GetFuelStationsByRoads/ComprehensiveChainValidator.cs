@@ -179,7 +179,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var fuelPercentAtArrival = (currentFuel / context.TankCapacity) * 100.0;
 
                 // Проверка 1: Можем ли дойти до станции с 20% запасом
-
                 if (!isFirst || (isFirst && fuelPercentAtArrival > 30) && fuelAtArrival < minReserve)
                 {
                     result.IsValid = false;
