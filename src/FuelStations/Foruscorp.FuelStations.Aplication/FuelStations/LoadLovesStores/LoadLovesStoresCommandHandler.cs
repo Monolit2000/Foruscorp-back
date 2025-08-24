@@ -53,11 +53,12 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                 {
                     // Ищем существующую станцию по координатам (с округлением до 3 знаков)
                     var existingStation = existingFuelStations.FirstOrDefault(s =>
-                        Math.Round(s.Coordinates.Longitude, 3) == Math.Round(store.Longitude, 3) &&
-                        Math.Round(s.Coordinates.Latitude, 3) == Math.Round(store.Latitude, 3));
+                        (Math.Round(s.Coordinates.Longitude, 3) == Math.Round(store.Longitude, 3) && 
+                        Math.Round(s.Coordinates.Latitude, 3) == Math.Round(store.Latitude, 3)) || 
+                        (s.FuelStationProviderId != null && s.FuelStationProviderId == store.Name));
 
 
-                    if (existingStation != null)
+                    if (existingStation is not null && (existingStation.SystemFuelProvider == SystemProvider.Loves || existingStation.SystemFuelProvider == SystemProvider.Unknown))
                     {
                         // Обновляем существующую станцию
 
@@ -72,6 +73,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
                         {
                             existingStation.UpdateLocation(fullAddress, new GeoPoint(store.Latitude, store.Longitude));
                         }
+                        existingStation.SystemFuelProvider = SystemProvider.Loves;
+
+                        existingStation.LastUpdated = DateTime.UtcNow;
+
+                        _fuelStationContext.FuelStations.Update(existingStation);
                     }
                     else
                     {
@@ -86,6 +92,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores
 
                         newFuelStation.FuelStationProviderId = store.Number.ToString();
                         //newFuelStation.ProviderName = "Love's";
+
+                        newFuelStation.SystemFuelProvider = SystemProvider.Loves;
 
                         newStationsList.Add(newFuelStation);
                     }

@@ -4,6 +4,14 @@ using Foruscorp.BuildingBlocks.Domain;
 
 namespace Foruscorp.FuelStations.Domain.FuelStations
 {
+
+    public enum SystemProvider
+    {
+        Unknown = 0,
+        TaPetro = 1,
+        Loves = 2,
+    }
+
     public class FuelStation : Entity, IAggregateRoot
     {
         public List<FuelPrice> FuelPrices = [];
@@ -12,9 +20,11 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
         public string FuelStationProviderId { get; set; }
         public string ProviderName { get; set; } 
         public string Address { get; private set; }
+        public SystemProvider SystemFuelProvider  { get; set; }
         public string FuelProvider { get; private set; }    
         public GeoPoint Coordinates { get; private set; }
-        public DateTime LastUpdated { get; private set; }
+        public DateTime LastUpdated { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         private FuelStation() { }
 
@@ -25,7 +35,7 @@ namespace Foruscorp.FuelStations.Domain.FuelStations
             Address = address;
             Coordinates = coordinates;
             LastUpdated = DateTime.UtcNow;
-
+            CreatedAt = DateTime.UtcNow;
             if (fuelPrices != null && fuelPrices.Any())
             {
                 FuelPrices = fuelPrices;

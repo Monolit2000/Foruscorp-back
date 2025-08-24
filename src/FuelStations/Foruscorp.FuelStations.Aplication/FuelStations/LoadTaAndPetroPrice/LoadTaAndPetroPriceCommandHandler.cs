@@ -30,12 +30,16 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
 
             var fuelStations = await fuelStationContext
                 .FuelStations
+                .Where(s => s.SystemFuelProvider == SystemProvider.TaPetro)
                 .Include(s => s.FuelPrices)
                 .ToListAsync(cancellationToken);
 
+            var updatedStations = new List<FuelStation>();
+            var notUpdatedStations = new List<FuelStation>();
+
             foreach (var station in fuelStations)
             {
-                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId);
+                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemProvider.TaPetro);
 
                 if (match is not null)
                 {
@@ -45,7 +49,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
                         price.FuelType = FuelType.Gasoline95;
                         price.Price = match.Price;
                         price.DiscountedPrice = match.Discount;
-                        price.UpdatedAt = DateTime.UtcNow;  
+                        price.UpdatedAt = DateTime.UtcNow;
+
+                        fuelStationContext.FuelStations.Update(station);
+                        updatedStations.Add(station);
                     }
                     else
                     {
@@ -53,7 +60,13 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice
                             FuelType.Gasoline95,
                             match.Price,
                             match.Discount));
+
+                        fuelStationContext.FuelStations.Update(station);
                     }
+                }
+                else
+                {
+                    notUpdatedStations.Add(station);
                 }
             }
 

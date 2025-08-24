@@ -31,6 +31,12 @@ namespace Foruscorp.FuelStations.Infrastructure.Domain.FuelStations
             builder.Property(fs => fs.LastUpdated)
                 .IsRequired();
 
+            builder.Property(fs => fs.CreatedAt)
+                .IsRequired();
+
+            builder.Property(fs => fs.SystemFuelProvider)
+                .HasConversion<string>()
+                .HasDefaultValue(SystemProvider.Unknown);
 
             builder.Property(fs => fs.ProviderName)
                 .IsRequired(false);

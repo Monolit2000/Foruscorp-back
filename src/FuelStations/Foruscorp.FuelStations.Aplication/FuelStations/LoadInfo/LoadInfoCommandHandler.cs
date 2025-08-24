@@ -44,11 +44,13 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo
                     Math.Round(s.Coordinates.Longitude, 3) == Math.Round(model.Longitude, 3) &&
                     Math.Round(s.Coordinates.Latitude, 3) == Math.Round(model.Latitude, 3));
 
-                if (fuelStation is not null)
+                if (fuelStation is not null && (fuelStation.SystemFuelProvider == SystemProvider.TaPetro || fuelStation.SystemFuelProvider == SystemProvider.Unknown))
                 {
                     fuelStation.FuelStationProviderId = model.Id;
-
-                }else
+                    fuelStation.SystemFuelProvider = SystemProvider.TaPetro;
+                    fuelStationContext.FuelStations.Update(fuelStation);
+                }
+                else
                 {
 
                     var newFuelStation = FuelStation.CreateNew(
@@ -58,9 +60,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo
                                 model.Latitude,
                                 model.Longitude)
                             );
-
                     newFuelStation.FuelStationProviderId = model.Id;
-
+                    newFuelStation.SystemFuelProvider = SystemProvider.TaPetro;
                     newStationsList.Add(newFuelStation);
                 }
             }

@@ -36,7 +36,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
 
             foreach (var station in fuelStations)
             {
-                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.FuelProvider == "Loves");
+                var match = models.FirstOrDefault(m => m.Id == station.FuelStationProviderId && station.SystemFuelProvider == SystemProvider.Loves);
 
                 if (match is not null)
                 {
@@ -46,7 +46,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
                         price.FuelType = FuelType.Gasoline95;
                         price.Price = (double)match.PumpPrice;
                         price.DiscountedPrice = (double)match.Discount;
-                        price.UpdatedAt = DateTime.UtcNow;  
+                        price.UpdatedAt = DateTime.UtcNow;
+
+                        fuelStationContext.FuelStations.Update(station);
                     }
                     else
                     {
@@ -54,6 +56,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice
                             FuelType.Gasoline95,
                             (double)match.PumpPrice,
                             (double)match.Discount));
+
+                        fuelStationContext.FuelStations.Update(station);
                     }
                 }
             }
