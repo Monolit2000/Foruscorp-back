@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http.Headers;
 
 namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 {
@@ -197,6 +198,12 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 // Рассчитываем оптимальную дозаправку
                 var refillAmount = costCalculator.CalculateOptimalRefillAmount(
                     station, fuelAtArrival, chain.Stations.ToList(), context);
+
+                if ((refillAmount / context.TankCapacity) * 100.0 < 15)
+                {
+                    result.IsValid = false;
+                    return false;
+                }
 
                 // Проверка 2: Не превышаем ли вместимость бака
                 if (fuelAtArrival + refillAmount > context.TankCapacity)
