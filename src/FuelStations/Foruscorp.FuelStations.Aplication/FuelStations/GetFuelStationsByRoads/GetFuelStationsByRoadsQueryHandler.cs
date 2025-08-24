@@ -121,18 +121,18 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var totalRouteDistanceKm = CalculateTotalRouteDistance(routePoints);
 
-            //var newSDSD = new RefactoredFuelStopStationPlanner();
+            var newSDSD = new RefactoredFuelStopStationPlanner();
 
-            //var stopPlan = newSDSD.PlanStopsWithComprehensiveOptimization(
-            //    routePoints,
-            //    stationsAlongRoute,
-            //    totalRouteDistanceKm,
-            //    fuelParameters.ConsumptionGPerKm,
-            //    fuelParameters.InitialFuelPercent,
-            //    fuelParameters.TankCapacityG,
-            //    requiredStationDtos,
-            //    finishFuel,
-            //    road.RoadSectionId);
+            var stopPlanO = newSDSD.PlanStopsWithComprehensiveOptimization(
+                routePoints,
+                stationsAlongRoute,
+                totalRouteDistanceKm,
+                fuelParameters.ConsumptionGPerKm,
+                fuelParameters.InitialFuelPercent,
+                fuelParameters.TankCapacityG,
+                requiredStationDtos,
+                finishFuel,
+                road.RoadSectionId);
 
             var dijkstra = new DijkstraFuelOptimizer();
 

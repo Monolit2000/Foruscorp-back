@@ -58,6 +58,18 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             var graph = BuildFuelStationGraph(stations, route, context);
             Console.WriteLine($"📊 Граф построен: {graph.Nodes.Count} узлов, {graph.Edges.Count} рёбер");
 
+            // 1.5. Проверяем возможность прямого маршрута без заправок
+            var directRouteCheck = CheckDirectRouteToFinish(context);
+            if (directRouteCheck.IsPossible)
+            {
+                Console.WriteLine("🎯 Прямой маршрут возможен без заправок!");
+                return new StopPlanInfo 
+                { 
+                    StopPlan = new List<FuelStopPlan>(),
+                    Finish = CreateFinishInfo(context, directRouteCheck.FuelAtFinish)
+                };
+            }
+
             // 2. Запускаем алгоритм Дейкстры
             var optimalPath = RunDijkstraAlgorithm(graph, context);
             
@@ -218,6 +230,27 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             
             if (fuelAtArrival < 0) return null; // Не дойдем
             
+            // 🎯 КРИТИЧЕСКАЯ ПРОВЕРКА: Для финиша проверяем требуемый остаток топлива
+            if (toNode.NodeType == GraphNodeType.Finish)
+            {
+                if (fuelAtArrival < context.FinishFuel)
+                {
+                    // Недостаточно топлива для финиша с требуемым остатком
+                    return null;
+                }
+                
+                // ✅ Переход к финишу валиден - топлива хватает
+                return new FuelGraphEdge
+                {
+                    FromNode = fromNode,
+                    ToNode = toNode,
+                    Distance = distance,
+                    FuelUsed = fuelNeeded,
+                    TransitionCost = 0, // Переход к финишу бесплатный
+                    FuelAtDestination = fuelAtArrival
+                };
+            }
+            
             // Для станций проверяем минимальный запас (кроме критических ситуаций)
             if (toNode.NodeType == GraphNodeType.Station && fuelAtArrival < minReserve)
             {
@@ -261,11 +294,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             if (toNode.NodeType == GraphNodeType.Station)
             {
                 // Переход к станции - стоимость дозаправки
-                var refillAmount = context.TankCapacity * toNode.RefillLevel;
-                var maxPossibleRefill = context.TankCapacity - fuelAtArrival;
-                var actualRefill = Math.Min(refillAmount, maxPossibleRefill);
-                
-                var fuelCost = actualRefill * toNode.StationInfo.PricePerLiter;
+                var refillAmount = CalculateOptimalRefillForStation(toNode, fuelAtArrival, context);
+                var fuelCost = refillAmount * toNode.StationInfo.PricePerLiter;
                 
                 // Добавляем штраф за остановку для минимизации количества остановок
                 var stopPenalty = 10.0; // Фиксированный штраф за остановку
@@ -274,6 +304,43 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
             }
 
             return 0;
+        }
+
+        /// <summary>
+        /// 🎯 Рассчитывает оптимальную дозаправку с учетом финишного топлива
+        /// </summary>
+        private double CalculateOptimalRefillForStation(
+            FuelGraphNode stationNode, 
+            double fuelAtArrival, 
+            FuelPlanningContext context)
+        {
+            var distanceToFinish = context.TotalDistanceKm - stationNode.Position;
+            var fuelNeededToFinish = distanceToFinish * context.FuelConsumptionPerKm;
+            var totalFuelNeededForFinish = fuelNeededToFinish + context.FinishFuel;
+            
+            // Вариант 1: Минимальная заправка для достижения финиша
+            var minRefillForFinish = Math.Max(0, totalFuelNeededForFinish - fuelAtArrival);
+            
+            // Вариант 2: Заправка согласно уровню узла
+            var nodeRefillAmount = context.TankCapacity * stationNode.RefillLevel;
+            
+            // Вариант 3: Максимально возможная заправка
+            var maxPossibleRefill = context.TankCapacity - fuelAtArrival;
+            
+            // Выбираем оптимальную стратегию:
+            // Если можем дойти до финиша с текущим топливом - заправляемся согласно узлу
+            if (fuelAtArrival >= totalFuelNeededForFinish)
+            {
+                return Math.Min(nodeRefillAmount, maxPossibleRefill);
+            }
+            else
+            {
+                // Иначе заправляемся минимум для достижения финиша, 
+                // но не меньше чем предполагает узел (если это возможно)
+                var optimalRefill = Math.Max(minRefillForFinish, 
+                    Math.Min(nodeRefillAmount, maxPossibleRefill));
+                return Math.Min(optimalRefill, maxPossibleRefill);
+            }
         }
 
         /// <summary>
@@ -398,10 +465,8 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 var fuelUsed = distance * context.FuelConsumptionPerKm;
                 var fuelAtArrival = currentFuel - fuelUsed;
 
-                // Используем уровень дозаправки из узла графа
-                var refillAmount = Math.Min(
-                    context.TankCapacity * stationNode.RefillLevel,
-                    context.TankCapacity - fuelAtArrival);
+                // 🎯 Используем улучшенную логику дозаправки с учетом финишного топлива
+                var refillAmount = CalculateOptimalRefillForStation(stationNode, fuelAtArrival, context);
 
                 var stop = new FuelStopPlan
                 {
@@ -419,10 +484,39 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 currentPosition = station.ForwardDistanceKm;
             }
 
+            // 🔍 Проверим, достигнем ли финиша с требуемым топливом
+            var finalDistance = context.TotalDistanceKm - currentPosition;
+            var finalFuelUsed = finalDistance * context.FuelConsumptionPerKm;
+            var fuelAtFinish = currentFuel - finalFuelUsed;
+
+            Console.WriteLine($"🏁 Финишная проверка: Топливо на финише: {fuelAtFinish:F1}л, Требуется: {context.FinishFuel:F1}л");
+
             return new StopPlanInfo
             {
                 StopPlan = stops,
-                Finish = CreateFinishInfo(context)
+                Finish = CreateFinishInfo(context, fuelAtFinish)
+            };
+        }
+
+        /// <summary>
+        /// 🎯 Проверяет возможность прямого маршрута до финиша без заправок
+        /// </summary>
+        private DirectRouteResult CheckDirectRouteToFinish(FuelPlanningContext context)
+        {
+            var totalFuelNeeded = context.TotalDistanceKm * context.FuelConsumptionPerKm;
+            var fuelAtFinish = context.CurrentFuelLiters - totalFuelNeeded;
+            
+            var isPossible = fuelAtFinish >= context.FinishFuel;
+            
+            Console.WriteLine($"🧮 Прямой маршрут: Текущее топливо: {context.CurrentFuelLiters:F1}л, " +
+                            $"Нужно для поездки: {totalFuelNeeded:F1}л, " +
+                            $"Останется: {fuelAtFinish:F1}л, " +
+                            $"Требуется на финише: {context.FinishFuel:F1}л");
+            
+            return new DirectRouteResult
+            {
+                IsPossible = isPossible,
+                FuelAtFinish = Math.Max(0, fuelAtFinish)
             };
         }
 
@@ -449,11 +543,11 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 .FirstOrDefault()?.PriceAfterDiscount ?? 0;
         }
 
-        private FinishInfo CreateFinishInfo(FuelPlanningContext context)
+        private FinishInfo CreateFinishInfo(FuelPlanningContext context, double? actualFuelAtFinish = null)
         {
             return new FinishInfo
             {
-                RemainingFuelLiters = context.FinishFuel
+                RemainingFuelLiters = actualFuelAtFinish ?? context.FinishFuel
             };
         }
 
@@ -531,6 +625,15 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public List<StationInfo> Stations { get; set; } = new List<StationInfo>();
         public double TotalCost { get; set; }
         public List<FuelGraphNode> NodesInPath { get; set; } = new List<FuelGraphNode>();
+    }
+
+    /// <summary>
+    /// Результат проверки прямого маршрута
+    /// </summary>
+    public class DirectRouteResult
+    {
+        public bool IsPossible { get; set; }
+        public double FuelAtFinish { get; set; }
     }
 
     #endregion
