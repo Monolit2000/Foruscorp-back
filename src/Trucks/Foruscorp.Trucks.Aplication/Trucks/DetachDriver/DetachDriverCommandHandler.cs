@@ -22,6 +22,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.DetachDriver
         public async Task<Result> Handle(DetachDriverCommand command, CancellationToken cancellationToken)
         {
             var truck = await context.Trucks
+                .Include(t => t.TruckUsageHistory.Where(tu => tu.EndedAt == null))
                 .FirstOrDefaultAsync(t => t.Id == command.TruckId, cancellationToken);
             if (truck == null)
                 return Result.Fail($"Truck with id {command.TruckId} not found.");
