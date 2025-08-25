@@ -21,6 +21,7 @@ namespace Foruscorp.Push.Features.Devices.RegisterDevice
             if (existingDevice != null)
             {
                 existingDevice.Activate();
+                await context.SaveChangesAsync(cancellationToken);
                 return existingDevice.Id;
             }
 
