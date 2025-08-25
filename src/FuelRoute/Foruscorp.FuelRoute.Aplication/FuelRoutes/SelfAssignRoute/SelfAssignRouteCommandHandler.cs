@@ -30,7 +30,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
             if (fuelRoute == null)
                 return Result.Fail("Fuel route not found.");
 
-            fuelRoute.MarkAsSended(request.RouteSectionId);
+            fuelRoute.Assign(request.RouteSectionId);
 
             await context.SaveChangesAsync(cancellationToken);
 

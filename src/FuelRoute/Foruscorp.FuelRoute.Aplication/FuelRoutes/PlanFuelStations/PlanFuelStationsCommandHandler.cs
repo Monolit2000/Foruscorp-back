@@ -83,9 +83,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id)).ToList();
 
 
-            var sectionIds = roadSectionDtos
-                .Select(dto => Guid.Parse(dto.RoadSectionId))
-                .ToHashSet();
+
 
             var oldStations = await fuelRouteContext.FuelRouteStation
                 .Where(x => x.FuelRouteId == fuelRoad.Id && !x.IsOld)

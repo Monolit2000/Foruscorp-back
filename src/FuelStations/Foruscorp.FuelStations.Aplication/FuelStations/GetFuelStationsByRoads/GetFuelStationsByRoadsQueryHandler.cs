@@ -134,10 +134,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
                 finishFuel,
                 road.RoadSectionId);
 
-
-
-
-
             return new RouteStopsForRoadInfo
             {
                 StopPlan = stopPlan.StopPlan,

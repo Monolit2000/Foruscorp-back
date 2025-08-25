@@ -63,6 +63,13 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(x => x.RoadSectionId)
                 .IsRequired();
 
+            builder.Property(x => x.IsPlaned)
+                .IsRequired();
+
+            builder.Property(x => x.IsAssigned)
+                .IsRequired();
+
+
             // Внешний ключ на FuelRoute
             builder.HasOne<FuelRoute>()
                    .WithMany(fr => fr.FuelRouteStations)

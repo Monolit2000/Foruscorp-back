@@ -168,7 +168,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             UpdateChangedAt();
         }
 
-        public void MarkAsSended(Guid routeSectionId)
+        public void Assign(Guid routeSectionId)
         {
             var routeSectiuon = RouteSections.FirstOrDefault(rs => rs.Id == routeSectionId);
             if (routeSectiuon == null)

@@ -21,7 +21,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             var fuelRoad = await fuelRouteContext.FuelRoutes
                   .Include(x => x.OriginLocation)
                   .Include(x => x.DestinationLocation)
-                  .Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
+                  //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections.Where(x => x.IsAssigned == true))
                   .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
@@ -33,7 +33,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             if (section == null)
                 section = fuelRoad.RouteSections.First();
 
-            var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
+            var stations = fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
+            //var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
             var routes = fuelRoad.RouteSections.Where(rs => rs.Id == section.Id).Select(rs => new RouteDto
             {
 

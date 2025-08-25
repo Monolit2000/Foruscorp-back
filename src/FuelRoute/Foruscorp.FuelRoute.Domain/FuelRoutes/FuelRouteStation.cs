@@ -17,6 +17,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public DateTime ScheduledTime { get; set; }
 
+        public bool IsAssigned { get; set; }
+        public bool IsPlaned { get; set; }
+
+
         public bool IsOld { get; set; } = false;
         public int RouteVersion { get; set; } = 0; 
 
@@ -52,6 +56,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public void MurkAsOld()
         {
             IsOld = true;
+        }
+
+        public void Assign()
+        {
+            IsPlaned = true;
+            IsAssigned = true;
         }
 
         //private FuelRouteStations(

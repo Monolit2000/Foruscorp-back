@@ -38,7 +38,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
 
             logger.LogInformation("Processing fuel route: {FuelRoute}", JsonSerializer.Serialize(fuelRoute, new JsonSerializerOptions { WriteIndented = true}));
 
-            fuelRoute.MarkAsSended(request.RouteSectionId);
+            fuelRoute.Assign(request.RouteSectionId);
             fuelRoute.MarkAsAccepted();
 
             await context.SaveChangesAsync(cancellationToken);

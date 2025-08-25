@@ -87,6 +87,9 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
                 reportLoadAttempt.Complete(true);
                 await _truckTrackingContext.SaveChangesAsync(cancellationToken);
 
+
+
+
                 return Result.Ok(transactionDtos);
             }
             catch (Exception ex)
