@@ -15,11 +15,14 @@ namespace Foruscorp.Push.Features.Devices.RegisterDevice
         }
         public async Task<Result<Guid>> Handle(RegisterDeviceCommand request, CancellationToken cancellationToken)
         {
-            var IsTokenExist = await context.Devices
-                .AnyAsync(d => d.Token.Value == request.PushToken, cancellationToken);
+            var existingDevice = await context.Devices
+                .FirstOrDefaultAsync(d => d.Token.Value == request.PushToken, cancellationToken);
 
-            if(IsTokenExist)
-                return Result.Fail(new Error("Device with this token already registered."));
+            if (existingDevice != null)
+            {
+                existingDevice.Activate();
+                return existingDevice.Id;
+            }
 
             var device = new Device(new ExpoPushToken(request.PushToken), request.UserId);
             await context.AddAsync(device, cancellationToken);
