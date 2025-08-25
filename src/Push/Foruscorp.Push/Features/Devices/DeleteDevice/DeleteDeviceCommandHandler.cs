@@ -33,7 +33,8 @@ namespace Foruscorp.Push.Features.Devices.DeleteDevice
                     return Result.Fail($"Device with token {request.ExpoToken} not found");
                 }
 
-                context.Devices.Remove(device);
+                device.Deactivate();
+                //context.Devices.Remove(device);
                 await context.SaveChangesAsync(cancellationToken);
 
                 logger.LogInformation("Device with token {ExpoToken} successfully deleted", request.ExpoToken);

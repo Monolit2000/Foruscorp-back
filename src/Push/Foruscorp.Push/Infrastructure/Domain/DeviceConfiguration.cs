@@ -18,6 +18,10 @@ namespace Foruscorp.Push.Infrastructure.Domain
             builder.Property(d => d.UserId)
                    .IsRequired(false);
 
+            builder.Property(d => d.IsActive)
+                .HasDefaultValue(true)
+                .IsRequired();
+
             builder.OwnsOne(x => x.Token, token =>
             {
                 token.Property<string>("Value")

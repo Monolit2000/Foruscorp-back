@@ -9,7 +9,7 @@ namespace Foruscorp.Push.Domain.Devices
         public Guid? UserId { get; private set; }                
         public ExpoPushToken Token { get; private set; }         
         public DateTime RegisteredAt { get; private set; }        
-
+        public bool IsActive { get; private set; } = true;  
         private Device() { } 
 
         public Device(ExpoPushToken token, Guid? userId = null)
@@ -25,7 +25,9 @@ namespace Foruscorp.Push.Domain.Devices
             if (newToken == null) throw new ArgumentNullException(nameof(newToken));
             Token = newToken;
         }
+
+        public void Activate() => IsActive = true;
+        public void Deactivate() => IsActive = false;
+
     }
-
-
 }

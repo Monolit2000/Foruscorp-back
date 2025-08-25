@@ -31,6 +31,11 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotificat
                 .Where(d => d.UserId == request.UserId)
                 .ToListAsync(cancellationToken);
 
+            var activeDevices = devices.Where(d => d.IsActive).ToList();
+
+            if (!activeDevices.Any())
+                return;
+
             foreach (var d in devices)
                 notification.AddRecipient(d);
 

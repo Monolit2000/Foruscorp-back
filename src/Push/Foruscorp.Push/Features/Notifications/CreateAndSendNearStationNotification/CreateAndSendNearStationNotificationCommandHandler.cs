@@ -1,8 +1,9 @@
-﻿using MediatR;
-using Foruscorp.Push.Contruct;
-using Microsoft.EntityFrameworkCore;
-using Foruscorp.Push.Infrastructure.Database;
+﻿using Foruscorp.Push.Contruct;
 using Foruscorp.Push.Domain.PushNotifications;
+using Foruscorp.Push.Infrastructure.Database;
+using MediatR;
+using Microsoft.EntityFrameworkCore;
+using System.Threading;
 
 namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotification
 {
@@ -34,6 +35,12 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
             var devices = await context.Devices
                 .Where(d => d.UserId == request.UserId)
                 .ToListAsync(cancellationToken);
+
+            var activeDevices = devices.Where(d => d.IsActive).ToList();
+
+            if (!activeDevices.Any())
+                return;
+
             foreach (var d in devices)
                 notification.AddRecipient(d);
 
@@ -47,7 +54,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
             await context.SaveChangesAsync(cancellationToken);
         }
 
-        private async Task SendToPendingRecipientsAsync(Notification notification, CancellationToken ct)
+        private async Task SendToPendingRecipientsAsync(Notification notification, CancellationToken cancellationToken)
         {
             foreach (var rec in notification.Recipients.ToList())
             {
@@ -59,10 +66,13 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendNearStationNotifica
                         notification.Content.Body,
                         notification.Payload.Data);
 
+                    notification.MarkAsSent();
+
                     rec.MarkDelivered(DateTime.UtcNow);
                 }
                 catch (Exception ex)
                 {
+                    notification.MarkAsFailed();
                     rec.MarkFailed(ex.Message);
                 }
             }

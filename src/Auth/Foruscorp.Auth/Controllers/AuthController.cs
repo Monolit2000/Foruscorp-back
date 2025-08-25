@@ -64,6 +64,7 @@ namespace Foruscorp.Auth.Controllers
             return Ok("Logged out successfully");
         }
 
+        [Authorize]
         [HttpPost("logout-mobile")]
         public async Task<IActionResult> LogoutMobileAsync([FromBody] MobileLogoutRequest request)
         {

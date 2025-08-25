@@ -3,7 +3,6 @@ using Foruscorp.Trucks.Domain.DriverFuelHistorys;
 using Foruscorp.Trucks.Domain.Drivers.Events;
 using Foruscorp.Trucks.Domain.RouteOffers;
 using Foruscorp.Trucks.Domain.Trucks;
-using Foruscorp.Trucks.Domain.Trucks.Events;
 using Foruscorp.Trucks.Domain.Users;
 
 namespace Foruscorp.Trucks.Domain.Drivers
