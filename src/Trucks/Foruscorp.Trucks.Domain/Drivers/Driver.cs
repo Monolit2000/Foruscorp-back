@@ -82,6 +82,10 @@ namespace Foruscorp.Trucks.Domain.Drivers
             UserId = userId;
         }   
 
+        //public void SetCompany(Guid companyId)
+        //{
+        //    CompanyId = companyId;
+        //}   
 
         public void UpdateContact(
             string fullName = null,

@@ -6,6 +6,7 @@ using Foruscorp.Trucks.Aplication.Drivers.GetDriverById;
 using Foruscorp.Trucks.Aplication.Drivers.UpdateDriverContact;
 using Foruscorp.Trucks.Aplication.Trucks;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -19,6 +20,7 @@ namespace Foruscorp.Trucks.API.Controllers
     [Route("[controller]")]
     public class DriverController(IMediator mediator) : ControllerBase
     {
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(List<DriverDto>))]
         [HttpGet("get-all")]
         public async Task<ActionResult> GetAllDrivers(CancellationToken cancellationToken)

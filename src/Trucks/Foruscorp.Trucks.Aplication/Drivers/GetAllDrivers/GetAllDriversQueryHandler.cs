@@ -8,12 +8,15 @@ using System.Text.Json.Serialization;
 
 namespace Foruscorp.Trucks.Aplication.Drivers.GetAllDrivers
 {
-    public class GetAllDriversQueryHandler(ITruckContext context) : IRequestHandler<GetAllDriversQuery, List<GetAllDriverDto>>
+    public class GetAllDriversQueryHandler(
+        ITruckContext context,
+        ICurrentUser currentUser) : IRequestHandler<GetAllDriversQuery, List<GetAllDriverDto>>
     {
         public async Task<List<GetAllDriverDto>> Handle(GetAllDriversQuery request, CancellationToken cancellationToken)
         {
             var drivers = await context.Drivers
                 .AsNoTracking()
+                .Where(d => d.CompanyId == currentUser.CompanyId)
                 .Include(d => d.Truck)
                 .Include(d => d.Bonuses)
                 .Include(d => d.DriverUser)

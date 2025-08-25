@@ -19,11 +19,14 @@ namespace Foruscorp.Trucks.Aplication.Drivers.CreateDriver
 
     public class CreateDriverCommandHandler(
         ITruckContext context,
+        ICurrentUser currentUser,
         IPublishEndpoint publishEndpoint) : IRequestHandler<CreateDriverCommand, Result<DriverDto>>
     {
         public async Task<Result<DriverDto>> Handle(CreateDriverCommand request, CancellationToken cancellationToken)
         {
             var driver = Driver.CreateNew(request.Name, request.Phone, request.Email, request.TelegramLink);
+
+            driver.SetCompany(currentUser.CompanyId.Value);
 
             await context.Drivers.AddAsync(driver, cancellationToken);
 
