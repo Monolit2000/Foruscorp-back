@@ -24,6 +24,7 @@ namespace Foruscorp.Trucks.Aplication.Trucks.GetAllTruckUnit
         {
             var trucks = await truckContext.Trucks
                 .Where(t => t.CompanyId == currentUser.CompanyId)
+                .Where(t => t.DriverId == null)
                 .Select(t => new TruckUnitDto
                 {
                     TruckId = t.Id,
