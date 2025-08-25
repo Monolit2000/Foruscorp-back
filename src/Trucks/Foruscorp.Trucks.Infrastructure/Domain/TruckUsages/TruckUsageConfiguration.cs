@@ -18,7 +18,7 @@ namespace Foruscorp.Trucks.Infrastructure.Domain.TruckUsages
             builder.HasKey(tu => tu.Id);
 
             builder.Property(tu => tu.Id)
-                   .IsRequired();
+                .ValueGeneratedNever();
 
             builder.Property(tu => tu.TruckId)
                    .IsRequired();
