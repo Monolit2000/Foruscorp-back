@@ -24,7 +24,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public Driver Driver { get; private set; }
         public Guid? ModelTruckGroupId { get; private set; }
         public ModelTruckGroup ModelTruckGroup { get; private set; }
-        public List<TruckUsage> TruckUsageHistory { get; set; }
+        public List<TruckUsage> TruckUsageHistory { get; set; } = [];
 
         private Truck() { }
 

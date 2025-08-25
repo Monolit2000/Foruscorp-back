@@ -1,7 +1,7 @@
 x-db: &db-env
   # ConnectionStrings__DefaultConnection: "Host=host.docker.internal;Port=5432;Database=ForuscorpDB;Username=postgres;Password=postgres"
-  # ConnectionStrings__DefaultConnection: "Host=54.151.63.149;Port=5435;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
-  ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  ConnectionStrings__DefaultConnection: "Host=54.151.63.149;Port=5435;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  # ConnectionStrings__DefaultConnection: "Host=foruscorp.db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
 
 x-mq: &mq-env
   MessageBroker__HostName: "rabbitmq://rabbitmq"
