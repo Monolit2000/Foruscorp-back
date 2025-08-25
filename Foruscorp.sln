@@ -84,6 +84,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.TrucksTracking.Wo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.TrucksTracking.Worker.IntegrationEvents", "src\TrucksTracking\Foruscorp.TrucksTracking.Worker.IntegrationEvents\Foruscorp.TrucksTracking.Worker.IntegrationEvents.csproj", "{8EEC8515-42D6-4167-91C5-EDD176E569E2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Foruscorp.FuelStations.IntegrationEvents", "src\FuelStations\Foruscorp.FuelStations.IntegrationEvents\Foruscorp.FuelStations.IntegrationEvents.csproj", "{096B1703-B27E-43CA-B856-4518EFBB9F50}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -202,6 +204,10 @@ Global
 		{8EEC8515-42D6-4167-91C5-EDD176E569E2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8EEC8515-42D6-4167-91C5-EDD176E569E2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8EEC8515-42D6-4167-91C5-EDD176E569E2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{096B1703-B27E-43CA-B856-4518EFBB9F50}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{096B1703-B27E-43CA-B856-4518EFBB9F50}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{096B1703-B27E-43CA-B856-4518EFBB9F50}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{096B1703-B27E-43CA-B856-4518EFBB9F50}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -243,6 +249,7 @@ Global
 		{B590D0E1-BCF9-452F-A649-03FBDBC9D44E} = {676DE73E-4244-4A05-ACB8-297B6135F49A}
 		{60DC06E2-90C7-4DF4-9745-24D971155F9F} = {49C09F7C-C68E-4556-8CB9-80B2285B76AE}
 		{8EEC8515-42D6-4167-91C5-EDD176E569E2} = {49C09F7C-C68E-4556-8CB9-80B2285B76AE}
+		{096B1703-B27E-43CA-B856-4518EFBB9F50} = {EABA0AE4-4A9E-4F72-8E66-12B3781ABE73}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2904CEA6-8C5E-4BE6-8C16-181313AB69B3}

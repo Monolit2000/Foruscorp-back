@@ -45,6 +45,15 @@ namespace Foruscorp.Trucks.Infrastructure.Satup
 
             services.AddScoped<ITruckContext, TruckContext>();
 
+            services.AddScoped<ITruckTrackingService, TruckTrackingService>();
+
+            services.AddHttpClient<ITruckTrackingService, TruckTrackingService>(client =>
+            {
+                client.BaseAddress = new Uri("http://foruscorp.truckstracking.api:5001");
+            });
+
+            services.AddScoped<IPdfTransactionService, PdfTransactionService>();
+
             services.AddScoped<ITruckProviderService, SamsaraApiService>();
 
             services.AddScoped<ICurrentUser, CurrentUser>();

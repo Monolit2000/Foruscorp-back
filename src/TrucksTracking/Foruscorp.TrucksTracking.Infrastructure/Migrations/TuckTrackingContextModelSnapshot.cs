@@ -56,6 +56,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Migrations
                     b.Property<Guid?>("RecordedOnLocationId")
                         .HasColumnType("uuid");
 
+                    b.Property<double>("Refill")
+                        .HasColumnType("double precision");
+
                     b.Property<Guid>("RouteId")
                         .HasColumnType("uuid");
 

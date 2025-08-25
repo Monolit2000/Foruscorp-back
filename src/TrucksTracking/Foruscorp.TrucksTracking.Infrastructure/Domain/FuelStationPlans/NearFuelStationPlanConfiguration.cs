@@ -40,6 +40,9 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Domain.FuelStationPlans
             builder.Property(x => x.NearDistance)
                    .HasColumnType("double precision");
 
+            builder.Property(x => x.Refill)
+                   .HasColumnType("double precision");
+
             builder.Property(x => x.IsNear);
 
             builder.Property(x => x.Address)

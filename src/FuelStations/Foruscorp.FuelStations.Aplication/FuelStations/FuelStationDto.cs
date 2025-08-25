@@ -19,7 +19,6 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations
         public string PriceAfterDiscount { get; set; }
         public string DistanceToLocation { get; set; }
         public int Route { get; set; }
-
         public int StopOrder { get; set; }
     }
 }

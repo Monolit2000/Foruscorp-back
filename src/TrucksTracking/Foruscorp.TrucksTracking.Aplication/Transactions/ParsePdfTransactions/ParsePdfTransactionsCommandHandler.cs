@@ -1,15 +1,11 @@
+using MediatR;
 using FluentResults;
 using Foruscorp.TrucksTracking.Aplication.Contruct;
-using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
+using Microsoft.Extensions.Logging;
 using Foruscorp.TrucksTracking.Domain.Transactions;
 using Foruscorp.TrucksTracking.Domain.Reports;
-using MediatR;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using Foruscorp.TrucksTracking.Aplication.Contructs.Services;
 
 namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
 {
@@ -33,7 +29,6 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions
 
         public async Task<Result<List<TransactionDto>>> Handle(ParsePdfTransactionsCommand request, CancellationToken cancellationToken)
         {
-            // Создаем запись о попытке загрузки отчета
             var reportLoadAttempt = ReportLoadAttempt.CreateNew(1); // 1 файл
             await _truckTrackingContext.ReportLoadAttempts.AddAsync(reportLoadAttempt, cancellationToken);
             await _truckTrackingContext.SaveChangesAsync(cancellationToken);

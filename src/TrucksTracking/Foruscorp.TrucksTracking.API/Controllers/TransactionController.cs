@@ -1,6 +1,8 @@
-using Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions;
-using Foruscorp.TrucksTracking.Aplication.Reports.GetReportLoadAttempts;
+using Foruscorp.Trucks.IntegrationEvents;
+using Foruscorp.TrucksTracking.Aplication.FuelStations.GetNearFuelStationPlan;
 using Foruscorp.TrucksTracking.Aplication.Reports;
+using Foruscorp.TrucksTracking.Aplication.Reports.GetReportLoadAttempts;
+using Foruscorp.TrucksTracking.Aplication.Transactions.ParsePdfTransactions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using System;
@@ -96,6 +98,34 @@ namespace Foruscorp.TrucksTracking.API.Controllers
                 }
                 
                 return Ok(result.Value);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
+        }
+
+
+        [HttpPost("near-fuel-plan-bonus")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(int))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<int>> GetNearFuelStationPlanBonus([FromBody] NearFuelPlanRequest request, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (request.TruckId == Guid.Empty)
+                    return BadRequest("TruckId is required");
+
+                var query = new GetNearFuelStationPlanBonusIndexQuery(
+                    request.TruckId,
+                    request.TransactionTime,
+                    request.Quantity,
+                    request.TankCapacity);
+
+                var bonusIndex = await _mediator.Send(query, cancellationToken);
+
+                return Ok(bonusIndex);
             }
             catch (Exception ex)
             {

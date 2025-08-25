@@ -20,6 +20,7 @@ namespace Foruscorp.Trucks.Domain.Drivers
         public List<DriverBonus> Bonuses { get; set; } = [];
 
         public readonly List<DriverFuelHistory> FuelHistories = [];
+        public List<TruckUsage> TruckUsageHistory { get; set; } = [];
         public Guid Id { get; private set; }
         public string LicenseNumber { get; private set; }
         public DriverStatus Status { get; private set; }

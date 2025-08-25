@@ -9,6 +9,7 @@ namespace Foruscorp.TrucksTracking.Aplication.Contruct
     public interface ITruckTrackingContext
     {
         DbSet<Route> Routes { get; set; }
+        DbSet<TruckFuel> TruckFuels { get; set; }
         DbSet<TruckTracker> TruckTrackers { get; set; }
         DbSet<TruckLocation> TruckLocations { get; set; }
         DbSet<NearFuelStationPlan> NearFuelStationPlans { get; set; }

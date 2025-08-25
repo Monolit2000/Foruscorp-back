@@ -22,6 +22,12 @@ namespace Foruscorp.TrucksTracking.Infrastructure.Satup
 
             services.AddScoped<ITruckTrackingContext, TuckTrackingContext>();
             services.AddScoped<IPdfTransactionService, PdfTransactionService>();
+            services.AddScoped<IFuelStationService, FuelStationService>();
+
+            services.AddHttpClient<IFuelStationService, FuelStationService>(client =>
+                {
+                    client.BaseAddress = new Uri("http://foruscorp.truckstracking.api:5001");
+                });
 
 
             services.AddMediatR(cfg =>

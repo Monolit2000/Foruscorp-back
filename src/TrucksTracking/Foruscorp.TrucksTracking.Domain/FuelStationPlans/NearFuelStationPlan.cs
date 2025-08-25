@@ -13,6 +13,7 @@ namespace Foruscorp.TrucksTracking.Domain.FuelStationPlans
         public double Latitude { get; private set; }
         public string Address { get; set; }
         public bool IsNear { get; set; } 
+        public double Refill { get; set; }
         public bool IsProcessed { get; set; }
         public double NearDistance { get; private set; }
         public Guid? RecordedOnLocationId { get; set; }
@@ -27,6 +28,7 @@ namespace Foruscorp.TrucksTracking.Domain.FuelStationPlans
             double longitude, 
             double latitude, 
             string address,
+            double refill,
             double nearDistance = 10.0)
         {
             TruckId = truckId;
@@ -36,17 +38,21 @@ namespace Foruscorp.TrucksTracking.Domain.FuelStationPlans
             Latitude = latitude;
             IsNear = false;
             IsProcessed = false;
-            NearDistance = nearDistance;    
+            NearDistance = nearDistance;
+            Refill = refill;
             CreatedAt = DateTime.UtcNow;
         }
-        public static NearFuelStationPlan Create(Guid fuelStationId, Guid truckId, Guid routeId, double longitude, double latitude, string address, double nearDistance = 10.0)
-            => new NearFuelStationPlan(fuelStationId, truckId, routeId, longitude, latitude, address, nearDistance);
+        public static NearFuelStationPlan Create(Guid fuelStationId, Guid truckId, Guid routeId, double longitude, double latitude, string address, double refill, double nearDistance = 10.0)
+            => new NearFuelStationPlan(fuelStationId, truckId, routeId, longitude, latitude, address, refill, nearDistance);
 
         public void MarkIsNear(TruckLocation recordedOnLocation)
         {
             IsNear = true;
             RecordedOnLocation = recordedOnLocation;
-            IsProcessed = true; 
+        }
+        public void MarkAsProcessed()
+        {
+            IsProcessed = true;
         }
     }
 }

@@ -19,7 +19,7 @@ namespace Foruscorp.TrucksTracking.Aplication.Transactions.CalculateBonuses
 
             foreach (var transaction in trunsaction)
             {
-
+                //nearStationPlans = 
             }
 
             throw new NotImplementedException();

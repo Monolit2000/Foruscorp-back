@@ -24,6 +24,7 @@ namespace Foruscorp.Trucks.Domain.Trucks
         public Driver Driver { get; private set; }
         public Guid? ModelTruckGroupId { get; private set; }
         public ModelTruckGroup ModelTruckGroup { get; private set; }
+        public List<TruckUsage> TruckUsageHistory { get; set; }
 
         private Truck() { }
 
@@ -145,6 +146,8 @@ namespace Foruscorp.Trucks.Domain.Trucks
             DriverId = driver.Id;
             Driver = driver;
 
+            TruckUsageHistory.Add(TruckUsage.CreateNew(this.Id, driver.Id));
+
             AddDomainEvent(new TruckDriverAttachedDomainEvent(Id, Driver.Id));
         }
 
@@ -153,8 +156,13 @@ namespace Foruscorp.Trucks.Domain.Trucks
             if (DriverId == null)
                 return;
 
-            Driver = null;
+            var currentUsage = TruckUsageHistory.FirstOrDefault(tu => tu.DriverId == DriverId && tu.EndedAt == null);
+            if (currentUsage != null)
+            {
+                currentUsage.EndUsage();
+            }
 
+            Driver = null;
             AddDomainEvent(new TruckDriverDetachedDomainEvent(Id, DriverId.Value));   
         }
 

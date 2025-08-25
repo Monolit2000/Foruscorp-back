@@ -55,6 +55,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                     request.TruckId,
                     fs.Address,
                     16.0,
+                    double.Parse(fs.Refill, CultureInfo.InvariantCulture),
                     double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
                     double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
                 .ToList();
@@ -77,11 +78,20 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                     planedStation.TruckId,
                     planedStation.Address,
                     planedStation.nearDistance,
+                    planedStation.refill,
                     planedStation.Longitude,
                     planedStation.Latitude));
             }
         }
 
-        public record FuelRouteStationPlan(Guid FuelStationId, Guid RouteId, Guid TruckId, string Address, double nearDistance, double Longitude, double Latitude);
+        public record FuelRouteStationPlan(
+            Guid FuelStationId, 
+            Guid RouteId, 
+            Guid TruckId, 
+            string Address, 
+            double nearDistance,
+            double refill,
+            double Longitude, 
+            double Latitude);
     }
 }

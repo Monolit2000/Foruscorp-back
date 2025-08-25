@@ -93,6 +93,16 @@ namespace Foruscorp.TrucksTracking.API.Controllers
         }
 
 
+        [HttpPost("GetNearFuelStationPlan")]
+        public async Task<ActionResult> GetNearFuelStationPlan(Guid TruckId)
+        {
+            var result = await mediator.Send(new GetLastTruckLocationsQuery(TruckId));
+            return Ok(result);
+        }
+
+
+
+
 
         [HttpGet("{truckId:guid}/route")]
         [ProducesResponseType(typeof(RouteDto), StatusCodes.Status200OK)]
@@ -101,14 +111,12 @@ namespace Foruscorp.TrucksTracking.API.Controllers
          [FromRoute] Guid truckId,
          CancellationToken cancellationToken)
         {
-            // Собираем команду-Query
             var query = new GetPassedRouteQuery { TruckId = truckId };
 
-            // Шлём через MediatR
             var route = await mediator.Send(query, cancellationToken);
 
             if (route == null)
-                return NotFound($"Маршрут для TruckId = '{truckId}' не найден.");
+                return NotFound($" TruckId = '{truckId}' Not Found.");
 
             return Ok(route);
         }

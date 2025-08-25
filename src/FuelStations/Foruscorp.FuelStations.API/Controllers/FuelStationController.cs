@@ -2,13 +2,14 @@
 using Foruscorp.FuelStations.Aplication.Contructs.Services.Models;
 using Foruscorp.FuelStations.Aplication.Contructs.WebScrapers;
 using Foruscorp.FuelStations.Aplication.FuelStations;
+using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationByIdQuery;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRadius;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadInfo;
-using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadLoversPrice;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices;
 using Foruscorp.FuelStations.Aplication.FuelStations.LoadPrices.GetPriceLoadAttempts;
-using Foruscorp.FuelStations.Aplication.FuelStations.LoadLovesStores;
+using Foruscorp.FuelStations.Aplication.FuelStations.LoadTaAndPetroPrice;
 using Foruscorp.FuelStations.Aplication.FuelStations.LodadFuelStation;
 using Foruscorp.FuelStations.Infrastructure.WebScrapers;
 using MediatR;
@@ -171,6 +172,27 @@ namespace Foruscorp.FuelStations.API.Controllers
             
             return Ok(result.Value);
         }
+
+
+
+        [HttpGet("{fuelStationId:guid}/fuelStation")]
+        public async Task<ActionResult<List<PriceLoadAttemptDto>>> GetFuelStationById(
+             [FromRoute] Guid fuelStationId,
+             CancellationToken cancellationToken = default)
+        {
+            var query = new GetFuelStationByIdQuery(fuelStationId);
+            var result = await _mediator.Send(query, cancellationToken);
+            
+            if (result.IsFailed)
+            {
+                return BadRequest(result.Errors);
+            }
+            
+            return Ok(result.Value);
+        }
+
+
+
 
 
 

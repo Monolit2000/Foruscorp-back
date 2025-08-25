@@ -4,12 +4,7 @@ using Foruscorp.FuelRoutes.IntegrationEvents;
 using MassTransit;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute.AssignRouteCommandHandler;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
@@ -44,6 +39,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
                     request.TruckId,
                     fs.Address,
                     16.0,
+                    double.Parse(fs.Refill, CultureInfo.InvariantCulture),
                     double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
                     double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
                 .ToList();
@@ -63,6 +59,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
                     planedStation.TruckId,
                     planedStation.Address,
                     planedStation.nearDistance,
+                    planedStation.refill,   
                     planedStation.Longitude,
                     planedStation.Latitude));
             }

@@ -21,6 +21,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Foruscorp.FuelStations.Domain\Foruscorp.FuelStations.Domain.csproj" />
+	  <ProjectReference Include="..\Foruscorp.FuelStations.IntegrationEvents\Foruscorp.FuelStations.IntegrationEvents.csproj" />
 	</ItemGroup>
 
 
