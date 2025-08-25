@@ -80,7 +80,7 @@ namespace Foruscorp.TrucksTracking.Aplication.FuelStations.GetNearFuelStationPla
                 plan.MarkAsProcessed();
                 truckTrackingContext.NearFuelStationPlans.Update(plan);
 
-                break; // прерываем цикл после первой обработанной записи
+                break; 
             }
 
             await truckTrackingContext.SaveChangesAsync(cancellationToken);
