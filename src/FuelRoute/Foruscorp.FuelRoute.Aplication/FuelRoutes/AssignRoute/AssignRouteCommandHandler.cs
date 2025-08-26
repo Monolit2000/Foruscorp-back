@@ -24,6 +24,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 .Include(x => x.FuelRouteStations.Where(fs => fs.RoadSectionId == request.RouteSectionId))
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
+            if (fuelRoute.IsSended)
+            {
+                logger.LogWarning("Fuel route with ID {RouteId} has already been sent.", request.RouteId);
+                return Result.Fail("Fuel route has already been sent.");
+            }
+
             if (fuelRoute == null)
             {
                 logger.LogWarning("Fuel route with ID {RouteId} not found.", request.RouteId);
@@ -39,7 +45,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
             logger.LogInformation("Processing fuel route: {FuelRoute}", JsonSerializer.Serialize(fuelRoute, new JsonSerializerOptions { WriteIndented = true}));
 
             fuelRoute.Assign(request.RouteSectionId);
-            fuelRoute.MarkAsAccepted();
+            //fuelRoute.MarkAsAccepted();
 
             await context.SaveChangesAsync(cancellationToken);
 
@@ -47,51 +53,25 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId)
             );
 
-            var fuelRouteStations = fuelRoute.FuelRouteStations
-                .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
-                .Select(fs => new FuelRouteStationPlan(
-                    fs.FuelStationId,
-                    fs.FuelRouteId,
-                    request.TruckId,
-                    fs.Address,
-                    16.0,
-                    double.Parse(fs.Refill, CultureInfo.InvariantCulture),
-                    double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
-                    double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
-                .ToList();
+            //var fuelRouteStations = fuelRoute.FuelRouteStations
+            //    .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
+            //    .Select(fs => new FuelRouteStationPlan(
+            //        fs.FuelStationId,
+            //        fs.FuelRouteId,
+            //        request.TruckId,
+            //        fs.Address,
+            //        16.0,
+            //        double.Parse(fs.Refill, CultureInfo.InvariantCulture),
+            //        double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
+            //        double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
+            //    .ToList();
 
-            var publishStationsTask = PublisFuelStationsPlan(fuelRouteStations);
+            //var publishStationsTask = PublisFuelStationsPlan(fuelRouteStations);
 
-            await Task.WhenAll(publishEventTask, publishStationsTask);
+            //await Task.WhenAll(publishEventTask, publishStationsTask);
 
             logger.LogInformation("Fuel route {RouteId} sent successfully.", fuelRoute.Id);
             return Result.Ok().WithSuccess("Fuel route sent successfully.");
         }
-
-        private async Task PublisFuelStationsPlan(List<FuelRouteStationPlan> fuelRouteStations)
-        {
-            foreach (var planedStation in fuelRouteStations)
-            {
-                await publishEndpoint.Publish(new FuelStationPlanAssignedIntegrationEvent(
-                    planedStation.FuelStationId,
-                    planedStation.RouteId,
-                    planedStation.TruckId,
-                    planedStation.Address,
-                    planedStation.nearDistance,
-                    planedStation.refill,
-                    planedStation.Longitude,
-                    planedStation.Latitude));
-            }
-        }
-
-        public record FuelRouteStationPlan(
-            Guid FuelStationId, 
-            Guid RouteId, 
-            Guid TruckId, 
-            string Address, 
-            double nearDistance,
-            double refill,
-            double Longitude, 
-            double Latitude);
     }
 }

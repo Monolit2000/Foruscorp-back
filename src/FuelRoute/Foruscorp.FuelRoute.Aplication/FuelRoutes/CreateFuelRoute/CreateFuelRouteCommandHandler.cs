@@ -121,11 +121,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
   
 
-            await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
-            {
-                TruckId = request.TruckId,
-                RouteId = fuelRoute.Id
-            });
+            //await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
+            //{
+            //    TruckId = request.TruckId,
+            //    RouteId = fuelRoute.Id
+            //});
 
 
 

@@ -31,6 +31,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
 
             await publishEndpoint.Publish(new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId, true));
 
+            var publishEventTask = publishEndpoint.Publish(new RouteAccptedIntegrationEvent(fuelRoute.Id, request.TruckId));
+
             var fuelRouteStations = fuelRoute.FuelRouteStations
                 .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
                 .Select(fs => new FuelRouteStationPlan(
@@ -64,5 +66,15 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute
                     planedStation.Latitude));
             }
         }
+
+        public record FuelRouteStationPlan(
+            Guid FuelStationId,
+            Guid RouteId,
+            Guid TruckId,
+            string Address,
+            double nearDistance,
+            double refill,
+            double Longitude,
+            double Latitude);
     }
 }
