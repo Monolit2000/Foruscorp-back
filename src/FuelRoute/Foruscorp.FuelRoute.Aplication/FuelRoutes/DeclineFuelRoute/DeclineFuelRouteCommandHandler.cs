@@ -81,10 +81,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute
             editedSection?.MarkAsAssigned();
 
             var assignedSection = await context.RouteSections
-                .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsAssigned)
+                .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsAssigned && !fs.IsEdited)
                 .FirstOrDefaultAsync();
 
-            assignedSection?.MarkAsAssigned();
+            assignedSection?.MarkAsUnassigned();
 
             context.RouteSections.UpdateRange([editedSection, assignedSection]);
         }
