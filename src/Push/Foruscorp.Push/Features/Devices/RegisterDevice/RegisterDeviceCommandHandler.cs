@@ -18,7 +18,7 @@ namespace Foruscorp.Push.Features.Devices.RegisterDevice
             var existingDevice = await context.Devices
                 .FirstOrDefaultAsync(d => d.Token.Value == request.PushToken, cancellationToken);
 
-            if (existingDevice != null)
+            if (existingDevice != null && existingDevice.UserId != request.UserId)
             {
                 existingDevice.Activate();
                 await context.SaveChangesAsync(cancellationToken);
