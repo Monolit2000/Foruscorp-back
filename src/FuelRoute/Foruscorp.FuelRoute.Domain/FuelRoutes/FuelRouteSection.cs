@@ -48,6 +48,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             RouteSectionInfo = routeSectionInfo;
             return RouteSectionInfo;    
         }
+
+        public void MarkAsAccepted()
+        {
+            IsAccepted = true;
+        }
+
         public void MarkAsAssigned()
         {
             IsAssigned = true;
