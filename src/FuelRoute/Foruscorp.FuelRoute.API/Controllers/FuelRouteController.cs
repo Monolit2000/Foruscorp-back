@@ -72,6 +72,8 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return NotFound(result.Errors); 
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RoutInfoDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("get-fuel-route")]
         public async Task<ActionResult> GetFuelRouteQuery(GetPussedFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
         {
@@ -109,6 +111,8 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(RoutInfoDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("get-current-route")]
         public async Task<IActionResult> GetFuelRoute(GetPussedFuelRouteQuery getFuelRouteQuery, CancellationToken cancellationToken)
         {
@@ -120,6 +124,8 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(Result))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("AssignRoute")]
         public async Task<IActionResult> AssignRoute(AssignRouteCommand assignRouteCommand, CancellationToken cancellationToken)
         {
@@ -142,6 +148,8 @@ namespace Foruscorp.FuelRoutes.API.Controllers
             return BadRequest(result.Errors);
         }
 
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(GetFuelRouteDto))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("get-fuel-route-byId")]
         public async Task<IActionResult> GetByUser(GetFuelRouteQuery getFuelRouteQuery )
         {
