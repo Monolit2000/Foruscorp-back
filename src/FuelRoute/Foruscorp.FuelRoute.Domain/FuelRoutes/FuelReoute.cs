@@ -31,6 +31,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public int CurrentVersion { get; private set; } = 1;
         public int TotalCountRoutVersions { get; private set; } = 1;
 
+        public bool IsActive { get; private set; } = true;  
         public double Weight { get; set; }
 
         public bool IsSended { get; private set; }
@@ -38,6 +39,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public double RemainingFuel { get; set; } = 0.0; 
 
         public bool IsAccepted { get; private set; }
+
+        public bool IsEdited { get; private set; } = false;
 
         public bool IsDeclined { get; private set; }
         public DateTime? DeclinedAt { get; private set; }
@@ -123,11 +126,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 DestinationLocation = NewDestinationLocation;
             }
 
+            RouteSections.ForEach(rs => rs.IsEdited = true);
+
             foreach (var section in sections)
                 section.RouteVersion = RouteVersion;
 
             RouteSections.AddRange(sections);
+
+            IsEdited = true;
             UpdateChangedAt();
+
         }
 
 

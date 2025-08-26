@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Globalization;
 using static Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute.AssignRouteCommandHandler;
 
@@ -20,28 +21,32 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
         IMemoryCache memoryCache,
         IPublishEndpoint publishEndpoint,
         IFuelRouteContext fuelRouteContext,
-        IFuelRouteRopository fuelRouteRopository) : IRequestHandler<AcceptFuelRouteCommand, Result>
+        IFuelRouteRopository fuelRouteRopository,
+        ILogger<AcceptFuelRouteCommandHandler> logger) : IRequestHandler<AcceptFuelRouteCommand, Result>
     {
         public async Task<Result> Handle(AcceptFuelRouteCommand request, CancellationToken cancellationToken)
         {
-            var reoute = await fuelRouteContext.FuelRoutes
+            var route = await fuelRouteContext.FuelRoutes
                 .FirstOrDefaultAsync(r => r.Id == request.RouteId, cancellationToken);
 
-            if (reoute == null)
+            if (route == null)
                 return Result.Fail("Route not found");
 
-            if (reoute.IsAccepted)
-                return Result.Ok();
+            if (route.IsAccepted && !route.IsEdited)
+            {
+                logger.LogWarning("Fuel route with ID {RouteId} has already been accepted.", request.RouteId);
+                return Result.Fail("Fuel route has already been accepted.");
+            }
 
-            reoute.MarkAsAccepted();
+            route.MarkAsAccepted();
 
             var routSection = await fuelRouteContext.RouteSections
-                .FirstOrDefaultAsync(rs => rs.RouteId == reoute.Id && rs.IsAssigned);
+                .FirstOrDefaultAsync(rs => rs.RouteId == route.Id && rs.IsAssigned);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
             var publishEventTask = publishEndpoint.Publish(
-                    new RouteAccptedIntegrationEvent(reoute.Id, reoute.TruckId)
+                    new RouteAccptedIntegrationEvent(route.Id, route.TruckId)
                 );
 
             var fuelRouteStations = await fuelRouteContext.FuelRouteStation
@@ -49,7 +54,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
                 .Select(fs => new FuelRouteStationPlan(
                     fs.FuelStationId,
                     fs.FuelRouteId,
-                    reoute.TruckId,
+                    route.TruckId,
                     fs.Address,
                     16.0,
                     double.Parse(fs.Refill, CultureInfo.InvariantCulture),

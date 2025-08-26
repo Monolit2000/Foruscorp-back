@@ -1,5 +1,6 @@
 ﻿using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
+using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.IntegrationEvents;
 using MassTransit;
 using MediatR;
@@ -32,16 +33,21 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute
                 return Result.Fail($"Fuel route with ID {request.RouteId} is already completed and cannot be declined");
             }
 
-            if (fuelRoute.IsDeclined)
-            {
-                logger.LogWarning("Fuel route with ID {RouteId} is already declined", request.RouteId);
-                return Result.Fail($"Fuel route with ID {request.RouteId} is already declined");
-            }
+            //if (fuelRoute.IsDeclined)
+            //{
+            //    logger.LogWarning("Fuel route with ID {RouteId} is already declined", request.RouteId);
+            //    return Result.Fail($"Fuel route with ID {request.RouteId} is already declined");
+            //}
 
             try
             {
                 // Mark the route as declined using the domain method
                 fuelRoute.DeclineRoute();
+
+                if(fuelRoute.IsEdited)
+                {
+                    await DeclineEditing(fuelRoute);
+                }
                 
                 // Update the database
                 context.FuelRoutes.Update(fuelRoute);
@@ -64,6 +70,23 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute
                 logger.LogError(ex, "Error declining fuel route {RouteId}", request.RouteId);
                 return Result.Fail($"Error declining fuel route: {ex.Message}");
             }
+        }
+
+        public async Task DeclineEditing(FuelRoute fuelRoute)
+        {
+            var editedSection = await context.RouteSections
+                .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsEdited)
+                .FirstOrDefaultAsync();
+
+            editedSection?.MarkAsAssigned();
+
+            var assignedSection = await context.RouteSections
+                .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsAssigned)
+                .FirstOrDefaultAsync();
+
+            assignedSection?.MarkAsAssigned();
+
+            context.RouteSections.UpdateRange([editedSection, assignedSection]);
         }
     }
 }

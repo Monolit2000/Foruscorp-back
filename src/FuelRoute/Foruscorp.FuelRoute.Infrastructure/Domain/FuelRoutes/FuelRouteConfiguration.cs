@@ -21,6 +21,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(fr => fr.TruckId)
                 .IsRequired();
 
+            
 
             builder.Property(fr => fr.CreatedAt)
                 .IsRequired();
@@ -36,6 +37,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .IsRequired();
 
             builder.Property(fr => fr.IsComplet)
+                .IsRequired()
+                .HasDefaultValue(false);
+
+            builder.Property(fr => fr.IsEdited)
                 .IsRequired()
                 .HasDefaultValue(false);
 

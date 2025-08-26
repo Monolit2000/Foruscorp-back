@@ -24,7 +24,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 .Include(x => x.FuelRouteStations.Where(fs => fs.RoadSectionId == request.RouteSectionId))
                 .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
-            if (fuelRoute.IsSended)
+            if (fuelRoute.IsSended && !fuelRoute.IsEdited)
             {
                 logger.LogWarning("Fuel route with ID {RouteId} has already been sent.", request.RouteId);
                 return Result.Fail("Fuel route has already been sent.");
@@ -36,11 +36,28 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 return Result.Fail("Fuel route not found.");
             }
 
-            var routeSections = await context.RouteSections
+            var routeSection = await context.RouteSections
                 .Where(fs => fs.Id == request.RouteSectionId)
-                .ToListAsync();
+                .FirstOrDefaultAsync();
 
-            fuelRoute.RouteSections = routeSections;
+            if (routeSection == null)
+            {
+                logger.LogWarning("Route section with ID {RouteSectionId} not found.", request.RouteSectionId);
+                return Result.Fail("Route section not found.");
+            }
+
+            if (routeSection.IsAssigned)
+            {
+                logger.LogWarning("Route section with ID {RouteSectionId} has already been assigned.", request.RouteSectionId);
+                return Result.Fail("Route section has already been assigned.");
+            }
+
+            if(fuelRoute.IsEdited)
+            {
+                await MurkAsEdited(fuelRoute);
+            }
+
+            fuelRoute.RouteSections.Add(routeSection);
 
             logger.LogInformation("Processing fuel route: {FuelRoute}", JsonSerializer.Serialize(fuelRoute, new JsonSerializerOptions { WriteIndented = true}));
 
@@ -53,25 +70,19 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 new RouteAssignedIntegrationEvent(fuelRoute.Id, request.TruckId)
             );
 
-            //var fuelRouteStations = fuelRoute.FuelRouteStations
-            //    .Where(fs => fs.RoadSectionId == request.RouteSectionId && fs.IsAlgorithm)
-            //    .Select(fs => new FuelRouteStationPlan(
-            //        fs.FuelStationId,
-            //        fs.FuelRouteId,
-            //        request.TruckId,
-            //        fs.Address,
-            //        16.0,
-            //        double.Parse(fs.Refill, CultureInfo.InvariantCulture),
-            //        double.Parse(fs.Longitude, CultureInfo.InvariantCulture),
-            //        double.Parse(fs.Latitude, CultureInfo.InvariantCulture)))
-            //    .ToList();
-
-            //var publishStationsTask = PublisFuelStationsPlan(fuelRouteStations);
-
-            //await Task.WhenAll(publishEventTask, publishStationsTask);
-
             logger.LogInformation("Fuel route {RouteId} sent successfully.", fuelRoute.Id);
             return Result.Ok().WithSuccess("Fuel route sent successfully.");
+        }
+
+        public async Task MurkAsEdited(FuelRoute fuelRoute)
+        {
+            var editedSection = await context.RouteSections
+                .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsAssigned)
+                .FirstOrDefaultAsync();
+
+            editedSection.MarkAsEdited();
+
+            context.RouteSections.Update(editedSection);
         }
     }
 }

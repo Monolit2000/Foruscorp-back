@@ -25,6 +25,14 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
         builder.Property(fs => fs.FuelNeeded)
             .IsRequired();
 
+        builder.Property(fr => fr.IsEdited)
+            .IsRequired()
+            .HasDefaultValue(false);
+
+        builder.Property(fr => fr.IsAccepted)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         builder.OwnsOne(x => x.RouteSectionInfo, info =>
         {
             info.Property(p => p.Tolls)
