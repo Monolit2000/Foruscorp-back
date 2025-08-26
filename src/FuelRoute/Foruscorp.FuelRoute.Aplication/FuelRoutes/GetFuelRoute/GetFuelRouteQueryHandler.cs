@@ -22,13 +22,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                   .Include(x => x.OriginLocation)
                   .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
-                  .Include(x => x.RouteSections.Where(x => x.IsAccepted == true))
+                  .Include(x => x.RouteSections.Where(x => x.IsAssigned == true))
                   .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)
                 return new GetFuelRouteDto();
 
-            var section = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAccepted == true);
+            var section = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true);
 
             if (section == null)
                 section = fuelRoad.RouteSections.First();
