@@ -43,6 +43,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
             var routSection = await fuelRouteContext.RouteSections
                 .FirstOrDefaultAsync(rs => rs.RouteId == route.Id && rs.IsAssigned);
 
+             fuelRouteContext.RouteSections
+                .RemoveRange(fuelRouteContext.RouteSections.Where(rs => rs.RouteId == route.Id && rs.Id != routSection.Id));  
+
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
             var publishEventTask = publishEndpoint.Publish(
