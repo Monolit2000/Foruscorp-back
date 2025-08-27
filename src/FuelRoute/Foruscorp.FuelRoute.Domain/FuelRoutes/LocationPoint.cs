@@ -12,12 +12,13 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
     public class LocationPoint : Entity, IAggregateRoot
     {
         public Guid? RouteId { get; private set; } 
-        public Guid? FuelRouteSectionId { get; private set; }
         public Guid Id { get; private set; }
         public string Name { get; private set; } 
         public double Latitude { get; private set; }
         public double Longitude { get; private set; }
         public LocationPointType Type { get; private set; }
+        
+        public List<FuelRouteSection> FuelRouteSections { get; set; } = [];
 
         public int RouteVersion { get; set; } = 0; 
         private LocationPoint() { } // For EF Core
@@ -57,14 +58,22 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             Type = type;
         }
 
-        public void SetFuelRouteSection(Guid fuelRouteSectionId)
+        public void AddFuelRouteSection(FuelRouteSection fuelRouteSection)
         {
-            FuelRouteSectionId = fuelRouteSectionId;
+            if (!FuelRouteSections.Any(frs => frs.Id == fuelRouteSection.Id))
+            {
+                FuelRouteSections.Add(fuelRouteSection);
+            }
         }
 
-        public void RemoveFuelRouteSection()
+        public void RemoveFuelRouteSection(FuelRouteSection fuelRouteSection)
         {
-            FuelRouteSectionId = null;
+            FuelRouteSections.RemoveAll(frs => frs.Id == fuelRouteSection.Id);
+        }
+
+        public void ClearFuelRouteSections()
+        {
+            FuelRouteSections.Clear();
         }
     }
 }

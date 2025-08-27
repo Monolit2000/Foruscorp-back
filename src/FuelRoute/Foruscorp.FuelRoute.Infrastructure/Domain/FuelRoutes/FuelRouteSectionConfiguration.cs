@@ -58,14 +58,10 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
                 .IsRequired();
         });
 
+        // Связь с FuelRoute (One-to-Many)
         builder.HasOne<FuelRoute>()
                .WithMany(x => x.RouteSections)
                .HasForeignKey(x => x.RouteId)
                .OnDelete(DeleteBehavior.Cascade);
-
-        builder.HasMany(frs => frs.LocationPoints)
-               .WithOne()
-               .HasForeignKey(lp => lp.FuelRouteSectionId)
-               .OnDelete(DeleteBehavior.SetNull);
     }
 }

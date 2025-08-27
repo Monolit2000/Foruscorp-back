@@ -80,8 +80,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             if (LocationPoints.Any(lp => lp.Id == locationPoint.Id))
                 return;
 
-            locationPoint.SetFuelRouteSection(Id);
             LocationPoints.Add(locationPoint);
+            locationPoint.AddFuelRouteSection(this);
         }
 
         public void RemoveLocationPoint(Guid locationPointId)
@@ -89,16 +89,16 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             var locationPoint = LocationPoints.FirstOrDefault(lp => lp.Id == locationPointId);
             if (locationPoint != null)
             {
-                locationPoint.RemoveFuelRouteSection();
                 LocationPoints.Remove(locationPoint);
+                locationPoint.RemoveFuelRouteSection(this);
             }
         }
 
         public void ClearLocationPoints()
         {
-            foreach (var locationPoint in LocationPoints)
+            foreach (var locationPoint in LocationPoints.ToList())
             {
-                locationPoint.RemoveFuelRouteSection();
+                locationPoint.RemoveFuelRouteSection(this);
             }
             LocationPoints.Clear();
         }

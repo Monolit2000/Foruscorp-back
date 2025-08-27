@@ -41,18 +41,23 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(lp => lp.RouteId)
                 .IsRequired(false);
 
-            builder.Property(lp => lp.FuelRouteSectionId)
-                .IsRequired(false);
-
             builder.HasOne<FuelRoute>()
                 .WithMany()
                 .HasForeignKey(lp => lp.RouteId)
                 .OnDelete(DeleteBehavior.SetNull);
 
-            builder.HasOne<FuelRouteSection>()
+            builder.HasMany(lp => lp.FuelRouteSections)
                 .WithMany(frs => frs.LocationPoints)
-                .HasForeignKey(lp => lp.FuelRouteSectionId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .UsingEntity<Dictionary<string, object>>(
+                    "FuelRouteSectionLocationPoints",
+                    j => j.HasOne<FuelRouteSection>()
+                          .WithMany()
+                          .HasForeignKey("FuelRouteSectionId")
+                          .OnDelete(DeleteBehavior.Cascade),
+                    j => j.HasOne<LocationPoint>()
+                          .WithMany()
+                          .HasForeignKey("LocationPointId")
+                          .OnDelete(DeleteBehavior.Cascade));
         }
     }
 }

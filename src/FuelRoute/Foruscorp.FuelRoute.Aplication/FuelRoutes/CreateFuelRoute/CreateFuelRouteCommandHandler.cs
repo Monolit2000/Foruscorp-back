@@ -124,7 +124,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             fuelRoute.SetRouteSections(routeSections);
 
-            fuelRouteContext.FuelRoutes.Add(fuelRoute); 
+            await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
