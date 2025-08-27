@@ -34,7 +34,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 .FirstOrDefault();
 
             if (section == null)
-                section = fuelRoad.RouteSections.First();
+                section = fuelRouteContext.RouteSections
+                    .Where(x => x.RouteId == fuelRoad.Id && x.IsAccepted)
+                    .FirstOrDefault();
 
             var stations = fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
             //var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
