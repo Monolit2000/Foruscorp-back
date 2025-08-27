@@ -52,7 +52,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.HasOne<FuelRouteSection>()
                 .WithMany(frs => frs.LocationPoints)
                 .HasForeignKey(lp => lp.FuelRouteSectionId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

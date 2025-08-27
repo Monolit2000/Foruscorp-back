@@ -118,8 +118,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
             foreach (var section in sections)
             {
-                section.RouteVersion = RouteVersion;
-                section.LocationPoints.AddRange(NewOriginLocation, NewDestinationLocation);
+                section.SetOriginLocation(NewOriginLocation);
+                section.SetDestinationLocation(NewDestinationLocation);
             }
 
             RouteSections.AddRange(sections);

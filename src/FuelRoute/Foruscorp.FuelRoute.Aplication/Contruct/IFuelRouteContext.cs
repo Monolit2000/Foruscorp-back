@@ -11,6 +11,8 @@ namespace Foruscorp.FuelRoutes.Aplication.Contruct
          DbSet<FuelRouteStation> FuelRouteStation { get; set; }
 
          DbSet<FuelRouteSection> RouteSections { get; set; }
+
+         DbSet<LocationPoint> LocationPoints { get; set; }
         //Task BulkInsertAsync<T>(T entity) where T : class;
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
     }   

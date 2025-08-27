@@ -119,6 +119,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 rs.SetDestinationLocation(destinationLocation); 
             });
 
+
+            await fuelRouteContext.LocationPoints.AddRangeAsync([originLocation, destinationLocation]);
+
             fuelRoute.SetRouteSections(routeSections);
 
             fuelRouteContext.FuelRoutes.Add(fuelRoute); 
