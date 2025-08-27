@@ -22,6 +22,12 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
         builder.Property(x => x.IsAssigned)
             .IsRequired();
 
+        builder.Property(x => x.AssignedAt)
+            .IsRequired(false);
+
+        builder.Property(x => x.AcceptedAt)
+            .IsRequired(false);
+
         builder.Property(fs => fs.FuelNeeded)
             .IsRequired();
 
