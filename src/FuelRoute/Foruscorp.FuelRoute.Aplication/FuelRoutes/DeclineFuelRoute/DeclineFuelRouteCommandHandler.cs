@@ -86,7 +86,14 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute
 
             assignedSection?.MarkAsUnassigned();
 
+            var all = await context.RouteSections
+                .Where(fs => fs.RouteId == fuelRoute.Id && !fs.IsAccepted).ToListAsync();
+
+            all.ForEach(rs => rs.MarkAsUnassigned());   
+
             context.RouteSections.UpdateRange([editedSection, assignedSection]);
+
+            context.RouteSections.UpdateRange(all);
         }
     }
 }

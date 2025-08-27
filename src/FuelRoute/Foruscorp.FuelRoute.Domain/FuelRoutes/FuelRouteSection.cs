@@ -19,6 +19,9 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public bool IsAccepted { get; private set; } = false;
         public bool IsAssigned { get; private set; } 
 
+        public DateTime? AssignedAt { get; set; } 
+        public DateTime? AcceptedAt { get; set; } 
+
         public List<FuelRouteStation> FuelRouteStations = [];
 
         [NotMapped]
@@ -52,11 +55,13 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public void MarkAsAccepted()
         {
             IsAccepted = true;
+            AcceptedAt = DateTime.UtcNow;
         }
 
         public void MarkAsAssigned()
         {
             IsAssigned = true;
+            AssignedAt = DateTime.UtcNow;   
         }
         public void MarkAsUnassigned()
         {

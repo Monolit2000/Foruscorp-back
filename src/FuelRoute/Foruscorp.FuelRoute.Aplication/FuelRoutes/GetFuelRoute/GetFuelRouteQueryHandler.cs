@@ -28,7 +28,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             if (fuelRoad == null)
                 return new GetFuelRouteDto();
 
-            var section = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAssigned == true);
+            var section = fuelRoad.RouteSections
+                .Where(rs => rs.IsAssigned)
+                .OrderByDescending(rs => rs.AssignedAt)
+                .FirstOrDefault();
 
             if (section == null)
                 section = fuelRoad.RouteSections.First();
