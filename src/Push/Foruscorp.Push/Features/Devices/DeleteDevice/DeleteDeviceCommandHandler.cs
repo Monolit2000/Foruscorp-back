@@ -4,6 +4,7 @@ using Foruscorp.Push.Infrastructure.Database;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Foruscorp.Push.Features.Devices.DeleteDevice
 {
@@ -24,16 +25,23 @@ namespace Foruscorp.Push.Features.Devices.DeleteDevice
         {
             try
             {
-                var device = await context.Devices
-                    .FirstOrDefaultAsync(d => d.Token.Value == request.ExpoToken, cancellationToken);
+                var devices = await context.Devices
+                    .Where(d => d.Token.Value == request.ExpoToken)
+                    .ToListAsync(cancellationToken);
 
-                if (device == null)
+                //if (device == null)
+                //{
+                //    logger.LogWarning("Device with token {ExpoToken} not found for deletion", request.ExpoToken);
+                //    return Result.Fail($"Device with token {request.ExpoToken} not found");
+                //}
+
+                foreach(var device in devices)
                 {
-                    logger.LogWarning("Device with token {ExpoToken} not found for deletion", request.ExpoToken);
-                    return Result.Fail($"Device with token {request.ExpoToken} not found");
+                    device.Deactivate();
                 }
 
-                device.Deactivate();
+                context.Devices.UpdateRange(devices);
+
                 //context.Devices.Remove(device);
                 await context.SaveChangesAsync(cancellationToken);
 
