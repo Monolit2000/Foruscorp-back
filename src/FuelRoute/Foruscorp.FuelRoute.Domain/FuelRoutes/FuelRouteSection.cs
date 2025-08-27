@@ -22,7 +22,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public DateTime? AssignedAt { get; set; } 
         public DateTime? AcceptedAt { get; set; } 
 
-        public List<FuelRouteStation> FuelRouteStations = [];
+        public List<FuelRouteStation> FuelRouteStations { get; set; } = [];
+        public List<LocationPoint> LocationPoints { get; set; } = [];
 
         [NotMapped]
         public string RouteSectionResponceId { get; set; } 
@@ -72,6 +73,77 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             IsEdited = true;
             IsAssigned = false;
+        }
+
+        public void AddLocationPoint(LocationPoint locationPoint)
+        {
+            if (LocationPoints.Any(lp => lp.Id == locationPoint.Id))
+                return;
+
+            locationPoint.SetFuelRouteSection(Id);
+            LocationPoints.Add(locationPoint);
+        }
+
+        public void RemoveLocationPoint(Guid locationPointId)
+        {
+            var locationPoint = LocationPoints.FirstOrDefault(lp => lp.Id == locationPointId);
+            if (locationPoint != null)
+            {
+                locationPoint.RemoveFuelRouteSection();
+                LocationPoints.Remove(locationPoint);
+            }
+        }
+
+        public void ClearLocationPoints()
+        {
+            foreach (var locationPoint in LocationPoints)
+            {
+                locationPoint.RemoveFuelRouteSection();
+            }
+            LocationPoints.Clear();
+        }
+
+        public LocationPoint GetOriginLocation()
+        {
+            return LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Origin);
+        }
+
+        public LocationPoint GetDestinationLocation()
+        {
+            return LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Destination);
+        }
+
+        public IEnumerable<LocationPoint> GetStopLocations()
+        {
+            return LocationPoints.Where(lp => lp.Type == LocationPointType.Stop);
+        }
+
+        public void SetOriginLocation(LocationPoint originLocation)
+        {
+            // Удаляем старую точку отправления, если есть
+            var existingOrigin = GetOriginLocation();
+            if (existingOrigin != null)
+            {
+                RemoveLocationPoint(existingOrigin.Id);
+            }
+
+            // Устанавливаем новую точку как Origin
+            originLocation.UpdateType(LocationPointType.Origin);
+            AddLocationPoint(originLocation);
+        }
+
+        public void SetDestinationLocation(LocationPoint destinationLocation)
+        {
+            // Удаляем старую точку назначения, если есть
+            var existingDestination = GetDestinationLocation();
+            if (existingDestination != null)
+            {
+                RemoveLocationPoint(existingDestination.Id);
+            }
+
+            // Устанавливаем новую точку как Destination
+            destinationLocation.UpdateType(LocationPointType.Destination);
+            AddLocationPoint(destinationLocation);
         }
     }
 }

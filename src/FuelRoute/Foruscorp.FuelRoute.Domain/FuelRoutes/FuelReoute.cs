@@ -129,7 +129,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             RouteSections.ForEach(rs => rs.IsEdited = true);
 
             foreach (var section in sections)
+            {
                 section.RouteVersion = RouteVersion;
+                section.LocationPoints.AddRange(OriginLocation, DestinationLocation);
+            }
 
             RouteSections.AddRange(sections);
 
@@ -199,7 +202,10 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
                 throw new ArgumentException("Sections cannot be null or empty", nameof(sections));
 
             foreach (var section in sections)
+            {
                 section.RouteVersion = RouteVersion;
+                section.LocationPoints.AddRange(OriginLocation, DestinationLocation);
+            }
 
             RouteSections.AddRange(sections);
             UpdateChangedAt();

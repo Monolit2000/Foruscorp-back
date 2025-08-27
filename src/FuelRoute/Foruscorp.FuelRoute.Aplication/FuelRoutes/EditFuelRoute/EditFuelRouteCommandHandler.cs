@@ -122,8 +122,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 }
             }
 
-            var newOrigin = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude);
-            var newDestination = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude);
+            var newOrigin = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin);
+            var newDestination = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination);
 
             fuelRoute.EditRoute(routeSections,
                 newOrigin, 

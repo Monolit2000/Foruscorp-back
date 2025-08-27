@@ -31,12 +31,28 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
                 .IsRequired()
                 .HasColumnType("double precision");
 
-            builder.Property(l => l.RouteId)
-                 .IsRequired(false);
+            builder.Property(lp => lp.RouteVersion)
+                .IsRequired();
+
+            builder.Property(lp => lp.Type)
+                .IsRequired()
+                .HasConversion<string>();
+
+            builder.Property(lp => lp.RouteId)
+                .IsRequired(false);
+
+            builder.Property(lp => lp.FuelRouteSectionId)
+                .IsRequired(false);
 
             builder.HasOne<FuelRoute>()
                 .WithMany()
-                .HasForeignKey(lp => lp.RouteId);
+                .HasForeignKey(lp => lp.RouteId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            builder.HasOne<FuelRouteSection>()
+                .WithMany(frs => frs.LocationPoints)
+                .HasForeignKey(lp => lp.FuelRouteSectionId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }
 }

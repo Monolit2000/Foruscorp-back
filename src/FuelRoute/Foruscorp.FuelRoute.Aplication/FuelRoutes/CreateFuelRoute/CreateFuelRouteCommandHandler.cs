@@ -79,8 +79,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var fuelRoute = FuelRoute.CreateNew(
                 request.TruckId, 
-                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude),
-                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude),
+                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin),
+                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination),
                 new List<FuelRouteStation>(),
                 new List<MapPoint>(),
                 request.Weight);
@@ -118,15 +118,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
             fuelRouteContext.FuelRoutes.Add(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
-
-  
-
-            //await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
-            //{
-            //    TruckId = request.TruckId,
-            //    RouteId = fuelRoute.Id
-            //});
-
 
 
             return new FuelRouteDto
