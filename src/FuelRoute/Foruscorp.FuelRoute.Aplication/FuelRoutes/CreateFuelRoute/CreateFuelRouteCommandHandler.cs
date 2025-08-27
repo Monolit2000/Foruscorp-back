@@ -79,12 +79,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var fuelRoute = FuelRoute.CreateNew(
                 request.TruckId, 
-                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin),
-                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination),
                 new List<FuelRouteStation>(),
                 new List<MapPoint>(),
                 request.Weight);
 
+
+            var originLocation = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin);
+            var destinationLocation = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination);
 
             var routeSections = sections
              .Select(x => new
@@ -112,6 +113,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 }
             }
 
+            routeSections.ForEach(rs =>
+            {
+                rs.SetOriginLocation(originLocation);
+                rs.SetDestinationLocation(destinationLocation); 
+            });
 
             fuelRoute.SetRouteSections(routeSections);
 

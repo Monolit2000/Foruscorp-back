@@ -21,8 +21,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public Guid Id { get; private set; }
         public Guid TruckId { get; private set; }
 
-        public LocationPoint OriginLocation { get; private set; } 
-        public LocationPoint DestinationLocation { get; private set; }
 
         public DateTime CreatedAt { get; private set; }
         public DateTime ChangedAt { get; private set; }
@@ -52,8 +50,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         private FuelRoute(
             Guid truckId,
-            LocationPoint originLocation,
-            LocationPoint destinationLocation,
             List<FuelRouteStation> fuelPoints,
             List<MapPoint> mapPoints,
             double weight)
@@ -66,11 +62,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             ChangedAt = DateTime.UtcNow;
             IsAccepted = false;
 
-            originLocation.RouteVersion = RouteVersion;
-            destinationLocation.RouteVersion = RouteVersion;
 
-            OriginLocation = originLocation;
-            DestinationLocation = destinationLocation;
             Weight = weight;
             IsSended = false;
 
@@ -86,16 +78,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public static FuelRoute CreateNew(
             Guid truckId,
-            LocationPoint originLocation,
-            LocationPoint destinationLocation,
             List<FuelRouteStation> fuelPoints,
             List<MapPoint> mapPoints,
             double weight)
         {
             return new FuelRoute(
                 truckId,
-                originLocation,
-                destinationLocation,
                 fuelPoints,
                 mapPoints,
                 weight);
@@ -110,28 +98,28 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             CurrentVersion++;
             TotalCountRoutVersions++;
 
-            if (NewOriginLocation != null && OriginLocation.Name != NewOriginLocation.Name && 
-                OriginLocation.Latitude != NewOriginLocation.Latitude &&
-                OriginLocation.Longitude != NewOriginLocation.Latitude)
-            {
-                NewOriginLocation.RouteVersion = RouteVersion;
-                OriginLocation = NewOriginLocation;
-            }
+            //if (NewOriginLocation != null && OriginLocation.Name != NewOriginLocation.Name && 
+            //    OriginLocation.Latitude != NewOriginLocation.Latitude &&
+            //    OriginLocation.Longitude != NewOriginLocation.Latitude)
+            //{
+            //    NewOriginLocation.RouteVersion = RouteVersion;
+            //    OriginLocation = NewOriginLocation;
+            //}
 
-            if (NewDestinationLocation != null && DestinationLocation.Name != NewDestinationLocation.Name &&
-                DestinationLocation.Latitude != NewDestinationLocation.Latitude &&
-                DestinationLocation.Longitude != NewDestinationLocation.Latitude)
-            {
-                NewDestinationLocation.RouteVersion = RouteVersion;
-                DestinationLocation = NewDestinationLocation;
-            }
+            //if (NewDestinationLocation != null && DestinationLocation.Name != NewDestinationLocation.Name &&
+            //    DestinationLocation.Latitude != NewDestinationLocation.Latitude &&
+            //    DestinationLocation.Longitude != NewDestinationLocation.Latitude)
+            //{
+            //    NewDestinationLocation.RouteVersion = RouteVersion;
+            //    DestinationLocation = NewDestinationLocation;
+            //}
 
             RouteSections.ForEach(rs => rs.IsEdited = true);
 
             foreach (var section in sections)
             {
                 section.RouteVersion = RouteVersion;
-                section.LocationPoints.AddRange(OriginLocation, DestinationLocation);
+                section.LocationPoints.AddRange(NewOriginLocation, NewDestinationLocation);
             }
 
             RouteSections.AddRange(sections);
@@ -204,7 +192,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             foreach (var section in sections)
             {
                 section.RouteVersion = RouteVersion;
-                section.LocationPoints.AddRange(OriginLocation, DestinationLocation);
+                //section.LocationPoints.AddRange(OriginLocation, DestinationLocation);
             }
 
             RouteSections.AddRange(sections);

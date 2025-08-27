@@ -19,8 +19,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public async Task<GetFuelRouteDto> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections.Where(x => x.IsAssigned == true))
                     .ThenInclude(re => re.LocationPoints)
@@ -60,8 +58,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             {
                 RemainingFuel = fuelRoad.RemainingFuel,
                 Weight = fuelRoad.Weight,
-                OriginName = fuelRoad.OriginLocation.Name,
-                DestinationName = fuelRoad.DestinationLocation.Name,
+                OriginName = orignPoint.Name,
+                DestinationName = destinationPoint.Name,
                 Origin = new GeoPoint(orignPoint.Latitude, orignPoint.Longitude),
                 Destination = new GeoPoint(destinationPoint.Latitude, destinationPoint.Longitude),
                 RouteId = fuelRoad.Id.ToString(),

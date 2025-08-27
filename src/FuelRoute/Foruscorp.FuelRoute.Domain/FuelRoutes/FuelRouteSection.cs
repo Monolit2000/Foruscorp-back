@@ -134,14 +134,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public void SetDestinationLocation(LocationPoint destinationLocation)
         {
-            // Удаляем старую точку назначения, если есть
             var existingDestination = GetDestinationLocation();
             if (existingDestination != null)
             {
                 RemoveLocationPoint(existingDestination.Id);
             }
 
-            // Устанавливаем новую точку как Destination
             destinationLocation.UpdateType(LocationPointType.Destination);
             AddLocationPoint(destinationLocation);
         }

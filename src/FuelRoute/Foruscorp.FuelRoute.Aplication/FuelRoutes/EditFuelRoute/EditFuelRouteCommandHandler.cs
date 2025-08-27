@@ -48,8 +48,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 return Result.Fail("Truck route not found.");
 
             var fuelRoute = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections)
                   .FirstOrDefaultAsync(x => x.Id == route.RouteId, cancellationToken);

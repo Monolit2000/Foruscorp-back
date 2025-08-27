@@ -16,8 +16,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             var route = await truckClient.GetRouteAsync(request.TruckId);
 
             var fuelRoute = await fuelRouteContext.FuelRoutes
-                .Include(x => x.OriginLocation)
-                .Include(x => x.DestinationLocation)
                 .Include(x => x.RouteSections.Where(rs => rs.IsAccepted))
                     .ThenInclude(rs => rs.LocationPoints)
                 .FirstOrDefaultAsync(x => x.Id == route.RouteId);
@@ -44,8 +42,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
             var fuelRouteDto = new RoutInfoDto
             {
                 TruckId = fuelRoute.TruckId,
-                OriginName = fuelRoute.OriginLocation.Name,
-                DestinationName = fuelRoute.DestinationLocation.Name,
+                OriginName = orignPoint.Name,
+                DestinationName = destinationPoint.Name,
                 Origin = new GeoPoint(orignPoint.Latitude, orignPoint.Longitude),
                 Destination = new GeoPoint(destinationPoint.Latitude, destinationPoint.Longitude),
                 routeDto = route,
