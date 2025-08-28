@@ -6,6 +6,7 @@ using Foruscorp.FuelRoutes.Domain.RouteValidators;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using NPOI.POIFS.Macros;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 {
@@ -94,7 +95,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                 var changeDto = request.FuelStationChange;
                 var fuelStation = routeSection.FuelRouteStations
-                    .FirstOrDefault(fs => fs.FuelStationId == changeDto.FuelStationId);
+                    .FirstOrDefault(fs => fs.FuelPointId == changeDto.FuelStationId);
 
                 if (fuelStation == null)
                 {
@@ -159,26 +160,33 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                     case Operation.Update:
                         // Обновляем существующую топливную станцию
-                        var updateFuelStationChange = changeDto.IsManual 
-                            ? FuelStationChange.CreateManual(fuelStation, changeDto.ForwardDistance ?? 0)
-                            : FuelStationChange.CreateAlgo(fuelStation);
+
+
+                       var change = routeValidator.FuelStationChanges.FirstOrDefault(x => x.FuelStation.FuelPointId == fuelStation.FuelPointId);
+
+
+                        //var updateFuelStationChange = changeDto.IsManual 
+                        //    ? FuelStationChange.CreateManual(fuelStation, changeDto.ForwardDistance ?? 0)
+                        //    : FuelStationChange.CreateAlgo(fuelStation);
 
                         if (changeDto.NewRefill.HasValue)
-                            updateFuelStationChange.Refill = changeDto.NewRefill.Value;
-                        if (changeDto.NewCurrentFuel.HasValue)
-                            updateFuelStationChange.CurrentFuel = changeDto.NewCurrentFuel.Value;
+                            change.Refill = changeDto.NewRefill.Value;
+                        //if (changeDto.NewCurrentFuel.HasValue)
+                        //    change.CurrentFuel = changeDto.NewCurrentFuel.Value;
 
-                        routeValidator.AddFuelStationChange(updateFuelStationChange);
+                        
+
+                        //routeValidator.AddFuelStationChange(updateFuelStationChange);
 
                         changes.Add(new FuelStationChangeInfo
                         {
                             FuelStationId = changeDto.FuelStationId,
                             OriginalRefill = originalRefill,
-                            NewRefill = updateFuelStationChange.Refill,
+                            NewRefill = change.Refill,
                             OriginalCurrentFuel = originalCurrentFuel,
-                            NewCurrentFuel = updateFuelStationChange.CurrentFuel,
-                            IsAlgo = updateFuelStationChange.IsAlgo,
-                            IsManual = updateFuelStationChange.IsManual,
+                            NewCurrentFuel = change.CurrentFuel,
+                            IsAlgo = change.IsAlgo,
+                            IsManual = change.IsManual,
                             Status = "Updated"
                         });
                         break;

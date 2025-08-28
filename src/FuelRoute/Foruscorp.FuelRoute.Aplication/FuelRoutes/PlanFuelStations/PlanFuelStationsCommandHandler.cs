@@ -143,7 +143,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             {
                 FuelRouteId = fuelRouteId,
                 FuelPointId = dto.Id,
-
+                FuelStationId = dto.Id,
                 Price = decimal.TryParse(dto.Price, out var price) ? price : 0m,
                 Discount = decimal.TryParse(dto.Discount, out var discount) ? discount : 0m,
                 PriceAfterDiscount = decimal.TryParse(dto.PriceAfterDiscount, out var afterDiscount) ? afterDiscount : 0m,

@@ -22,7 +22,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         // Navigation properties
         public FuelRoute FuelRoute { get; private set; }
-        public List<FuelRouteStation> FuelRouteStations = [];
+
         public RouteValidator? RouteValidator { get; private set; }
         public DateTime? AssignedAt { get; set; } 
         public DateTime? AcceptedAt { get; set; } 

@@ -49,7 +49,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 
         public FuelRouteStation() 
         {
-            FuelStationId = Guid.NewGuid();
+            //FuelStationId = Guid.NewGuid();
 
         } // For EF Core 
 

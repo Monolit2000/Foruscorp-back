@@ -173,7 +173,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             var currentFuel = 150.0; // Начальное количество топлива
             var currentPosition = 0.0;
             var minReserve = MaxTankCapacity * MinReserveFactor;
-            var fuelConsumptionPerKm = 0.3; // Расход топлива (л/км)
+            var fuelConsumptionPerKm = 0.08; // Расход топлива (л/км)
             var finishFuel = 50.0; // Требуемое количество топлива на финише
 
             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
@@ -195,7 +195,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 var fuelPercentAtArrival = (fuelAtArrival / MaxTankCapacity) * 100.0;
 
                 // Проверка 1: Можем ли дойти до станции с 20% запасом
-                if (!isFirst || (isFirst && fuelPercentAtArrival > 30) && fuelAtArrival < minReserve)
+                if (!isFirst  && fuelAtArrival < minReserve)
                 {
                     result.IsValid = false;
                     result.FailureReason = $"Невозможно дойти до станции {station.FuelRouteStationId} " +
@@ -223,9 +223,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 // Проверка 2: Не превышаем ли вместимость бака
                 if (fuelAtArrival + refillAmount > MaxTankCapacity)
                 {
+                    //result.IsValid = false;
                     result.Warnings.Add($"На станции {station.FuelRouteStationId} " +
                         $"дозаправка ограничена вместимостью бака");
-                    refillAmount = MaxTankCapacity - fuelAtArrival;
+                    //refillAmount = MaxTankCapacity - fuelAtArrival;
+                    //return false;
                 }
 
                 stepResult.RefillAmount = refillAmount;
@@ -256,7 +258,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             double finishFuel)
         {
             var totalDistance = routeSection.RouteSectionInfo?.Miles ?? 0;
-            var distanceToFinish = (totalDistance * 1.60934) - currentPosition; // Конвертируем мили в км
+            totalDistance = totalDistance / 1000.0;
+            var distanceToFinish = totalDistance - currentPosition; // Конвертируем мили в км
             var fuelNeededToFinish = distanceToFinish * fuelConsumptionPerKm;
             var fuelAtFinish = currentFuel - fuelNeededToFinish;
 

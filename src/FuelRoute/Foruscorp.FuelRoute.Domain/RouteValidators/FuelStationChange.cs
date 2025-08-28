@@ -30,7 +30,7 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
             FuelStation = fuelRouteStation;
             Refill = Convert.ToDouble(fuelRouteStation.Refill);
             CurrentFuel = fuelRouteStation.CurrentFuel; 
-            ForwardDistance = forwardDistance;
+            ForwardDistance = fuelRouteStation.ForwardDistance;
         }
 
         public static FuelStationChange CreateAlgo(FuelRouteStation fuelRouteStation)

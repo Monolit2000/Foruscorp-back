@@ -13,7 +13,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.HasKey(x => x.FuelStationId);
 
             builder.Property(x => x.FuelStationId)
-                .ValueGeneratedOnAdd();
+                .ValueGeneratedNever();
 
             builder.Property(x => x.FuelRouteId)
                 .IsRequired();
