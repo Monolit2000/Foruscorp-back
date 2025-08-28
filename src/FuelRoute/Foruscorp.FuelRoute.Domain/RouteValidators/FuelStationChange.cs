@@ -36,13 +36,15 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
         public static FuelStationChange CreateAlgo(FuelRouteStation fuelRouteStation)
         {
             var station = new FuelStationChange(fuelRouteStation);
-            station.IsAlgo = true;  
+            station.IsAlgo = true;
+            station.Id = fuelRouteStation.FuelPointId;
             return station;
         }
 
-        public static FuelStationChange CreateManual(FuelRouteStation fuelRouteStation, double forwardDistance)
+        public static FuelStationChange CreateManual(FuelRouteStation fuelRouteStation)
         {
-            var station = new FuelStationChange(fuelRouteStation, forwardDistance);
+            var station = new FuelStationChange(fuelRouteStation);
+            station.Id = fuelRouteStation.FuelPointId;
             station.IsManual = true;
             return station;
         }

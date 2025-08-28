@@ -1,6 +1,7 @@
 ﻿using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Domain.RouteValidators;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
 using Microsoft.AspNetCore.Components.Forms;
@@ -75,6 +76,32 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         }
 
         public static FuelStationDto MapToDto(FuelRouteStation station)
+        {
+            return new FuelStationDto
+            {
+                Id = station.FuelPointId,
+                Name = station.Name,
+                Address = station.Address,
+                Latitude = station.Latitude,
+                Longitude = station.Longitude,
+                Price = station.Price.ToString(CultureInfo.InvariantCulture),
+                Discount = station.Discount.ToString(CultureInfo.InvariantCulture),
+                PriceAfterDiscount = station.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
+
+                IsAlgorithm = station.IsAlgorithm,
+                Refill = station.Refill,
+                StopOrder = station.StopOrder,
+                NextDistanceKm = station.NextDistanceKm,
+
+                RoadSectionId = station.RoadSectionId.ToString(),
+
+                CurrentFuel = station.CurrentFuel
+
+                
+            };
+        }
+
+        public static FuelStationDto MapToDto(FuelStationChange station)
         {
             return new FuelStationDto
             {

@@ -163,6 +163,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                      MeetsReserveRequirement = true,
                      Notes = $"Direct trip to finish without stops. Consumption: {fuelConsumptionPerKm:F3} g/km"
                  });
+                 
             }
             else
             {
@@ -189,7 +190,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                      var stepResult = new ValidationStepResult
                      {
                          IsValid = false,
-                         StationId = orderedStations[i].FuelRouteStationId,
+                         StationId = orderedStations[i].Id,
                          StationsNotOrdered = true,
                          PreviousStationDistance = orderedStations[i-1].ForwardDistance,
                          CurrentStationDistance = orderedStations[i].ForwardDistance,
@@ -227,7 +228,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                      var stepResult = new ValidationStepResult
                      {
                          IsValid = false,
-                         StationId = station.FuelRouteStationId,
+                         StationId = station.Id,
                          DistanceTooClose = true,
                          MinRequiredDistance = requiredMinDistance,
                          ActualDistance = distance,
@@ -261,18 +262,21 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
             bool isFirst = true;
 
-            // Симулируем каждую остановку
-            foreach (var station in orderedStations)
-            {
-                var stepResult = new ValidationStepResult { StationId = station.FuelRouteStationId };
-                
-                // Рассчитываем расход топлива до станции
-                var distance = station.ForwardDistance - currentPosition;
-                var fuelUsed = distance * fuelConsumptionPerKm;
-                var fuelAtArrival = currentFuel - fuelUsed;
+                         // Симулируем каждую остановку
+             foreach (var station in orderedStations)
+             {
+                 var stepResult = new ValidationStepResult { StationId = station.Id };
+                 
+                 // Рассчитываем расход топлива до станции
+                 var distance = station.ForwardDistance - currentPosition;
+                 var fuelUsed = distance * fuelConsumptionPerKm;
+                 var fuelAtArrival = currentFuel - fuelUsed;
 
-                stepResult.FuelBefore = currentFuel;
-                stepResult.Distance = distance;
+                 // Проставляем CurrentFuel для FuelStationChange
+                 station.CurrentFuel = fuelAtArrival;
+
+                 stepResult.FuelBefore = currentFuel;
+                 stepResult.Distance = distance;
 
                 var fuelPercentAtArrival = (fuelAtArrival / maxTankCapacity) * 100.0;
 
@@ -367,14 +371,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             var fuelNeededToFinish = distanceToFinish * fuelConsumptionPerKm;
             var fuelAtFinish = currentFuel - fuelNeededToFinish;
 
-            var finishStep = new ValidationStepResult
-            {
-                StationId = Guid.Empty,
-                FuelBefore = currentFuel,
-                Distance = distanceToFinish,
-                RefillAmount = 0,
-                FuelAfter = fuelAtFinish
-            };
+                         var finishStep = new ValidationStepResult
+             {
+                 StationId = Guid.Empty,
+                 FuelBefore = currentFuel,
+                 Distance = distanceToFinish,
+                 RefillAmount = 0,
+                 FuelAfter = fuelAtFinish
+             };
+             
+             // Для финального шага CurrentFuel будет равно fuelAtFinish
+             // Но поскольку это не FuelStationChange, это не применимо
 
             // Проверяем, хватит ли топлива до финиша с требуемым запасом
             if (fuelAtFinish < fuelFinish)
@@ -428,7 +435,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         public bool MeetsReserveRequirement { get; set; }
         public string Notes { get; set; } = string.Empty;
 
-        public bool IsValid { get; set; }
+        public bool IsValid { get; set; } = true;
 
 
         // Плохие случаи валидации

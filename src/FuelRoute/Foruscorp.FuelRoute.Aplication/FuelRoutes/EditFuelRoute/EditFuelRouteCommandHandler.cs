@@ -127,6 +127,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 newOrigin, 
                 newDestination);
 
+            fuelRoute.Weight = request.Weight;  
+
             await fuelRouteContext.LocationPoints.AddRangeAsync([newOrigin, newDestination]);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);

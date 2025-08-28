@@ -20,6 +20,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
     public record ChangeFuelPlanCommand : IRequest<Result<ChangeFuelPlanResponse>>
     {
         public Guid RouteSectionId { get; init; }
+        public double CurrentFuelPercent { get; init; }
         public FuelStationChangeDto FuelStationChange { get; init; }
         public Operation Operation { get; init; }
     }
@@ -28,19 +29,18 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
     {
         public Guid FuelStationId { get; init; }
         public double? NewRefill { get; init; }
-        public double? NewCurrentFuel { get; init; }
-        public bool IsManual { get; init; } = false;
     }
 
     public record ChangeFuelPlanResponse
     {
-        public Guid RouteValidatorId { get; init; }
+        //public Guid RouteValidatorId { get; init; }
         public bool IsValid { get; init; }
         public List<FuelStationChangeInfo> Changes { get; init; } = [];
-        public string Message { get; init; } = string.Empty;
-        public string ValidationDetails { get; init; } = string.Empty;
-        public List<string> ValidationWarnings { get; init; } = [];
-        public double FinalFuelAmount { get; init; }
+        //public string Message { get; init; } = string.Empty;
+        //public string ValidationDetails { get; init; } = string.Empty;
+        //public List<string> ValidationWarnings { get; init; } = [];
+        //public double FinalFuelAmount { get; init; }
+        public List<ValidationStepResult> StepResults { get; set; } = [];
     }
 
     public record FuelStationChangeInfo
@@ -77,14 +77,15 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     return Result.Fail<ChangeFuelPlanResponse>($"Route section {request.RouteSectionId} not found");
                 }
 
-                await CalculateAndSetForwardDistances(routeSection, logger);
 
                 var routeValidator = await fuelRouteContext.RouteValidators
                     .Include(rv => rv.FuelStationChanges)
                     .FirstOrDefaultAsync(rv => rv.FuelRouteSectionId == routeSection.Id, cancellationToken);
 
+
                 if (routeValidator == null)
                 {
+                    await CalculateAndSetForwardDistances(routeSection, logger);
                     routeValidator = new RouteValidator(routeSection.FuelRoute, routeSection);
                     fuelRouteContext.RouteValidators.Add(routeValidator);
                 }
@@ -109,26 +110,28 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 {
                     case Operation.Add:
                         // Добавляем новую топливную станцию
-                        var newFuelStationChange = changeDto.IsManual 
-                            ? FuelStationChange.CreateManual(fuelStation, changeDto.ForwardDistance ?? 0)
-                            : FuelStationChange.CreateAlgo(fuelStation);
+
+                        var fuelStationChange = routeValidator.FuelStationChanges.FirstOrDefault(x => x.FuelStation.FuelPointId == fuelStation.FuelPointId);
+
+                        if(fuelStationChange != null) goto case Operation.Update;
+
+                        fuelStationChange = FuelStationChange.CreateManual(fuelStation);
 
                         if (changeDto.NewRefill.HasValue)
-                            newFuelStationChange.Refill = changeDto.NewRefill.Value;
-                        if (changeDto.NewCurrentFuel.HasValue)
-                            newFuelStationChange.CurrentFuel = changeDto.NewCurrentFuel.Value;
+                            fuelStationChange.Refill = changeDto.NewRefill.Value;
 
-                        routeValidator.AddFuelStationChange(newFuelStationChange);
+
+                        routeValidator.AddFuelStationChange(fuelStationChange);
 
                         changes.Add(new FuelStationChangeInfo
                         {
                             FuelStationId = changeDto.FuelStationId,
                             OriginalRefill = 0.0,
-                            NewRefill = newFuelStationChange.Refill,
+                            NewRefill = fuelStationChange.Refill,
                             OriginalCurrentFuel = 0.0,
-                            NewCurrentFuel = newFuelStationChange.CurrentFuel,
-                            IsAlgo = newFuelStationChange.IsAlgo,
-                            IsManual = newFuelStationChange.IsManual,
+                            NewCurrentFuel = fuelStationChange.CurrentFuel,
+                            IsAlgo = fuelStationChange.IsAlgo,
+                            IsManual = fuelStationChange.IsManual,
                             Status = "Added"
                         });
                         break;
@@ -162,7 +165,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                        var change = routeValidator.FuelStationChanges.FirstOrDefault(x => x.FuelStation.FuelPointId == fuelStation.FuelPointId);
 
+                        if (change == null) goto case Operation.Add;
 
+                       change.IsManual = true;
                         //var updateFuelStationChange = changeDto.IsManual 
                         //    ? FuelStationChange.CreateManual(fuelStation, changeDto.ForwardDistance ?? 0)
                         //    : FuelStationChange.CreateAlgo(fuelStation);
@@ -195,7 +200,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
    
                 var fuelPlanValidator = new FuelPlanValidator();
-                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, 40000.0, 64.0, 200.0, 100.0, 0.18, 50.0);
+                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, routeSection.FuelRoute.Weight, request.CurrentFuelPercent, 200.0, 400.0, 0.18, routeSection.FuelRoute.RemainingFuel);
                 routeValidator.IsValid = validationResult.IsValid;
 
                 // Логируем детали валидации
@@ -209,6 +214,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     logger.LogWarning("Fuel plan validation warning: {Warning}", warning);
                 }
 
+                routeValidator.FinalFuelAmount = validationResult.FinalFuelAmount;
+
                 // Сохраняем изменения в базу данных
                 await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
@@ -217,13 +224,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                 var response = new ChangeFuelPlanResponse
                 {
-                    RouteValidatorId = routeValidator.Id,
                     IsValid = validationResult.IsValid,
                     Changes = changes,
-                    Message = validationResult.IsValid ? $"Fuel plan {request.Operation} applied successfully" : $"Fuel plan {request.Operation} applied but validation failed",
-                    ValidationDetails = validationResult.FailureReason,
-                    ValidationWarnings = validationResult.Warnings,
-                    FinalFuelAmount = validationResult.FinalFuelAmount
+                    //ValidationDetails = validationResult.FailureReason,
+                    //ValidationWarnings = validationResult.Warnings,
+                    //FinalFuelAmount = validationResult.FinalFuelAmount,
+                    StepResults = validationResult.StepResults.Where(x => x.IsValid == false).ToList()
                 };
 
                 return Result.Ok(response);
@@ -235,12 +241,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             }
         }
 
-        /// <summary>
-        /// Красивый метод для автоматического расчета и установки ForwardDistance для всех топливных станций
-        /// Использует рекурсивную логику аналогично NewRouteAnalyzer для точного расчета расстояний вдоль маршрута
-        /// </summary>
-        /// <param name="routeSection">Секция маршрута с топливными станциями</param>
-        /// <param name="logger">Логгер для записи операций</param>
         private async Task CalculateAndSetForwardDistances(FuelRouteSection routeSection, ILogger logger)
         {
             try

@@ -10,6 +10,7 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
         public FuelRoute FuelRoute { get; set; }
         public FuelRouteSection FuelRouteSection { get; set; }
         public bool IsValid { get; set; }
+        public double FinalFuelAmount { get; set; }
         public List<FuelStationChange> FuelStationChanges { get; set; } = [];
 
         private RouteValidator()

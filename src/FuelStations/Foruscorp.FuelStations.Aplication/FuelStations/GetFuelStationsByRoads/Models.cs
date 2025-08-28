@@ -46,6 +46,9 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
         public string NextDistanceKm { get; set; } = null!;
         public string RoadSectionId { get; set; } = string.Empty;
         public double CurrentFuel { get; set; } = 0.0; 
+
+        public bool IsManual { get; set; }
+        public double ForwardDistants { get; set; }
     }
 
     public class RouteStopsForRoadInfo

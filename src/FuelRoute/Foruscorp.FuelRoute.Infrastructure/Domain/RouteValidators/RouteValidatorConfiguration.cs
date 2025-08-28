@@ -17,6 +17,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Domain.RouteValidators
                 .IsRequired()
                 .HasDefaultValue(true);
 
+            builder.Property(fsc => fsc.FinalFuelAmount)
+                .IsRequired()
+                .HasColumnType("double precision");
+
             builder.HasOne(rv => rv.FuelRoute)
                 .WithMany()
                 .HasForeignKey("FuelRouteId")

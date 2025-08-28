@@ -11,7 +11,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Domain.RouteValidators
             builder.HasKey(fsc => fsc.Id);
 
             builder.Property(fsc => fsc.Id)
-                .ValueGeneratedOnAdd();
+                .ValueGeneratedNever();
 
             builder.Property(fsc => fsc.RouteValidatorId)
                 .IsRequired();
