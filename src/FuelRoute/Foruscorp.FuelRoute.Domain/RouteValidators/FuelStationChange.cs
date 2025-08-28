@@ -20,6 +20,9 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
         public bool IsAlgo { get; set; }
         public bool IsManual { get; set; }
 
+        public int StopOrder { get; set; }
+        public double NextDistanceKm { get; set; }
+
         private FuelStationChange()
         {
                 

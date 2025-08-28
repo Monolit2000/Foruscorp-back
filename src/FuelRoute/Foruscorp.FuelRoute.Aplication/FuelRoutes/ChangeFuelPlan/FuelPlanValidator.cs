@@ -176,78 +176,90 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             return result;
         }
 
-        /// <summary>
-        /// Проверяет упорядоченность станций по расстоянию
-        /// </summary>
-        private bool ValidateStationOrder(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result)
-        {
-            var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
-            
-            for (int i = 1; i < orderedStations.Count; i++)
-            {
-                if (orderedStations[i].ForwardDistance <= orderedStations[i-1].ForwardDistance)
-                {
-                     var stepResult = new ValidationStepResult
-                     {
-                         IsValid = false,
-                         StationId = orderedStations[i].Id,
-                         StationsNotOrdered = true,
-                         PreviousStationDistance = orderedStations[i-1].ForwardDistance,
-                         CurrentStationDistance = orderedStations[i].ForwardDistance,
-                         Notes = $"Stations are not ordered by distance"
-                     };
-                    
-                    result.StepResults.Add(stepResult);
-                                         result.IsValid = false;
-                     result.FailureReason = $"Stations are not ordered by distance: " +
-                         $"Station {orderedStations[i-1].FuelRouteStationId} ({orderedStations[i-1].ForwardDistance:F0}km) " +
-                         $"after station {orderedStations[i].FuelRouteStationId} ({orderedStations[i].ForwardDistance:F0}km)";
-                    return false;
-                }
-            }
-            return true;
-        }
+                 /// <summary>
+         /// Проверяет упорядоченность станций по расстоянию
+         /// </summary>
+         private bool ValidateStationOrder(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result)
+         {
+             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
+             
+             // Проставляем StopOrder для всех станций
+             for (int i = 0; i < orderedStations.Count; i++)
+             {
+                 orderedStations[i].StopOrder = i + 1;
+             }
+             
+             for (int i = 1; i < orderedStations.Count; i++)
+             {
+                 if (orderedStations[i].ForwardDistance <= orderedStations[i-1].ForwardDistance)
+                 {
+                      var stepResult = new ValidationStepResult
+                      {
+                          IsValid = false,
+                          StationId = orderedStations[i].Id,
+                          StationsNotOrdered = true,
+                          PreviousStationDistance = orderedStations[i-1].ForwardDistance,
+                          CurrentStationDistance = orderedStations[i].ForwardDistance,
+                          Notes = $"Stations are not ordered by distance"
+                      };
+                     
+                     result.StepResults.Add(stepResult);
+                                          result.IsValid = false;
+                      result.FailureReason = $"Stations are not ordered by distance: " +
+                          $"Station {orderedStations[i-1].FuelRouteStationId} ({orderedStations[i-1].ForwardDistance:F0}km) " +
+                          $"after station {orderedStations[i].FuelRouteStationId} ({orderedStations[i].ForwardDistance:F0}km)";
+                     return false;
+                 }
+             }
+             return true;
+         }
 
-        /// <summary>
-        /// Проверяет минимальные расстояния между станциями
-        /// </summary>
-        private bool ValidateMinimumDistances(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result, double minStopDistanceKm)
-        {
-            var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
-            var previousPosition = 0.0; // Старт
+                 /// <summary>
+         /// Проверяет минимальные расстояния между станциями
+         /// </summary>
+         private bool ValidateMinimumDistances(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result, double minStopDistanceKm)
+         {
+             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
+             var previousPosition = 0.0; // Старт
 
-            foreach (var station in orderedStations)
-            {
-                var distance = station.ForwardDistance - previousPosition;
-                
-                // Для первой станции минимальное расстояние может быть меньше
-                var requiredMinDistance = previousPosition == 0 ? 50.0 : minStopDistanceKm;
-                
-                if (distance < requiredMinDistance)
-                {
-                     var stepResult = new ValidationStepResult
-                     {
-                         IsValid = false,
-                         StationId = station.Id,
-                         DistanceTooClose = true,
-                         MinRequiredDistance = requiredMinDistance,
-                         ActualDistance = distance,
-                         Distance = distance,
-                         Notes = $"Minimum distance violation to station"
-                     };
-                    
-                    result.StepResults.Add(stepResult);
-                                         result.IsValid = false;
-                     result.FailureReason = $"Minimum distance violation to station " +
-                         $"{station.FuelRouteStationId}: {distance:F0}km < {requiredMinDistance:F0}km";
-                    return false;
-                }
+             // Проставляем StopOrder для всех станций
+             for (int i = 0; i < orderedStations.Count; i++)
+             {
+                 orderedStations[i].StopOrder = i + 1;
+             }
 
-                previousPosition = station.ForwardDistance;
-            }
+             foreach (var station in orderedStations)
+             {
+                 var distance = station.ForwardDistance - previousPosition;
+                 
+                 // Для первой станции минимальное расстояние может быть меньше
+                 var requiredMinDistance = previousPosition == 0 ? 50.0 : minStopDistanceKm;
+                 
+                 if (distance < requiredMinDistance)
+                 {
+                      var stepResult = new ValidationStepResult
+                      {
+                          IsValid = false,
+                          StationId = station.Id,
+                          DistanceTooClose = true,
+                          MinRequiredDistance = requiredMinDistance,
+                          ActualDistance = distance,
+                          Distance = distance,
+                          Notes = $"Minimum distance violation to station"
+                      };
+                     
+                     result.StepResults.Add(stepResult);
+                                          result.IsValid = false;
+                      result.FailureReason = $"Minimum distance violation to station " +
+                          $"{station.FuelRouteStationId}: {distance:F0}km < {requiredMinDistance:F0}km";
+                     return false;
+                 }
 
-            return true;
-        }
+                 previousPosition = station.ForwardDistance;
+             }
+
+             return true;
+         }
 
         /// <summary>
         /// Симулирует поездку и проверяет все ограничения
@@ -263,8 +275,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             bool isFirst = true;
 
                          // Симулируем каждую остановку
-             foreach (var station in orderedStations)
+             for (int i = 0; i < orderedStations.Count; i++)
              {
+                 var station = orderedStations[i];
                  var stepResult = new ValidationStepResult { StationId = station.Id };
                  
                  // Рассчитываем расход топлива до станции
@@ -272,8 +285,26 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                  var fuelUsed = distance * fuelConsumptionPerKm;
                  var fuelAtArrival = currentFuel - fuelUsed;
 
+                 // Проставляем StopOrder для FuelStationChange (начиная с 1)
+                 station.StopOrder = i + 1;
+                 
                  // Проставляем CurrentFuel для FuelStationChange
                  station.CurrentFuel = fuelAtArrival;
+                 
+                 // Проставляем NextDistanceKm для FuelStationChange
+                 if (i < orderedStations.Count - 1)
+                 {
+                     // Расстояние до следующей станции
+                     var nextStation = orderedStations[i + 1];
+                     station.NextDistanceKm = nextStation.ForwardDistance - station.ForwardDistance;
+                 }
+                 else
+                 {
+                     // Для последней станции - расстояние до финиша
+                     var totalDistance = routeSection.RouteSectionInfo?.Miles ?? 0;
+                     var totalDistanceKm = totalDistance / 1000.0;
+                     station.NextDistanceKm = totalDistanceKm - station.ForwardDistance;
+                 }
 
                  stepResult.FuelBefore = currentFuel;
                  stepResult.Distance = distance;

@@ -39,7 +39,50 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                     .Include(re => re.LocationPoints)
                     .FirstOrDefaultAsync();
 
-            var stations = await fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToListAsync();
+            var routeValidator = await fuelRouteContext.RouteValidators
+                    .Include(rv => rv.FuelStationChanges)
+                        .ThenInclude(fsc => fsc.FuelStation)
+                    .FirstOrDefaultAsync(rv => rv.FuelRouteSectionId == section.Id, cancellationToken);
+
+            // Используем FuelStationChange из RouteValidator, если он существует
+            var stations = new List<FuelStationDto>();
+            if (routeValidator != null && routeValidator?.FuelStationChanges != null && routeValidator.FuelStationChanges.Any())
+            {
+                // Получаем все FuelStationChange из RouteValidator
+                var stationChanges = routeValidator.FuelStationChanges
+                    .OrderBy(fsc => fsc.StopOrder)
+                    .Select(fsc => MapToDto(fsc))
+                    .ToList();
+
+                // Получаем все FuelRouteStation для этого section
+                var fuelRouteStations = await fuelRouteContext.FuelRouteStation
+                    .Where(x => x.RoadSectionId == section.Id)
+                    .ToListAsync();
+
+                // Создаем словарь для быстрого поиска по Id
+                var stationChangesDict = stationChanges.ToDictionary(s => s.Id);
+
+                // Добавляем все FuelStationChange
+                stations.AddRange(stationChanges);
+
+                // Добавляем только те FuelRouteStation, которые:
+                // 1. Не найдены в FuelStationChange (по Id)
+                // 2. Имеют IsAlgorithm == false (не алгоритмические)
+                var additionalStations = fuelRouteStations
+                    .Where(frs => !stationChangesDict.ContainsKey(frs.FuelPointId) && !frs.IsAlgorithm)
+                    .Select(frs => MapToDto(frs))
+                    .ToList();
+
+                stations.AddRange(additionalStations);
+            }
+            else
+            {
+                // Fallback к старым FuelRouteStation, если RouteValidator не найден
+                stations = await fuelRouteContext.FuelRouteStation
+                    .Where(x => x.RoadSectionId == section.Id)
+                    .Select(fs => MapToDto(fs))
+                    .ToListAsync();
+            }
 
             var routes = fuelRoad.RouteSections.Where(rs => rs.Id == section.Id).Select(rs => new RouteDto
             {
@@ -67,6 +110,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 FuelStationDtos = stations,
 
                 SectionId = section.Id.ToString(),
+                IsValid = routeValidator?.IsValid,
 
                 RouteInfo = routes.FirstOrDefault().RouteInfo,
                 MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
@@ -89,15 +133,16 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 PriceAfterDiscount = station.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
 
                 IsAlgorithm = station.IsAlgorithm,
-                Refill = station.Refill,
+                Refill = station.Refill.ToString(CultureInfo.InvariantCulture),
                 StopOrder = station.StopOrder,
-                NextDistanceKm = station.NextDistanceKm,
+                NextDistanceKm = station.NextDistanceKm.ToString(CultureInfo.InvariantCulture),
 
                 RoadSectionId = station.RoadSectionId.ToString(),
 
-                CurrentFuel = station.CurrentFuel
+                CurrentFuel = station.CurrentFuel,
 
-                
+                IsManual = false, // Старые FuelRouteStation всегда алгоритмические
+                ForwardDistants = station.ForwardDistance,
             };
         }
 
@@ -105,23 +150,26 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         {
             return new FuelStationDto
             {
-                Id = station.FuelPointId,
-                Name = station.Name,
-                Address = station.Address,
-                Latitude = station.Latitude,
-                Longitude = station.Longitude,
-                Price = station.Price.ToString(CultureInfo.InvariantCulture),
-                Discount = station.Discount.ToString(CultureInfo.InvariantCulture),
-                PriceAfterDiscount = station.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
+                Id = station.FuelStation.FuelPointId,
+                Name = station.FuelStation.Name,
+                Address = station.FuelStation.Address,
+                Latitude = station.FuelStation.Latitude,
+                Longitude = station.FuelStation.Longitude,
+                Price = station.FuelStation.Price.ToString(CultureInfo.InvariantCulture),
+                Discount = station.FuelStation.Discount.ToString(CultureInfo.InvariantCulture),
+                PriceAfterDiscount = station.FuelStation.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
 
-                IsAlgorithm = station.IsAlgorithm,
-                Refill = station.Refill,
+                IsAlgorithm = station.FuelStation.IsAlgorithm,
+                Refill = station.Refill.ToString(CultureInfo.InvariantCulture),
                 StopOrder = station.StopOrder,
-                NextDistanceKm = station.NextDistanceKm,
+                NextDistanceKm = station.NextDistanceKm.ToString(CultureInfo.InvariantCulture),
 
-                RoadSectionId = station.RoadSectionId.ToString(),
+                RoadSectionId = station.FuelStation.RoadSectionId.ToString(),
 
-                CurrentFuel = station.CurrentFuel
+                CurrentFuel = station.CurrentFuel,
+
+                IsManual = station.IsManual,
+                ForwardDistants = station.ForwardDistance,
             };
         }
     }
@@ -143,6 +191,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         
         public double RemainingFuel { get; set; }
         public string SectionId { get; set; }
+        public string? RouteValidatorId { get; set; }
+
+        public bool? IsValid { get; set; } = true;    
         public List<List<double>> MapPoints { get; set; } = new List<List<double>>();
 
         public List<FuelStationDto> FuelStationDtos { get; set; } = new List<FuelStationDto>();
