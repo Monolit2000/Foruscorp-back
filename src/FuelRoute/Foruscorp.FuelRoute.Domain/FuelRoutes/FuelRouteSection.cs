@@ -19,6 +19,8 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public bool IsAccepted { get; private set; } = false;
         public bool IsAssigned { get; private set; } 
 
+        // Navigation properties
+        public FuelRoute FuelRoute { get; private set; }
         public List<FuelRouteStation> FuelRouteStations = [];
 
         [NotMapped]
@@ -30,6 +32,15 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             Id = Guid.NewGuid();
             RouteId = routeId; 
+            EncodeRoute = encodeRoute;
+            IsAssigned = false; 
+        }
+
+        public FuelRouteSection(FuelRoute fuelRoute, string encodeRoute)
+        {
+            Id = Guid.NewGuid();
+            RouteId = fuelRoute.Id; 
+            FuelRoute = fuelRoute;
             EncodeRoute = encodeRoute;
             IsAssigned = false; 
         }
@@ -61,6 +72,12 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             IsEdited = true;
             IsAssigned = false;
+        }
+
+        public void SetFuelRoute(FuelRoute fuelRoute)
+        {
+            FuelRoute = fuelRoute ?? throw new ArgumentNullException(nameof(fuelRoute));
+            RouteId = fuelRoute.Id;
         }
     }
 }

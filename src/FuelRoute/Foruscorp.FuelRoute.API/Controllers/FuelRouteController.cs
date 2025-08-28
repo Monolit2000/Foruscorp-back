@@ -4,6 +4,7 @@ using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute;
@@ -196,6 +197,28 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
         [HttpPost("decline-fuel-route")]
+        public async Task<IActionResult> DeclineFuelRoute(DeclineFuelRouteCommand declineFuelRouteCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(declineFuelRouteCommand, cancellationToken);
+
+            if (result.IsSuccess)
+                return Ok(result.Successes);
+
+            return BadRequest(result.Errors);
+        }
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ChangeFuelPlanResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("change-fuel-plan")]
+        public async Task<IActionResult> ChangeFuelPlan(ChangeFuelPlanCommand changeFuelPlanCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(changeFuelPlanCommand, cancellationToken);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
         public async Task<IActionResult> DeclineFuelRoute(DeclineFuelRouteCommand declineFuelRouteCommand, CancellationToken cancellationToken)
         {
             var result = await mediator.Send(declineFuelRouteCommand, cancellationToken);

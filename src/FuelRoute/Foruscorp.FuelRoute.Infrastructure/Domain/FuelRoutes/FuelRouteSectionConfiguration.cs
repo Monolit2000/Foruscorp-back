@@ -52,8 +52,9 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
                 .IsRequired();
         });
 
-        builder.HasOne<FuelRoute>()
+        builder.HasOne(x => x.FuelRoute)
                .WithMany(x => x.RouteSections)
-               .HasForeignKey(x => x.RouteId);
+               .HasForeignKey(x => x.RouteId)
+               .OnDelete(DeleteBehavior.Cascade);
     }
 }

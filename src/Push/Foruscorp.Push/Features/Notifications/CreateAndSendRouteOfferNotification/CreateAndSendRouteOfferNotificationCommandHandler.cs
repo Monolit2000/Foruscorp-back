@@ -15,7 +15,7 @@ namespace Foruscorp.Push.Features.Notifications.CreateAndSendRouteOfferNotificat
     {
         public async Task Handle(CreateAndSendRouteOfferNotificationCommand request, CancellationToken cancellationToken)
         {
-            var content = new NotificationContent("Meneger route", $"You have a new route suggestion.");
+            var content = new NotificationContent("Manager route", $"You have a new route suggestion.");
             var payloadData = new Dictionary<string, object>
             {
                 ["RouteId"] = request.RouteId,

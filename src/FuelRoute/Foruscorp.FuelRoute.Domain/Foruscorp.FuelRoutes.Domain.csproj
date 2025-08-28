@@ -16,4 +16,8 @@
     <ProjectReference Include="..\..\BuildingBlocks\Foruscorp.BuildingBlocks.Domain\Foruscorp.BuildingBlocks.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="RoutePlannerValidation\" />
+  </ItemGroup>
+
 </Project>

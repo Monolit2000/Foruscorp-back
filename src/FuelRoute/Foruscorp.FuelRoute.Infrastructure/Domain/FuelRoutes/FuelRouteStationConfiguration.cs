@@ -63,6 +63,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Data.Configurations
             builder.Property(x => x.RoadSectionId)
                 .IsRequired();
 
+            builder.Property(x => x.ForwardDistance)
+                .IsRequired()
+                .HasDefaultValue(0.0)
+                .HasColumnType("double precision");
+
             builder.Property(x => x.IsPlaned)
                 .IsRequired();
 

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Domain.RouteValidators;
 using Foruscorp.FuelRoutes.Aplication.Contruct;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 
@@ -19,6 +20,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Percistence
         public DbSet<FuelRouteStation> FuelRouteStation { get; set; }
 
         public DbSet<FuelRouteSection> RouteSections { get; set; }
+
+        public DbSet<RouteValidator> RouteValidators { get; set; }
+
+        public DbSet<FuelStationChange> FuelStationChanges { get; set; }
 
         public FuelRouteContext(DbContextOptions<FuelRouteContext> options) : base(options)
         {
