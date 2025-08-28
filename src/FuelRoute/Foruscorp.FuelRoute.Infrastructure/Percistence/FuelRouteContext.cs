@@ -25,6 +25,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Percistence
 
         public DbSet<FuelStationChange> FuelStationChanges { get; set; }
 
+        public DbSet<LocationPoint> LocationPoints { get; set; }
+
         public FuelRouteContext(DbContextOptions<FuelRouteContext> options) : base(options)
         {
         }

@@ -24,6 +24,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         public FuelRoute FuelRoute { get; private set; }
         public List<FuelRouteStation> FuelRouteStations = [];
         public RouteValidator? RouteValidator { get; private set; }
+        public DateTime? AssignedAt { get; set; } 
+        public DateTime? AcceptedAt { get; set; } 
+
+        public List<FuelRouteStation> FuelRouteStations { get; set; } = [];
+        public List<LocationPoint> LocationPoints { get; set; } = [];
 
         [NotMapped]
         public string RouteSectionResponceId { get; set; } 
@@ -61,9 +66,17 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             RouteSectionInfo = routeSectionInfo;
             return RouteSectionInfo;    
         }
+
+        public void MarkAsAccepted()
+        {
+            IsAccepted = true;
+            AcceptedAt = DateTime.UtcNow;
+        }
+
         public void MarkAsAssigned()
         {
             IsAssigned = true;
+            AssignedAt = DateTime.UtcNow;   
         }
         public void MarkAsUnassigned()
         {
@@ -74,6 +87,75 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             IsEdited = true;
             IsAssigned = false;
+        }
+
+        public void AddLocationPoint(LocationPoint locationPoint)
+        {
+            if (LocationPoints.Any(lp => lp.Id == locationPoint.Id))
+                return;
+
+            LocationPoints.Add(locationPoint);
+            locationPoint.AddFuelRouteSection(this);
+        }
+
+        public void RemoveLocationPoint(Guid locationPointId)
+        {
+            var locationPoint = LocationPoints.FirstOrDefault(lp => lp.Id == locationPointId);
+            if (locationPoint != null)
+            {
+                LocationPoints.Remove(locationPoint);
+                locationPoint.RemoveFuelRouteSection(this);
+            }
+        }
+
+        public void ClearLocationPoints()
+        {
+            foreach (var locationPoint in LocationPoints.ToList())
+            {
+                locationPoint.RemoveFuelRouteSection(this);
+            }
+            LocationPoints.Clear();
+        }
+
+        public LocationPoint GetOriginLocation()
+        {
+            return LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Origin);
+        }
+
+        public LocationPoint GetDestinationLocation()
+        {
+            return LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Destination);
+        }
+
+        public IEnumerable<LocationPoint> GetStopLocations()
+        {
+            return LocationPoints.Where(lp => lp.Type == LocationPointType.Stop);
+        }
+
+        public void SetOriginLocation(LocationPoint originLocation)
+        {
+            // Удаляем старую точку отправления, если есть
+            var existingOrigin = GetOriginLocation();
+            if (existingOrigin != null)
+            {
+                RemoveLocationPoint(existingOrigin.Id);
+            }
+
+            // Устанавливаем новую точку как Origin
+            originLocation.UpdateType(LocationPointType.Origin);
+            AddLocationPoint(originLocation);
+        }
+
+        public void SetDestinationLocation(LocationPoint destinationLocation)
+        {
+            var existingDestination = GetDestinationLocation();
+            if (existingDestination != null)
+            {
+                RemoveLocationPoint(existingDestination.Id);
+            }
+
+            destinationLocation.UpdateType(LocationPointType.Destination);
+            AddLocationPoint(destinationLocation);
         }
 
         public void SetFuelRoute(FuelRoute fuelRoute)

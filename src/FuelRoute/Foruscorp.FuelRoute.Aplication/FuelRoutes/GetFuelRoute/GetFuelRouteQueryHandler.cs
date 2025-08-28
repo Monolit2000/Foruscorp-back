@@ -19,25 +19,29 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
         public async Task<GetFuelRouteDto> Handle(GetFuelRouteQuery request, CancellationToken cancellationToken)
         {
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
-                  .Include(x => x.RouteSections.Where(x => x.IsAccepted == true))
+                  .Include(x => x.RouteSections.Where(x => x.IsAssigned == true))
+                    .ThenInclude(re => re.LocationPoints)
                   .FirstOrDefaultAsync(x => x.Id == request.RouteId, cancellationToken);
 
             if (fuelRoad == null)
                 return new GetFuelRouteDto();
 
-            var section = fuelRoad.RouteSections.FirstOrDefault(rs => rs.IsAccepted == true);
+            var section = fuelRoad.RouteSections
+                .Where(rs => rs.IsAssigned)
+                .OrderByDescending(rs => rs.AssignedAt)
+                .FirstOrDefault();
 
             if (section == null)
-                section = fuelRoad.RouteSections.First();
+                section = await fuelRouteContext.RouteSections
+                    .Where(x => x.RouteId == fuelRoad.Id && x.IsAccepted)
+                    .Include(re => re.LocationPoints)
+                    .FirstOrDefaultAsync();
 
-            var stations = fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
-            //var stations = fuelRoad.FuelRouteStations.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToList();
+            var stations = await fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).Select(fs => MapToDto(fs)).ToListAsync();
+
             var routes = fuelRoad.RouteSections.Where(rs => rs.Id == section.Id).Select(rs => new RouteDto
             {
-
                 RouteSectionId = section.Id.ToString(),
                 MapPoints = PolylineEncoder.DecodePolyline(rs.EncodeRoute),
                 RouteInfo = new RouteInfo(
@@ -47,14 +51,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                     rs.RouteSectionInfo.DriveTime)
             }).ToList();
 
+            var orignPoint = section.LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Origin);
+            var destinationPoint = section.LocationPoints.FirstOrDefault(lp => lp.Type == LocationPointType.Destination);
+
             var fuelRoute = new GetFuelRouteDto
             {
                 RemainingFuel = fuelRoad.RemainingFuel,
                 Weight = fuelRoad.Weight,
-                OriginName = fuelRoad.OriginLocation.Name,
-                DestinationName = fuelRoad.DestinationLocation.Name,
-                Origin = new GeoPoint(fuelRoad.OriginLocation.Latitude, fuelRoad.OriginLocation.Longitude),
-                Destination = new GeoPoint(fuelRoad.DestinationLocation.Latitude, fuelRoad.DestinationLocation.Longitude),
+                OriginName = orignPoint.Name,
+                DestinationName = destinationPoint.Name,
+                Origin = new GeoPoint(orignPoint.Latitude, orignPoint.Longitude),
+                Destination = new GeoPoint(destinationPoint.Latitude, destinationPoint.Longitude),
                 RouteId = fuelRoad.Id.ToString(),
                 FuelStationDtos = stations,
 

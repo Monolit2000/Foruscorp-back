@@ -48,8 +48,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 return Result.Fail("Truck route not found.");
 
             var fuelRoute = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
                   //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections)
                   .FirstOrDefaultAsync(x => x.Id == route.RouteId, cancellationToken);
@@ -122,12 +120,14 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute
                 }
             }
 
-            var newOrigin = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude);
-            var newDestination = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude);
+            var newOrigin = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin);
+            var newDestination = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination);
 
             fuelRoute.EditRoute(routeSections,
                 newOrigin, 
                 newDestination);
+
+            await fuelRouteContext.LocationPoints.AddRangeAsync([newOrigin, newDestination]);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 

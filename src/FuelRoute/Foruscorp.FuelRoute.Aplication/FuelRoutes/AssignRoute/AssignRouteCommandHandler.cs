@@ -80,6 +80,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute
                 .Where(fs => fs.RouteId == fuelRoute.Id && fs.IsAssigned)
                 .FirstOrDefaultAsync();
 
+            if (editedSection == null)
+                return;
+
             editedSection.MarkAsEdited();
 
             context.RouteSections.Update(editedSection);

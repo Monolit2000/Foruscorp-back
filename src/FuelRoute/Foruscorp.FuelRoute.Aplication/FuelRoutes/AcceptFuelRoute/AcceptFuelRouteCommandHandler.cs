@@ -43,7 +43,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute
             var routSection = await fuelRouteContext.RouteSections
                 .FirstOrDefaultAsync(rs => rs.RouteId == route.Id && (rs.IsAssigned && !rs.IsEdited));
 
-            routSection.MarkAsAssigned();
+            routSection.MarkAsAccepted();
 
              fuelRouteContext.RouteSections
                 .RemoveRange(fuelRouteContext.RouteSections.Where(rs => rs.RouteId == route.Id && rs.Id != routSection.Id));  

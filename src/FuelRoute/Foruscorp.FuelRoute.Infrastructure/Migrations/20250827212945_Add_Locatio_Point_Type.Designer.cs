@@ -3,6 +3,7 @@ using System;
 using Foruscorp.FuelRoutes.Infrastructure.Percistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 {
     [DbContext(typeof(FuelRouteContext))]
-    partial class FuelRouteContextModelSnapshot : ModelSnapshot
+    [Migration("20250827212945_Add_Locatio_Point_Type")]
+    partial class Add_Locatio_Point_Type
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -42,6 +45,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<DateTime?>("DeclinedAt")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<Guid?>("DestinationLocationId")
+                        .HasColumnType("uuid");
+
                     b.Property<bool>("IsAccepted")
                         .HasColumnType("boolean");
 
@@ -66,6 +72,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Property<bool>("IsSended")
                         .HasColumnType("boolean");
 
+                    b.Property<Guid?>("OriginLocationId")
+                        .HasColumnType("uuid");
+
                     b.Property<double>("RemainingFuel")
                         .HasColumnType("double precision");
 
@@ -87,6 +96,10 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         .HasColumnType("double precision");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DestinationLocationId");
+
+                    b.HasIndex("OriginLocationId");
 
                     b.HasIndex("TruckId");
 
@@ -151,11 +164,6 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                     b.Property<decimal>("Discount")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<double>("ForwardDistance")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("double precision")
-                        .HasDefaultValue(0.0);
 
                     b.Property<Guid>("FuelPointId")
                         .HasColumnType("uuid");
@@ -223,6 +231,9 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("LocationPointId");
 
+                    b.Property<Guid?>("FuelRouteSectionId")
+                        .HasColumnType("uuid");
+
                     b.Property<double>("Latitude")
                         .HasColumnType("double precision");
 
@@ -246,6 +257,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("FuelRouteSectionId");
+
                     b.HasIndex("RouteId");
 
                     b.ToTable("LocationPoints", "FuelRoutes");
@@ -267,114 +280,24 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.ToTable("MapPoints", "FuelRoutes");
                 });
 
-            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.RouteValidators.FuelStationChange", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
-
-                    b.Property<double>("CurrentFuel")
-                        .HasColumnType("double precision");
-
-                    b.Property<double>("ForwardDistance")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("FuelRouteStationId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsAlgo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<bool>("IsManual")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(false);
-
-                    b.Property<double>("Refill")
-                        .HasColumnType("double precision");
-
-                    b.Property<Guid>("RouteValidatorId")
-                        .HasColumnType("uuid");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuelRouteStationId");
-
-                    b.HasIndex("IsAlgo");
-
-                    b.HasIndex("IsManual");
-
-                    b.HasIndex("RouteValidatorId");
-
-                    b.ToTable("FuelStationChanges", "FuelRoutes");
-                });
-
-            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.RouteValidators.RouteValidator", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FuelRouteId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("FuelRouteSectionId")
-                        .HasColumnType("uuid");
-
-                    b.Property<bool>("IsValid")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("boolean")
-                        .HasDefaultValue(true);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("FuelRouteId");
-
-                    b.HasIndex("FuelRouteSectionId")
-                        .IsUnique();
-
-                    b.HasIndex("IsValid");
-
-                    b.ToTable("RouteValidators", "FuelRoutes");
-                });
-
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", b =>
-            {
-                b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", "DestinationLocation")
-                    .WithMany()
-                    .HasForeignKey("DestinationLocationId");
+                {
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", "DestinationLocation")
+                        .WithMany()
+                        .HasForeignKey("DestinationLocationId");
 
-                b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", "OriginLocation")
-                    .WithMany()
-                    .HasForeignKey("OriginLocationId");
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", "OriginLocation")
+                        .WithMany()
+                        .HasForeignKey("OriginLocationId");
 
-                b.Navigation("DestinationLocation");
+                    b.Navigation("DestinationLocation");
 
-                b.Navigation("OriginLocation");
-            });
-
-            modelBuilder.Entity("FuelRouteSectionLocationPoints", b =>
-            {
-                b.Property<Guid>("FuelRouteSectionId")
-                    .HasColumnType("uuid");
-
-                b.Property<Guid>("LocationPointId")
-                    .HasColumnType("uuid");
-
-                b.HasKey("FuelRouteSectionId", "LocationPointId");
-
-                b.HasIndex("LocationPointId");
-
-                b.ToTable("FuelRouteSectionLocationPoints", "FuelRoutes");
-            });
-
-
-
+                    b.Navigation("OriginLocation");
+                });
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", b =>
                 {
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", "FuelRoute")
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", null)
                         .WithMany("RouteSections")
                         .HasForeignKey("RouteId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -409,8 +332,6 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                                 .HasForeignKey("FuelRouteSectionId");
                         });
 
-                    b.Navigation("FuelRoute");
-
                     b.Navigation("RouteSectionInfo");
                 });
 
@@ -431,6 +352,11 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
 
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", b =>
                 {
+                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", null)
+                        .WithMany("LocationPoints")
+                        .HasForeignKey("FuelRouteSectionId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", null)
                         .WithMany()
                         .HasForeignKey("RouteId")
@@ -469,57 +395,6 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                     b.Navigation("GeoPoint");
                 });
 
-            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.RouteValidators.FuelStationChange", b =>
-                {
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteStation", "FuelStation")
-                        .WithMany()
-                        .HasForeignKey("FuelRouteStationId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.RouteValidators.RouteValidator", null)
-                        .WithMany("FuelStationChanges")
-                        .HasForeignKey("RouteValidatorId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FuelStation");
-                });
-
-            modelBuilder.Entity("FuelRouteSectionLocationPoints", b =>
-                {
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", null)
-                        .WithMany()
-                        .HasForeignKey("FuelRouteSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.LocationPoint", null)
-                        .WithMany()
-                        .HasForeignKey("LocationPointId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.RouteValidators.RouteValidator", b =>
-                {
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", "FuelRoute")
-                        .WithMany()
-                        .HasForeignKey("FuelRouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRouteSection", "FuelRouteSection")
-                        .WithOne("RouteValidator")
-                        .HasForeignKey("Foruscorp.FuelRoutes.Domain.RouteValidators.RouteValidator", "FuelRouteSectionId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("FuelRoute");
-
-                    b.Navigation("FuelRouteSection");
-                });
-
             modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.FuelRoutes.FuelRoute", b =>
                 {
                     b.Navigation("FuelRouteStations");
@@ -533,12 +408,7 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Migrations
                 {
                     b.Navigation("FuelRouteStations");
 
-                    b.Navigation("RouteValidator");
-                });
-
-            modelBuilder.Entity("Foruscorp.FuelRoutes.Domain.RouteValidators.RouteValidator", b =>
-                {
-                    b.Navigation("FuelStationChanges");
+                    b.Navigation("LocationPoints");
                 });
 #pragma warning restore 612, 618
         }

@@ -79,12 +79,13 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
 
             var fuelRoute = FuelRoute.CreateNew(
                 request.TruckId, 
-                LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude),
-                LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude),
                 new List<FuelRouteStation>(),
                 new List<MapPoint>(),
                 request.Weight);
 
+
+            var originLocation = LocationPoint.CreateNew(request.OriginName, request.Origin.Latitude, request.Origin.Longitude, LocationPointType.Origin);
+            var destinationLocation = LocationPoint.CreateNew(request.DestinationName, request.Destination.Latitude, request.Destination.Longitude, LocationPointType.Destination);
 
             var routeSections = sections
              .Select(x => new
@@ -112,21 +113,20 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute
                 }
             }
 
+            routeSections.ForEach(rs =>
+            {
+                rs.SetOriginLocation(originLocation);
+                rs.SetDestinationLocation(destinationLocation); 
+            });
+
+
+            await fuelRouteContext.LocationPoints.AddRangeAsync([originLocation, destinationLocation]);
 
             fuelRoute.SetRouteSections(routeSections);
 
-            fuelRouteContext.FuelRoutes.Add(fuelRoute); 
+            await fuelRouteContext.FuelRoutes.AddAsync(fuelRoute); 
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
-
-  
-
-            //await publishEndpoint.Publish(new RouteCreatedIntegretionEvent
-            //{
-            //    TruckId = request.TruckId,
-            //    RouteId = fuelRoute.Id
-            //});
-
 
 
             return new FuelRouteDto

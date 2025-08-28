@@ -88,6 +88,14 @@ namespace Foruscorp.Auth.Servises
         {
             try
             {
+
+                await publishEndpoint.Publish(new UserLogoutIntegrationEvent
+                {
+                    UserId = default,
+                    ExpoToken = expoToken,
+                    LogoutAt = DateTime.UtcNow
+                });
+
                 var http = httpContextAccessor.HttpContext
                     ?? throw new InvalidOperationException("No HttpContext");
 

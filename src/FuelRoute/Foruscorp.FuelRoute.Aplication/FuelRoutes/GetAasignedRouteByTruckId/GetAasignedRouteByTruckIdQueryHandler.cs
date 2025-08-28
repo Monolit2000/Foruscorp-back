@@ -67,7 +67,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
                 Location = new GeoPoint(passedRoute.CurrentLocation.Latitude, passedRoute.CurrentLocation.Longitude)
             };
 
-
             if (!passedRoute.RouteId.HasValue || !passedRoute.IsRoute)
             {
                 return new GetAasignedRouteByTruckIdResponce
@@ -83,10 +82,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
             }
 
             var fuelRoad = await fuelRouteContext.FuelRoutes
-                  .Include(x => x.OriginLocation)
-                  .Include(x => x.DestinationLocation)
-                  //.Include(x => x.FuelRouteStations.Where(frs => !frs.IsOld))
                   .Include(x => x.RouteSections.Where(x => x.IsAccepted == true))
+                    .ThenInclude(x => x.LocationPoints)
                   .FirstOrDefaultAsync(x => x.Id == passedRoute.RouteId, cancellationToken);
 
             if (fuelRoad == null)
@@ -104,30 +101,33 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId
             var stationsContextes = await fuelRouteContext.FuelRouteStation.Where(x => x.RoadSectionId == section.Id).ToListAsync(); 
             var stations = stationsContextes.Select(fs => MapToDto(fs)).ToList();
 
-            var routes = fuelRoad.RouteSections.Where(rs => rs.Id == section.Id).Select(rs => new RouteDto
+            var routes = new RouteDto
             {
                 RouteSectionId = section.Id.ToString(),
-                MapPoints = PolylineEncoder.DecodePolyline(rs.EncodeRoute),
+                MapPoints = PolylineEncoder.DecodePolyline(section.EncodeRoute),
                 RouteInfo = new RouteInfo(
-                    rs.RouteSectionInfo.Tolls,
-                    rs.RouteSectionInfo.Gallons,
-                    rs.RouteSectionInfo.Miles,
-                    rs.RouteSectionInfo.DriveTime)
-            }).ToList();
+                    section.RouteSectionInfo.Tolls,
+                    section.RouteSectionInfo.Gallons,
+                    section.RouteSectionInfo.Miles,
+                    section.RouteSectionInfo.DriveTime)
+            };
+
+            var orignPoint = section.GetOriginLocation();
+            var destinationPoint = section.GetDestinationLocation();
 
             var assignedRoute = new AssignedRoute
             {
                 RemainingFuel = fuelRoad.RemainingFuel,
                 Weight = fuelRoad.Weight,
-                OriginName = fuelRoad.OriginLocation.Name,
-                DestinationName = fuelRoad.DestinationLocation.Name,
-                Origin = new GeoPoint(fuelRoad.OriginLocation.Latitude, fuelRoad.OriginLocation.Longitude),
-                Destination = new GeoPoint(fuelRoad.DestinationLocation.Latitude, fuelRoad.DestinationLocation.Longitude),
+                OriginName = orignPoint.Name,
+                DestinationName = destinationPoint.Name,
+                Origin = new GeoPoint(orignPoint.Latitude, orignPoint.Longitude),
+                Destination = new GeoPoint(destinationPoint.Latitude, destinationPoint.Longitude),
                 RouteId = fuelRoad.Id.ToString(),
                 FuelStationDtos = stations,
                 SectionId = section.Id.ToString(),
-                RouteInfo = routes.FirstOrDefault().RouteInfo,
-                MapPoints = routes.SelectMany(r => r.MapPoints).ToList(),
+                RouteInfo = routes.RouteInfo,
+                MapPoints = routes.MapPoints.ToList(),
             };
 
             var assignedWithPassedRoute = new AssignedWithPassedRouteByTruckIdDto
