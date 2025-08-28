@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelRoutes.Domain.RouteValidators;
+using Org.BouncyCastle.Asn1.Crmf;
 
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 {
@@ -123,7 +124,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             catch (Exception ex)
             {
                 result.IsValid = false;
-                result.FailureReason = $"Ошибка валидации: {ex.Message}";
+                                 result.FailureReason = $"Validation error: {ex.Message}";
                 return result;
             }
         }
@@ -152,23 +153,23 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 result.IsValid = true;
                 result.FinalFuelAmount = currentFuel - totalFuelNeeded;
                 
-                result.StepResults.Add(new ValidationStepResult
-                {
-                    StationId = Guid.Empty,
-                    FuelBefore = currentFuel,
-                    FuelAfter = result.FinalFuelAmount,
-                    RefillAmount = 0,
-                    Distance = totalDistanceKm,
-                    MeetsReserveRequirement = true,
-                    Notes = $"Прямая поездка до финиша без остановок. Расход: {fuelConsumptionPerKm:F3} г/км"
-                });
+                 result.StepResults.Add(new ValidationStepResult
+                 {
+                     StationId = Guid.Empty,
+                     FuelBefore = currentFuel,
+                     FuelAfter = result.FinalFuelAmount,
+                     RefillAmount = 0,
+                     Distance = totalDistanceKm,
+                     MeetsReserveRequirement = true,
+                     Notes = $"Direct trip to finish without stops. Consumption: {fuelConsumptionPerKm:F3} g/km"
+                 });
             }
             else
             {
-                result.IsValid = false;
-                result.FailureReason = $"Недостаточно топлива для поездки без остановок. " +
-                    $"Нужно: {totalFuelNeeded + minReserve:F1}г, Есть: {currentFuel:F1}г. " +
-                    $"Расход: {fuelConsumptionPerKm:F3} г/км";
+                                 result.IsValid = false;
+                 result.FailureReason = $"Insufficient fuel for trip without stops. " +
+                     $"Required: {totalFuelNeeded + minReserve:F1}g, Available: {currentFuel:F1}g. " +
+                     $"Consumption: {fuelConsumptionPerKm:F3} g/km";
             }
 
             return result;
@@ -185,10 +186,21 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             {
                 if (orderedStations[i].ForwardDistance <= orderedStations[i-1].ForwardDistance)
                 {
-                    result.IsValid = false;
-                    result.FailureReason = $"Станции не упорядочены по расстоянию: " +
-                        $"Станция {orderedStations[i-1].FuelRouteStationId} ({orderedStations[i-1].ForwardDistance:F0}км) " +
-                        $"после станции {orderedStations[i].FuelRouteStationId} ({orderedStations[i].ForwardDistance:F0}км)";
+                     var stepResult = new ValidationStepResult
+                     {
+                         IsValid = false,
+                         StationId = orderedStations[i].FuelRouteStationId,
+                         StationsNotOrdered = true,
+                         PreviousStationDistance = orderedStations[i-1].ForwardDistance,
+                         CurrentStationDistance = orderedStations[i].ForwardDistance,
+                         Notes = $"Stations are not ordered by distance"
+                     };
+                    
+                    result.StepResults.Add(stepResult);
+                                         result.IsValid = false;
+                     result.FailureReason = $"Stations are not ordered by distance: " +
+                         $"Station {orderedStations[i-1].FuelRouteStationId} ({orderedStations[i-1].ForwardDistance:F0}km) " +
+                         $"after station {orderedStations[i].FuelRouteStationId} ({orderedStations[i].ForwardDistance:F0}km)";
                     return false;
                 }
             }
@@ -212,9 +224,21 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 
                 if (distance < requiredMinDistance)
                 {
-                    result.IsValid = false;
-                    result.FailureReason = $"Нарушение минимального расстояния до станции " +
-                        $"{station.FuelRouteStationId}: {distance:F0}км < {requiredMinDistance:F0}км";
+                     var stepResult = new ValidationStepResult
+                     {
+                         IsValid = false,
+                         StationId = station.FuelRouteStationId,
+                         DistanceTooClose = true,
+                         MinRequiredDistance = requiredMinDistance,
+                         ActualDistance = distance,
+                         Distance = distance,
+                         Notes = $"Minimum distance violation to station"
+                     };
+                    
+                    result.StepResults.Add(stepResult);
+                                         result.IsValid = false;
+                     result.FailureReason = $"Minimum distance violation to station " +
+                         $"{station.FuelRouteStationId}: {distance:F0}km < {requiredMinDistance:F0}km";
                     return false;
                 }
 
@@ -255,14 +279,18 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 // Проверка 1: Можем ли дойти до станции с требуемым запасом
                 if (!isFirst && fuelAtArrival < minReserve)
                 {
-                    result.IsValid = false;
-                    result.FailureReason = $"Невозможно дойти до станции {station.FuelRouteStationId} " +
-                        $"с соблюдением {minReserveFactor * 100:F0}% запаса. При прибытии будет {fuelAtArrival:F1}г " +
-                        $"< {minReserve:F1}г ({minReserveFactor * 100:F0}%)";
-                    
+                    stepResult.IsValid = false;
+                    stepResult.InsufficientFuelReserve = true;
+                    stepResult.RequiredFuelReserve = minReserve;
+                    stepResult.ActualFuelReserve = fuelAtArrival;
                     stepResult.MeetsReserveRequirement = false;
-                    stepResult.Notes = $"НАРУШЕНИЕ {minReserveFactor * 100:F0}% ЗАПАСА";
+                                         stepResult.Notes = $"VIOLATION OF {minReserveFactor * 100:F0}% RESERVE";
+                    
                     result.StepResults.Add(stepResult);
+                    result.IsValid = false;
+                                         result.FailureReason = $"Cannot reach station {station.FuelRouteStationId} " +
+                         $"with {minReserveFactor * 100:F0}% reserve. Arrival fuel will be {fuelAtArrival:F1}g " +
+                         $"< {minReserve:F1}g ({minReserveFactor * 100:F0}%)";
                     return false;
                 }
 
@@ -272,9 +300,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 var refillAmount = station.Refill;
                 if ((refillAmount / maxTankCapacity) * 100.0 < MinRefillPercentage * 100.0)
                 {
+                    stepResult.IsValid = false;
+                    stepResult.InsufficientRefillAmount = true;
+                    stepResult.RequiredRefillAmount = maxTankCapacity * MinRefillPercentage;
+                    stepResult.ActualRefillAmount = refillAmount;
+                    stepResult.MaxTankCapacity = maxTankCapacity;
+                                         stepResult.Notes = $"Insufficient refill at station";
+                    
+                    result.StepResults.Add(stepResult);
                     result.IsValid = false;
-                    result.FailureReason = $"Недостаточная дозаправка на станции {station.FuelRouteStationId}: " +
-                        $"{refillAmount:F1}г < {MinRefillPercentage * 100.0:F0}% от емкости бака";
+                                         result.FailureReason = $"Insufficient refill at station {station.FuelRouteStationId}: " +
+                         $"{refillAmount:F1}g < {MinRefillPercentage * 100.0:F0}% of tank capacity";
                     
                     return false;
                 }
@@ -282,16 +318,24 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 // Проверка 2: Не превышаем ли вместимость бака
                 if (fuelAtArrival + refillAmount > maxTankCapacity)
                 {
+                    stepResult.IsValid = false;
+                    stepResult.TankCapacityExceeded = true;
+                    stepResult.MaxTankCapacity = maxTankCapacity;
+                    stepResult.AttemptedRefill = fuelAtArrival + refillAmount;
+                    stepResult.FuelBefore = fuelAtArrival;
+                                         stepResult.Notes = $"Tank capacity exceeded at station";
+                    
+                    result.StepResults.Add(stepResult);
                     result.IsValid = false;
-                    result.Warnings.Add($"На станции {station.FuelRouteStationId} " +
-                        $"дозаправка ограничена вместимостью бака ({maxTankCapacity:F1}г)");
+                                         result.Warnings.Add($"At station {station.FuelRouteStationId} " +
+                         $"refill is limited by tank capacity ({maxTankCapacity:F1}g)");
                     refillAmount = maxTankCapacity - fuelAtArrival;
                     return false;
                 }
 
                 stepResult.RefillAmount = refillAmount;
                 stepResult.FuelAfter = fuelAtArrival + refillAmount;
-                stepResult.Notes = $"Успешная остановка, запас соблюден";
+                                 stepResult.Notes = $"Successful stop, reserve maintained";
 
                 result.StepResults.Add(stepResult);
 
@@ -335,19 +379,23 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             // Проверяем, хватит ли топлива до финиша с требуемым запасом
             if (fuelAtFinish < fuelFinish)
             {
-                result.IsValid = false;
-                result.FailureReason = $"Недостаточно топлива для достижения финиша. " +
-                    $"На финише будет {fuelAtFinish:F1}г < требуемых {fuelFinish:F1}г. " +
-                    $"Расход: {fuelConsumptionPerKm:F3} г/км";
-                
+                finishStep.InsufficientFuelToFinish = true;
+                finishStep.RequiredFuelToFinish = fuelFinish;
+                finishStep.ActualFuelAtFinish = fuelAtFinish;
                 finishStep.MeetsReserveRequirement = false;
-                finishStep.Notes = "НЕДОСТАТОЧНО ТОПЛИВА ДО ФИНИША";
+                                 finishStep.Notes = "INSUFFICIENT FUEL TO REACH FINISH";
+                
                 result.StepResults.Add(finishStep);
+                result.IsValid = false;
+                                 result.FailureReason = $"Insufficient fuel to reach finish. " +
+                     $"At finish will be {fuelAtFinish:F1}g < required {fuelFinish:F1}g. " +
+                     $"Consumption: {fuelConsumptionPerKm:F3} g/km";
+                
                 return false;
             }
 
             finishStep.MeetsReserveRequirement = true;
-            finishStep.Notes = "Успешное достижение финиша";
+                         finishStep.Notes = "Successfully reached finish";
             result.StepResults.Add(finishStep);
 
             result.FinalFuelAmount = fuelAtFinish;
@@ -379,5 +427,30 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         public double Distance { get; set; }
         public bool MeetsReserveRequirement { get; set; }
         public string Notes { get; set; } = string.Empty;
+
+        public bool IsValid { get; set; }
+
+
+        // Плохие случаи валидации
+        public bool InsufficientFuelReserve { get; set; } = false;
+        public bool InsufficientRefillAmount { get; set; } = false;
+        public bool TankCapacityExceeded { get; set; } = false;
+        public bool InsufficientFuelToFinish { get; set; } = false;
+        public bool DistanceTooClose { get; set; } = false;
+        public bool StationsNotOrdered { get; set; } = false;
+        
+        // Детали плохих случаев
+        public double RequiredFuelReserve { get; set; } = 0.0;
+        public double ActualFuelReserve { get; set; } = 0.0;
+        public double RequiredRefillAmount { get; set; } = 0.0;
+        public double ActualRefillAmount { get; set; } = 0.0;
+        public double MaxTankCapacity { get; set; } = 0.0;
+        public double AttemptedRefill { get; set; } = 0.0;
+        public double RequiredFuelToFinish { get; set; } = 0.0;
+        public double ActualFuelAtFinish { get; set; } = 0.0;
+        public double MinRequiredDistance { get; set; } = 0.0;
+        public double ActualDistance { get; set; } = 0.0;
+        public double PreviousStationDistance { get; set; } = 0.0;
+        public double CurrentStationDistance { get; set; } = 0.0;
     }
 }

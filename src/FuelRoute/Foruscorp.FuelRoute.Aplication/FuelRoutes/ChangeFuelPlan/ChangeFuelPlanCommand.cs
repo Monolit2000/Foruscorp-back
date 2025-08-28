@@ -22,7 +22,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         public Guid RouteSectionId { get; init; }
         public FuelStationChangeDto FuelStationChange { get; init; }
         public Operation Operation { get; init; }
-        public string? Reason { get; init; }
     }
 
     public record FuelStationChangeDto
@@ -30,7 +29,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         public Guid FuelStationId { get; init; }
         public double? NewRefill { get; init; }
         public double? NewCurrentFuel { get; init; }
-        public double? ForwardDistance { get; init; }
         public bool IsManual { get; init; } = false;
     }
 
