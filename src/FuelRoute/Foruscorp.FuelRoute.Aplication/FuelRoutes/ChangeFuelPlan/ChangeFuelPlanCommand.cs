@@ -197,7 +197,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
    
                 var fuelPlanValidator = new FuelPlanValidator();
-                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges);
+                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, 40000.0, 64.0, 200.0, 100.0, 0.18, 50.0);
                 routeValidator.IsValid = validationResult.IsValid;
 
                 // Логируем детали валидации

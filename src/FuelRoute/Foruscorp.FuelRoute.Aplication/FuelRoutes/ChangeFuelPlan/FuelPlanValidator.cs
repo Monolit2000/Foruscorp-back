@@ -7,6 +7,58 @@ using Foruscorp.FuelRoutes.Domain.RouteValidators;
 namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 {
     /// <summary>
+    /// Калькулятор расхода топлива на основе веса груза
+    /// </summary>
+    public class FuelConsumptionCalculator
+    {
+        private const double ReferenceWeightLb = 40000.0;
+        private const double ReferenceConsumptionGPerKm = 0.089;
+
+        public FuelParameters CalculateFuelParameters(double weightLb, double currentFuelPercent)
+        {
+            var tankCapacityG = 200.0;
+            var initialFuelG = tankCapacityG * (currentFuelPercent / 100.0);
+
+            return new FuelParameters
+            {
+                ConsumptionGPerKm = CalculateConsumptionGPerKm(weightLb),
+                TankCapacityG = tankCapacityG,
+                InitialFuelG = initialFuelG,
+                CurrentFuelPercent = currentFuelPercent
+            };
+        }
+
+        private static double CalculateConsumptionGPerKm(double weightLb)
+        {
+            return ReferenceConsumptionGPerKm * (weightLb / ReferenceWeightLb);
+        }
+    }
+
+    /// <summary>
+    /// Параметры топлива для расчета
+    /// </summary>
+    public class FuelParameters
+    {
+        public double ConsumptionGPerKm { get; set; }
+        public double TankCapacityG { get; set; }
+        public double InitialFuelG { get; set; }
+        public double CurrentFuelPercent { get; set; }
+    }
+
+    /// <summary>
+    /// Контекст планирования топлива
+    /// </summary>
+    public class FuelPlanningContext
+    {
+        public double TotalDistanceKm { get; set; }
+        public double FuelConsumptionPerKm { get; set; }
+        public double CurrentFuelLiters { get; set; }
+        public double TankCapacity { get; set; }
+        public double FinishFuel { get; set; }
+        public double WeightLb { get; set; }
+    }
+
+    /// <summary>
     /// Комплексный валидатор планов топливных станций
     /// Проверяет достижимость финиша, соблюдение запаса топлива, минимальные расстояния
     /// </summary>
@@ -20,11 +72,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         /// <summary>
         /// Проверяет, является ли план топливных станций валидным
         /// </summary>
-        public bool IsPlanValid(FuelRouteSection routeSection, List<FuelStationChange> fuelStationChanges)
+        public bool IsPlanValid(FuelRouteSection routeSection, List<FuelStationChange> fuelStationChanges, double weightLb = 40000.0, double currentFuelPercent = 100.0, double maxTankCapacity = 200.0, double minStopDistanceKm = 100.0, double minReserveFactor = 0.20, double fuelFinish = 50.0)
         {
             try
             {
-                var result = ValidatePlanDetailed(routeSection, fuelStationChanges);
+                var result = ValidatePlanDetailed(routeSection, fuelStationChanges, weightLb, currentFuelPercent, maxTankCapacity, minStopDistanceKm, minReserveFactor, fuelFinish);
                 return result.IsValid;
             }
             catch
@@ -36,16 +88,20 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         /// <summary>
         /// Возвращает детальную информацию о валидности плана
         /// </summary>
-        public FuelPlanValidationResult ValidatePlanDetailed(FuelRouteSection routeSection, List<FuelStationChange> fuelStationChanges)
+        public FuelPlanValidationResult ValidatePlanDetailed(FuelRouteSection routeSection, List<FuelStationChange> fuelStationChanges, double weightLb = 40000.0, double currentFuelPercent = 100.0, double maxTankCapacity = 200.0, double minStopDistanceKm = 100.0, double minReserveFactor = 0.20, double fuelFinish = 50.0)
         {
             var result = new FuelPlanValidationResult { IsValid = true };
             
             try
             {
+                // Инициализируем калькулятор расхода топлива
+                var fuelCalculator = new FuelConsumptionCalculator();
+                var fuelParams = fuelCalculator.CalculateFuelParameters(weightLb, currentFuelPercent);
+
                 // Проверка 1: Валидация плана без остановок
                 if (!fuelStationChanges.Any())
                 {
-                    return ValidateNoStopsPlan(routeSection);
+                    return ValidateNoStopsPlan(routeSection, fuelParams, maxTankCapacity, minReserveFactor, fuelFinish);
                 }
 
                 // Проверка 2: Упорядоченность станций по расстоянию
@@ -53,11 +109,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     return result;
 
                 // Проверка 3: Минимальные расстояния между станциями
-                if (!ValidateMinimumDistances(fuelStationChanges, result))
+                if (!ValidateMinimumDistances(fuelStationChanges, result, minStopDistanceKm))
                     return result;
 
                 // Проверка 4: Симуляция поездки с проверкой всех ограничений
-                if (!SimulateTripAndValidate(fuelStationChanges, routeSection, result))
+                if (!SimulateTripAndValidate(fuelStationChanges, routeSection, result, fuelParams, maxTankCapacity, minReserveFactor, fuelFinish))
                     return result;
 
                 // Если все проверки пройдены
@@ -75,20 +131,22 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         /// <summary>
         /// Валидация плана без остановок
         /// </summary>
-        private FuelPlanValidationResult ValidateNoStopsPlan(FuelRouteSection routeSection)
+        private FuelPlanValidationResult ValidateNoStopsPlan(FuelRouteSection routeSection, FuelParameters fuelParams, double maxTankCapacity, double minReserveFactor, double fuelFinish)
         {
             var result = new FuelPlanValidationResult();
             
             // Получаем информацию о маршруте
             var totalDistance = routeSection.RouteSectionInfo?.Miles ?? 0;
-            var fuelConsumptionPerKm = 0.3; // Примерный расход топлива (л/км)
-            var currentFuel = 150.0; // Текущее количество топлива
-            var finishFuel = 50.0; // Требуемое количество топлива на финише
+            var totalDistanceKm = totalDistance / 1000; // Конвертируем мили в км
             
-            var totalFuelNeeded = (totalDistance * 1.60934) * fuelConsumptionPerKm + finishFuel; // Конвертируем мили в км
-            var minReserve = MaxTankCapacity * MinReserveFactor;
+            // Используем точный расчет расхода топлива
+            var fuelConsumptionPerKm = fuelParams.ConsumptionGPerKm;
+            var currentFuel = fuelParams.InitialFuelG;
             
-            // Проверяем, хватит ли топлива с учетом 20% запаса
+            var totalFuelNeeded = totalDistanceKm * fuelConsumptionPerKm + fuelFinish;
+            var minReserve = maxTankCapacity * minReserveFactor;
+            
+            // Проверяем, хватит ли топлива с учетом запаса
             if (currentFuel >= totalFuelNeeded + minReserve)
             {
                 result.IsValid = true;
@@ -100,16 +158,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     FuelBefore = currentFuel,
                     FuelAfter = result.FinalFuelAmount,
                     RefillAmount = 0,
-                    Distance = totalDistance,
+                    Distance = totalDistanceKm,
                     MeetsReserveRequirement = true,
-                    Notes = "Прямая поездка до финиша без остановок"
+                    Notes = $"Прямая поездка до финиша без остановок. Расход: {fuelConsumptionPerKm:F3} г/км"
                 });
             }
             else
             {
                 result.IsValid = false;
                 result.FailureReason = $"Недостаточно топлива для поездки без остановок. " +
-                    $"Нужно: {totalFuelNeeded + minReserve:F1}л, Есть: {currentFuel:F1}л";
+                    $"Нужно: {totalFuelNeeded + minReserve:F1}г, Есть: {currentFuel:F1}г. " +
+                    $"Расход: {fuelConsumptionPerKm:F3} г/км";
             }
 
             return result;
@@ -139,7 +198,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         /// <summary>
         /// Проверяет минимальные расстояния между станциями
         /// </summary>
-        private bool ValidateMinimumDistances(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result)
+        private bool ValidateMinimumDistances(List<FuelStationChange> fuelStationChanges, FuelPlanValidationResult result, double minStopDistanceKm)
         {
             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
             var previousPosition = 0.0; // Старт
@@ -149,7 +208,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 var distance = station.ForwardDistance - previousPosition;
                 
                 // Для первой станции минимальное расстояние может быть меньше
-                var requiredMinDistance = previousPosition == 0 ? 50.0 : MinStopDistanceKm;
+                var requiredMinDistance = previousPosition == 0 ? 50.0 : minStopDistanceKm;
                 
                 if (distance < requiredMinDistance)
                 {
@@ -168,13 +227,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         /// <summary>
         /// Симулирует поездку и проверяет все ограничения
         /// </summary>
-        private bool SimulateTripAndValidate(List<FuelStationChange> fuelStationChanges, FuelRouteSection routeSection, FuelPlanValidationResult result)
+        private bool SimulateTripAndValidate(List<FuelStationChange> fuelStationChanges, FuelRouteSection routeSection, FuelPlanValidationResult result, FuelParameters fuelParams, double maxTankCapacity, double minReserveFactor, double fuelFinish)
         {
-            var currentFuel = 150.0; // Начальное количество топлива
+            var currentFuel = fuelParams.InitialFuelG; // Начальное количество топлива
             var currentPosition = 0.0;
-            var minReserve = MaxTankCapacity * MinReserveFactor;
-            var fuelConsumptionPerKm = 0.08; // Расход топлива (л/км)
-            var finishFuel = 50.0; // Требуемое количество топлива на финише
+            var minReserve = maxTankCapacity * minReserveFactor;
+            var fuelConsumptionPerKm = fuelParams.ConsumptionGPerKm; // Точный расход топлива (г/км)
 
             var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
             bool isFirst = true;
@@ -192,18 +250,18 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 stepResult.FuelBefore = currentFuel;
                 stepResult.Distance = distance;
 
-                var fuelPercentAtArrival = (fuelAtArrival / MaxTankCapacity) * 100.0;
+                var fuelPercentAtArrival = (fuelAtArrival / maxTankCapacity) * 100.0;
 
-                // Проверка 1: Можем ли дойти до станции с 20% запасом
-                if (!isFirst  && fuelAtArrival < minReserve)
+                // Проверка 1: Можем ли дойти до станции с требуемым запасом
+                if (!isFirst && fuelAtArrival < minReserve)
                 {
                     result.IsValid = false;
                     result.FailureReason = $"Невозможно дойти до станции {station.FuelRouteStationId} " +
-                        $"с соблюдением 20% запаса. При прибытии будет {fuelAtArrival:F1}л " +
-                        $"< {minReserve:F1}л (20%)";
+                        $"с соблюдением {minReserveFactor * 100:F0}% запаса. При прибытии будет {fuelAtArrival:F1}г " +
+                        $"< {minReserve:F1}г ({minReserveFactor * 100:F0}%)";
                     
                     stepResult.MeetsReserveRequirement = false;
-                    stepResult.Notes = "НАРУШЕНИЕ 20% ЗАПАСА";
+                    stepResult.Notes = $"НАРУШЕНИЕ {minReserveFactor * 100:F0}% ЗАПАСА";
                     result.StepResults.Add(stepResult);
                     return false;
                 }
@@ -212,22 +270,23 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                 // Проверяем минимальную дозаправку
                 var refillAmount = station.Refill;
-                if ((refillAmount / MaxTankCapacity) * 100.0 < MinRefillPercentage * 100.0)
+                if ((refillAmount / maxTankCapacity) * 100.0 < MinRefillPercentage * 100.0)
                 {
                     result.IsValid = false;
                     result.FailureReason = $"Недостаточная дозаправка на станции {station.FuelRouteStationId}: " +
-                        $"{refillAmount:F1}л < {MinRefillPercentage * 100.0:F0}% от емкости бака";
+                        $"{refillAmount:F1}г < {MinRefillPercentage * 100.0:F0}% от емкости бака";
+                    
                     return false;
                 }
 
                 // Проверка 2: Не превышаем ли вместимость бака
-                if (fuelAtArrival + refillAmount > MaxTankCapacity)
+                if (fuelAtArrival + refillAmount > maxTankCapacity)
                 {
-                    //result.IsValid = false;
+                    result.IsValid = false;
                     result.Warnings.Add($"На станции {station.FuelRouteStationId} " +
-                        $"дозаправка ограничена вместимостью бака");
-                    //refillAmount = MaxTankCapacity - fuelAtArrival;
-                    //return false;
+                        $"дозаправка ограничена вместимостью бака ({maxTankCapacity:F1}г)");
+                    refillAmount = maxTankCapacity - fuelAtArrival;
+                    return false;
                 }
 
                 stepResult.RefillAmount = refillAmount;
@@ -243,7 +302,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             }
 
             // Проверяем финальный участок до финиша
-            return ValidateFinishSegment(currentFuel, currentPosition, routeSection, result, fuelConsumptionPerKm, finishFuel);
+            return ValidateFinishSegment(currentFuel, currentPosition, routeSection, result, fuelConsumptionPerKm, fuelFinish, fuelParams);
         }
 
         /// <summary>
@@ -255,7 +314,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             FuelRouteSection routeSection,
             FuelPlanValidationResult result,
             double fuelConsumptionPerKm,
-            double finishFuel)
+            double fuelFinish,
+            FuelParameters fuelParams)
         {
             var totalDistance = routeSection.RouteSectionInfo?.Miles ?? 0;
             totalDistance = totalDistance / 1000.0;
@@ -273,11 +333,12 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             };
 
             // Проверяем, хватит ли топлива до финиша с требуемым запасом
-            if (fuelAtFinish < finishFuel)
+            if (fuelAtFinish < fuelFinish)
             {
                 result.IsValid = false;
                 result.FailureReason = $"Недостаточно топлива для достижения финиша. " +
-                    $"На финише будет {fuelAtFinish:F1}л < требуемых {finishFuel:F1}л";
+                    $"На финише будет {fuelAtFinish:F1}г < требуемых {fuelFinish:F1}г. " +
+                    $"Расход: {fuelConsumptionPerKm:F3} г/км";
                 
                 finishStep.MeetsReserveRequirement = false;
                 finishStep.Notes = "НЕДОСТАТОЧНО ТОПЛИВА ДО ФИНИША";
