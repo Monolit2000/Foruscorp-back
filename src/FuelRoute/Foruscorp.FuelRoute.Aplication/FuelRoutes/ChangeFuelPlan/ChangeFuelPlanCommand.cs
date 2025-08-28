@@ -78,16 +78,18 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     return Result.Fail<ChangeFuelPlanResponse>($"Route section {request.RouteSectionId} not found");
                 }
 
-                // Автоматически проставляем ForwardDistance для всех станций, если они не установлены
                 await CalculateAndSetForwardDistances(routeSection, logger);
 
-                var routeValidator = await fuelRouteContext.RouteValidators.FirstOrDefaultAsync(rv => rv.Fuel);
+                var routeValidator = await fuelRouteContext.RouteValidators
+                    .Include(rv => rv.FuelStationChanges)
+                    .FirstOrDefaultAsync(rv => rv.FuelRouteSectionId == routeSection.Id, cancellationToken);
 
-                
+                if (routeValidator == null)
+                {
+                    routeValidator = new RouteValidator(routeSection.FuelRoute, routeSection);
+                    fuelRouteContext.RouteValidators.Add(routeValidator);
+                }
 
-                var routeValidator = new RouteValidator(routeSection.FuelRoute, routeSection);
-
-                // Применяем изменение к топливной станции
                 var changes = new List<FuelStationChangeInfo>();
 
                 var changeDto = request.FuelStationChange;
@@ -104,7 +106,6 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 var originalRefill = double.TryParse(fuelStation.Refill, out var refill) ? refill : 0.0;
                 var originalCurrentFuel = fuelStation.CurrentFuel;
 
-                // Обрабатываем операцию
                 switch (request.Operation)
                 {
                     case Operation.Add:
@@ -186,7 +187,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                         return Result.Fail<ChangeFuelPlanResponse>($"Unknown operation: {request.Operation}");
                 }
 
-                // Валидируем изменения с использованием комплексного валидатора
+   
                 var fuelPlanValidator = new FuelPlanValidator();
                 var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges);
                 routeValidator.IsValid = validationResult.IsValid;
@@ -202,8 +203,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     logger.LogWarning("Fuel plan validation warning: {Warning}", warning);
                 }
 
-                // Сохраняем валидатор в базу данных
-                fuelRouteContext.RouteValidators.Add(routeValidator);
+                // Сохраняем изменения в базу данных
                 await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
                 logger.LogInformation("Fuel plan {Operation} completed for route section {RouteSectionId}. Valid: {IsValid}", 

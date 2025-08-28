@@ -219,15 +219,7 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
-        public async Task<IActionResult> DeclineFuelRoute(DeclineFuelRouteCommand declineFuelRouteCommand, CancellationToken cancellationToken)
-        {
-            var result = await mediator.Send(declineFuelRouteCommand, cancellationToken);
 
-            if (result.IsSuccess)
-                return Ok(result.Successes);
-
-            return BadRequest(result.Errors);
-        }
 
 
     }

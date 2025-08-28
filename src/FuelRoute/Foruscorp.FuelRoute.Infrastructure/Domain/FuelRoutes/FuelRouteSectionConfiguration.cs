@@ -1,4 +1,5 @@
 ﻿using Foruscorp.FuelRoutes.Domain.FuelRoutes;
+using Foruscorp.FuelRoutes.Domain.RouteValidators;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System.Net.NetworkInformation;
@@ -55,6 +56,12 @@ public class FuelRouteSectionConfiguration : IEntityTypeConfiguration<FuelRouteS
         builder.HasOne(x => x.FuelRoute)
                .WithMany(x => x.RouteSections)
                .HasForeignKey(x => x.RouteId)
+               .OnDelete(DeleteBehavior.Cascade);
+
+        // Связь с RouteValidator (один к одному)
+        builder.HasOne(x => x.RouteValidator)
+               .WithOne(x => x.FuelRouteSection)
+               .HasForeignKey<RouteValidator>(x => x.FuelRouteSectionId)
                .OnDelete(DeleteBehavior.Cascade);
     }
 }

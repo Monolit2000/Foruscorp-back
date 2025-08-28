@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Foruscorp.FuelRoutes.Domain.RouteValidators;
 
 namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
 {
@@ -22,6 +23,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         // Navigation properties
         public FuelRoute FuelRoute { get; private set; }
         public List<FuelRouteStation> FuelRouteStations = [];
+        public RouteValidator? RouteValidator { get; private set; }
 
         [NotMapped]
         public string RouteSectionResponceId { get; set; } 
@@ -78,6 +80,11 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
         {
             FuelRoute = fuelRoute ?? throw new ArgumentNullException(nameof(fuelRoute));
             RouteId = fuelRoute.Id;
+        }
+
+        public void SetRouteValidator(RouteValidator routeValidator)
+        {
+            RouteValidator = routeValidator ?? throw new ArgumentNullException(nameof(routeValidator));
         }
     }
 }

@@ -5,26 +5,27 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
     public class RouteValidator
     {
         public Guid Id { get; set; }
+        public Guid FuelRouteId { get; set; }
+        public Guid FuelRouteSectionId { get; set; }
         public FuelRoute FuelRoute { get; set; }
-        
-        public bool IsValid { get; set; }
-
         public FuelRouteSection FuelRouteSection { get; set; }
-
-        public List<FuelStationChange> FuelStationChanges { get; set; }
+        public bool IsValid { get; set; }
+        public List<FuelStationChange> FuelStationChanges { get; set; } = [];
 
         private RouteValidator()
         {
                 
         }
 
-        public RouteValidator(FuelRoute fuelRoute, FuelRouteSection fuelRouteSection )
+        public RouteValidator(FuelRoute fuelRoute, FuelRouteSection fuelRouteSection)
         {
             Id = Guid.NewGuid();
-            InitFuelStationChanges(fuelRouteSection.FuelRouteStations);
+            FuelRouteId = fuelRoute.Id;
+            FuelRouteSectionId = fuelRouteSection.Id;
+            FuelRoute = fuelRoute;
             FuelRouteSection = fuelRouteSection;
-            fuelRoute = FuelRoute;
-            IsValid = true; 
+            InitFuelStationChanges(fuelRouteSection.FuelRouteStations);
+            IsValid = true;
         }
 
         public void MarkAsInvalid()

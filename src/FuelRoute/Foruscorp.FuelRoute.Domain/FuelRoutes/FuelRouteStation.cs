@@ -65,64 +65,6 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             IsAssigned = true;
         }
 
-        /// <summary>
-        /// Calculates the forward distance to the next station or destination
-        /// </summary>
-        /// <param name="routeSection">The route section containing this station</param>
-        /// <param name="nextStation">Next fuel station (can be null if this is the last station)</param>
-        /// <param name="destinationPoint">Destination point coordinates</param>
-        /// <returns>Calculated forward distance in kilometers</returns>
-        public double CalculateForwardDistance(FuelRouteSection routeSection, FuelRouteStation? nextStation = null, GeoPoint? destinationPoint = null)
-        {
-            if (routeSection == null)
-            {
-                return 0.0;
-            }
-
-            // Extract route points from the encoded route
-            var mappedPoints = ExtractRoutePoints(PolylineEncoder.DecodePolyline(routeSection.EncodeRoute));
-            
-            if (!mappedPoints.Any())
-            {
-                return 0.0;
-            }
-
-            // Get current station coordinates
-            if (!double.TryParse(Latitude, out var currentLat) || !double.TryParse(Longitude, out var currentLon))
-            {
-                return 0.0;
-            }
-
-            var currentStationPoint = new GeoPoint(currentLat, currentLon);
-
-            // If we have a next station, calculate distance to it
-            if (nextStation != null)
-            {
-                if (double.TryParse(nextStation.Latitude, out var nextLat) && double.TryParse(nextStation.Longitude, out var nextLon))
-                {
-                    var nextStationPoint = new GeoPoint(nextLat, nextLon);
-                    ForwardDistance = CalculateDistanceBetweenPoints(currentLat, currentLon, nextLat, nextLon);
-                    return ForwardDistance;
-                }
-            }
-
-            // If this is the last station and we have destination coordinates
-            if (destinationPoint != null)
-            {
-                ForwardDistance = CalculateDistanceBetweenPoints(currentLat, currentLon, destinationPoint.Latitude, destinationPoint.Longitude);
-                return ForwardDistance;
-            }
-
-            // Calculate distance to the end of the route section
-            var lastRoutePoint = mappedPoints.Last();
-            ForwardDistance = CalculateDistanceBetweenPoints(currentLat, currentLon, lastRoutePoint.Latitude, lastRoutePoint.Longitude);
-            return ForwardDistance;
-        }
-
-        /// <summary>
-        /// Sets the forward distance manually
-        /// </summary>
-        /// <param name="distance">Distance in kilometers</param>
         public void SetForwardDistance(double distance)
         {
             if (distance < 0)
@@ -173,35 +115,7 @@ namespace Foruscorp.FuelRoutes.Domain.FuelRoutes
             return degrees * Math.PI / 180;
         }
 
-        //private FuelRouteStations(
-        //    GeoPoint location, 
-        //    Guid fuelRouteId, 
-        //    decimal fuelPrice,
-        //    DateTime scheduledTime)
-        //{
-        //    FuelPointId = Guid.NewGuid();
-        //    FuelRouteId = fuelRouteId;
-        //    FuelPrice = fuelPrice;
-        //    ScheduledTime = scheduledTime;
-        //}
-
-        //public static FuelRouteStations CreateNew(
-        //    GeoPoint location,
-        //    Guid fuelRouteId,
-        //    decimal fuelPrice,
-        //    DateTime scheduledTime)
-        //{
-        //    if (fuelRouteId == Guid.Empty)
-        //        throw new ArgumentException("Fuel route ID cannot be empty", nameof(fuelRouteId));
-        //    if (fuelPrice <= 0)
-        //        throw new ArgumentException("Fuel price must be positive", nameof(fuelPrice));
-
-        //    return new FuelRouteStations(
-        //        location,
-        //        fuelRouteId,
-        //        fuelPrice, 
-        //        scheduledTime);
-        //}
+    
 
     }
 }

@@ -24,8 +24,8 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Domain.RouteValidators
 
             // (One-to-One)
             builder.HasOne(rv => rv.FuelRouteSection)
-                .WithMany()
-                .HasForeignKey("FuelRouteSectionId")
+                .WithOne(frs => frs.RouteValidator)
+                .HasForeignKey<RouteValidator>(rv => rv.FuelRouteSectionId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // (One-to-Many)
