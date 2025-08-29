@@ -183,11 +183,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
          {
              var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
              
-             // Проставляем StopOrder для всех станций в обратном порядке
-             // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
+             // Проставляем StopOrder для всех станций
              for (int i = 0; i < orderedStations.Count; i++)
              {
-                 orderedStations[i].StopOrder = orderedStations.Count - i;
+                 orderedStations[i].StopOrder = i + 1;
              }
              
              for (int i = 1; i < orderedStations.Count; i++)
@@ -223,11 +222,10 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
              var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
              var previousPosition = 0.0; // Старт
 
-             // Проставляем StopOrder для всех станций в обратном порядке
-             // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
+             // Проставляем StopOrder для всех станций
              for (int i = 0; i < orderedStations.Count; i++)
              {
-                 orderedStations[i].StopOrder = orderedStations.Count - i;
+                 orderedStations[i].StopOrder = i + 1;
              }
 
              foreach (var station in orderedStations)
@@ -247,7 +245,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                           MinRequiredDistance = requiredMinDistance,
                           ActualDistance = distance,
                           Distance = distance,
-                          Notes = $"Minimum distance violation to station"
+                          Notes = $"Minimum distance violation to station. \n ActualDistance: {distance * 0.621371}"
                       };
                      
                      result.StepResults.Add(stepResult);
@@ -287,9 +285,8 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                  var fuelUsed = distance * fuelConsumptionPerKm;
                  var fuelAtArrival = currentFuel - fuelUsed;
 
-                 // Проставляем StopOrder для FuelStationChange в обратном порядке
-                 // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
-                 station.StopOrder = orderedStations.Count - i;
+                 // Проставляем StopOrder для FuelStationChange (начиная с 1)
+                 station.StopOrder = i + 1;
                  
                  // Проставляем CurrentFuel для FuelStationChange
                  station.CurrentFuel = fuelAtArrival;
@@ -322,7 +319,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     stepResult.RequiredFuelReserve = minReserve;
                     stepResult.ActualFuelReserve = fuelAtArrival;
                     stepResult.MeetsReserveRequirement = false;
-                                         stepResult.Notes = $"VIOLATION OF {minReserveFactor * 100:F0}% RESERVE";
+                                         stepResult.Notes = $"VIOLATION OF 20% RESERVE";
                     
                     result.StepResults.Add(stepResult);
                     result.IsValid = false;
@@ -343,7 +340,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     stepResult.RequiredRefillAmount = maxTankCapacity * MinRefillPercentage;
                     stepResult.ActualRefillAmount = refillAmount;
                     stepResult.MaxTankCapacity = maxTankCapacity;
-                                         stepResult.Notes = $"Insufficient refill at station";
+                                         stepResult.Notes = $"Insufficient refill at station. ActualRefillAmount: \n {stepResult.ActualRefillAmount}";
                     
                     result.StepResults.Add(stepResult);
                     result.IsValid = false;
@@ -361,7 +358,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     stepResult.MaxTankCapacity = maxTankCapacity;
                     stepResult.AttemptedRefill = fuelAtArrival + refillAmount;
                     stepResult.FuelBefore = fuelAtArrival;
-                                         stepResult.Notes = $"Tank capacity exceeded at station";
+                                         stepResult.Notes = $"Tank capacity exceeded at station. \n AttemptedRefill: {stepResult.AttemptedRefill} gl";
                     
                     result.StepResults.Add(stepResult);
                     result.IsValid = false;
@@ -420,6 +417,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
             // Проверяем, хватит ли топлива до финиша с требуемым запасом
             if (fuelAtFinish < fuelFinish)
             {
+                finishStep.IsValid = false;
                 finishStep.InsufficientFuelToFinish = true;
                 finishStep.RequiredFuelToFinish = fuelFinish;
                 finishStep.ActualFuelAtFinish = fuelAtFinish;
