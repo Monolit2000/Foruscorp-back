@@ -57,7 +57,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelPlanns.ValidateRoutePlann
             var result = new ValidateResponse
             {
                 IsValid = validationResult.IsValid,
-                StepResults = validationResult.StepResults
+                StepResults = validationResult.StepResults.Where(x => x.IsValid == false).ToList()
             };
 
             return result;

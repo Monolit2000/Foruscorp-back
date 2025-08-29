@@ -236,8 +236,5 @@ namespace Foruscorp.FuelRoutes.API.Controllers
         }
 
 
-
-
-
     }
 }
