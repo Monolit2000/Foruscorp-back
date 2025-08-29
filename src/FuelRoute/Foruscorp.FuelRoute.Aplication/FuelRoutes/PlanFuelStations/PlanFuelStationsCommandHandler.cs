@@ -56,6 +56,15 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             if (!routeSections.Any())
                 return Result.Fail("No route sections found for the provided IDs.");    
 
+            var validators = await fuelRouteContext.RouteValidators
+                .Where(rv => routeSections.Select(rs => rs.Id).Contains(rv.FuelRouteSectionId))
+                .ToListAsync(cancellationToken);
+
+            if (validators.Any())
+                 fuelRouteContext.RouteValidators.RemoveRange(validators);
+
+
+
             var roadSectionDtos = new List<RoadSectionDto>();
             foreach (var routeSection in routeSections)
             {
@@ -83,17 +92,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id)).ToList();
 
 
-
-
             var oldStations = await fuelRouteContext.FuelRouteStation
-                .Where(x => x.FuelRouteId == fuelRoad.Id && !x.IsOld)
+                .Where(x => x.FuelRouteId == fuelRoad.Id)
                 .ToListAsync(cancellationToken);
 
-            //Mark old stations as old
-            foreach (var station in oldStations)
-                station.MurkAsOld();
+            ////Mark old stations as old
+            //foreach (var station in oldStations)
+            //    station.MurkAsOld();
 
-            fuelRouteContext.FuelRouteStation.UpdateRange(oldStations);
+            fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
+
+            await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
             //Add new stations with route version
             foreach (var station in fuelStations)
