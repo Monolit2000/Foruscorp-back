@@ -166,7 +166,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelPlanns.ValidateRoutePlann
             var distanceToSegment = DistanceFromPointToSegment(stationCoords, segmentStart, segmentEnd);
 
             // Радиус поиска станций (в км)
-            const double searchRadiusKm = 5.0;
+            const double searchRadiusKm = 10.0;
 
             // Если станция достаточно близко к текущему сегменту
             if (distanceToSegment <= searchRadiusKm)
