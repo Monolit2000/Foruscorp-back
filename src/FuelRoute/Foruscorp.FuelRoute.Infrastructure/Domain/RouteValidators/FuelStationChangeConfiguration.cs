@@ -8,10 +8,13 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Domain.RouteValidators
     {
         public void Configure(EntityTypeBuilder<FuelStationChange> builder)
         {
-            builder.HasKey(fsc => fsc.Id);
 
-            builder.Property(fsc => fsc.Id)
-                .ValueGeneratedNever();
+            builder.HasKey(fsc => fsc.FuelStationChangeId);
+
+            builder.Property(fsc => fsc.FuelStationChangeId)
+                .ValueGeneratedOnAdd();
+
+            builder.Property(fsc => fsc.Id);
 
             builder.Property(fsc => fsc.RouteValidatorId)
                 .IsRequired();

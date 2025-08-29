@@ -10,9 +10,10 @@ namespace Foruscorp.FuelRoutes.Domain.RouteValidators
 {
     public class FuelStationChange
     {
+        public Guid FuelStationChangeId { get; set; }   
         public Guid RouteValidatorId { get; set; }
-        public Guid FuelRouteStationId { get; set; }
         public Guid Id { get; set; }
+        public Guid FuelRouteStationId { get; set; }
         public FuelRouteStation FuelStation { get; set; }
         public double ForwardDistance { get; set; }
         public double Refill { get; set; }

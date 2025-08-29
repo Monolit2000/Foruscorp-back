@@ -69,6 +69,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 var routeSection = await fuelRouteContext.RouteSections
                     .Include(rs => rs.FuelRouteStations)
                     .Include(rs => rs.FuelRoute)
+                    .AsSplitQuery()
                     .FirstOrDefaultAsync(rs => rs.Id == request.RouteSectionId, cancellationToken);
 
                 if (routeSection == null)
