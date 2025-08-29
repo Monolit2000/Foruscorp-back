@@ -1,19 +1,20 @@
 ﻿using FluentResults;
 using Foruscorp.FuelRoutes.Aplication.Contruct.Route.ApiClients;
+using Foruscorp.FuelRoutes.Aplication.FuelPlanns.ValidateRoutePlann;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AcceptFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AddFuelStation;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.AssignRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CompleteRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CreateFuelRoute;
+using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DropPiont;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.EditFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetAasignedRouteByTruckId;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations;
 using Foruscorp.FuelRoutes.Aplication.FuelRoutes.SelfAssignRoute;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.CompleteRoute;
-using Foruscorp.FuelRoutes.Aplication.FuelRoutes.DeclineFuelRoute;
 using Foruscorp.FuelRoutes.Domain.FuelRoutes;
 using Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads;
 using MediatR;
@@ -219,6 +220,22 @@ namespace Foruscorp.FuelRoutes.API.Controllers
 
             return BadRequest(result.Errors);
         }
+
+
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(ValidateResponse))]
+        [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(List<IError>))]
+        [HttpPost("validate-fuel-plan")]
+        public async Task<IActionResult> ValidateRoutePlann(ValidateRoutePlannCommand changeFuelPlanCommand, CancellationToken cancellationToken)
+        {
+            var result = await mediator.Send(changeFuelPlanCommand, cancellationToken);
+
+            if (result.IsSuccess)
+                return Ok(result.Value);
+
+            return BadRequest(result.Errors);
+        }
+
+
 
 
 
