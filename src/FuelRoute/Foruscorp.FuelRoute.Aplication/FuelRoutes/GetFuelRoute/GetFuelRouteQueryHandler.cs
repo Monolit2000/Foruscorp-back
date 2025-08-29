@@ -141,7 +141,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
                 CurrentFuel = station.CurrentFuel,
 
-                IsManual = false, // Старые FuelRouteStation всегда алгоритмические
+                IsManual = false, 
                 ForwardDistants = station.ForwardDistance,
             };
         }
