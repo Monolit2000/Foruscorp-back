@@ -123,8 +123,10 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
             var newSDSD = new RefactoredFuelStopStationPlanner();
 
+            var routePointsP = _routeValidator.ExtractRoutePoints(new List<RoadSectionDto> { road });
+
             var stopPlan = newSDSD.PlanStopsWithComprehensiveOptimization(
-                routePoints,
+                routePointsP,
                 stationsAlongRoute,
                 totalRouteDistanceKm,
                 fuelParameters.ConsumptionGPerKm,

@@ -39,7 +39,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
         //public string Message { get; init; } = string.Empty;
         //public string ValidationDetails { get; init; } = string.Empty;
         //public List<string> ValidationWarnings { get; init; } = [];
-        //public double FinalFuelAmount { get; init; }
+        public double FinalFuelAmount { get; init; }
         public List<ValidationStepResult> StepResults { get; set; } = [];
     }
 
@@ -182,17 +182,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                         //routeValidator.AddFuelStationChange(updateFuelStationChange);
 
-                        changes.Add(new FuelStationChangeInfo
-                        {
-                            FuelStationId = changeDto.FuelStationId,
-                            OriginalRefill = originalRefill,
-                            NewRefill = change.Refill,
-                            OriginalCurrentFuel = originalCurrentFuel,
-                            NewCurrentFuel = change.CurrentFuel,
-                            IsAlgo = change.IsAlgo,
-                            IsManual = change.IsManual,
-                            Status = "Updated"
-                        });
+                        //changes.Add(new FuelStationChangeInfo
+                        //{
+                        //    FuelStationId = changeDto.FuelStationId,
+                        //    OriginalRefill = originalRefill,
+                        //    NewRefill = change.Refill,
+                        //    OriginalCurrentFuel = originalCurrentFuel,
+                        //    NewCurrentFuel = change.CurrentFuel,
+                        //    IsAlgo = change.IsAlgo,
+                        //    IsManual = change.IsManual,
+                        //    Status = "Updated"
+                        //});
                         break;
 
                     default:
@@ -201,7 +201,30 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
    
                 var fuelPlanValidator = new FuelPlanValidator();
-                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, routeSection.FuelRoute.Weight, request.CurrentFuelPercent, 200.0, 400.0, 0.18, routeSection.FuelRoute.RemainingFuel - 3);
+                var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, routeSection.FuelRoute.Weight, request.CurrentFuelPercent, 200.0, 400.0, 0.18, routeSection.FuelRoute.RemainingFuel - 10);
+
+
+                if (request.Operation != Operation.Remove)
+                {
+
+                    var stationChange = routeValidator.FuelStationChanges.FirstOrDefault(fsc => fsc.FuelRouteStationId == fuelStation.FuelStationId);
+
+                    if (stationChange != null)
+                    {
+                        changes.Add(new FuelStationChangeInfo
+                        {
+                            FuelStationId = changeDto.FuelStationId,
+                            OriginalRefill = originalRefill,
+                            NewRefill = stationChange.Refill,
+                            OriginalCurrentFuel = originalCurrentFuel,
+                            NewCurrentFuel = stationChange.CurrentFuel,
+                            IsAlgo = stationChange.IsAlgo,
+                            IsManual = stationChange.IsManual,
+                            Status = request.Operation.ToString()
+                        });
+                    }
+                }
+
                 routeValidator.IsValid = validationResult.IsValid;
 
                 // Логируем детали валидации
@@ -229,7 +252,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     Changes = changes,
                     //ValidationDetails = validationResult.FailureReason,
                     //ValidationWarnings = validationResult.Warnings,
-                    //FinalFuelAmount = validationResult.FinalFuelAmount,
+                    FinalFuelAmount = validationResult.FinalFuelAmount,
                     StepResults = validationResult.StepResults.Where(x => x.IsValid == false).ToList()
                 };
 

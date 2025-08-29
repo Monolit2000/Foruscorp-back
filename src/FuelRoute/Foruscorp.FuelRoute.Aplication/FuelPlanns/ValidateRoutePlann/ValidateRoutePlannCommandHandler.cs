@@ -48,7 +48,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelPlanns.ValidateRoutePlann
             }
 
             var fuelPlanValidator = new FuelPlanValidator();
-            var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, routeSection.FuelRoute.Weight, request.CurrentFuelPercentage, 200.0, 400.0, 0.18, routeSection.FuelRoute.RemainingFuel - 2);
+            var validationResult = fuelPlanValidator.ValidatePlanDetailed(routeSection, routeValidator.FuelStationChanges, routeSection.FuelRoute.Weight, request.CurrentFuelPercentage, 200.0, 400.0, 0.18, routeSection.FuelRoute.RemainingFuel - 10);
             routeValidator.IsValid = validationResult.IsValid;
             routeValidator.FinalFuelAmount = validationResult.FinalFuelAmount;  
 

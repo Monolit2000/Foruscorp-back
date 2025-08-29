@@ -92,15 +92,16 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.PlanFuelStations
             var fuelStations = fuelStationsResult.Value.FuelStations.Select(x => MapToFuelStation(x, fuelRoad.Id)).ToList();
 
 
+
             var oldStations = await fuelRouteContext.FuelRouteStation
-                .Where(x => x.FuelRouteId == fuelRoad.Id)
+                .Where(x => x.FuelRouteId == fuelRoad.Id && !x.IsOld)
                 .ToListAsync(cancellationToken);
 
-            ////Mark old stations as old
-            //foreach (var station in oldStations)
-            //    station.MurkAsOld();
+            //Mark old stations as old
+            foreach (var station in oldStations)
+                station.MurkAsOld();
 
-            fuelRouteContext.FuelRouteStation.RemoveRange(oldStations);
+            fuelRouteContext.FuelRouteStation.UpdateRange(oldStations);
 
             await fuelRouteContext.SaveChangesAsync(cancellationToken);
 
