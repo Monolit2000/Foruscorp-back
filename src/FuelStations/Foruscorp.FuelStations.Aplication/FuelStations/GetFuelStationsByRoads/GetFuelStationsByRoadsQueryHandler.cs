@@ -284,7 +284,7 @@ namespace Foruscorp.FuelStations.Aplication.FuelStations.GetFuelStationsByRoads
 
                     result.Add(ToDto(
                         current.Station,
-                        stopOrder: i + 1,
+                        stopOrder: sectionStops.Count - i, // Обратный порядок: самая дальняя станция получает StopOrder = 1
                         refillLiters: current.RefillLiters,
                         nextDistanceKm: nextDistanceKm,
                         roadSectionId: current.RoadSectionId,

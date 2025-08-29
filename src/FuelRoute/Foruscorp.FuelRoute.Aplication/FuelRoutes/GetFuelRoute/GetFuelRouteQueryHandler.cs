@@ -100,7 +100,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
 
             var fuelRoute = new GetFuelRouteDto
             {
-                RemainingFuel = fuelRoad.RemainingFuel,
+                RemainingFuel = routeValidator != null ? routeValidator.FinalFuelAmount : fuelRoad.RemainingFuel,
                 Weight = fuelRoad.Weight,
                 OriginName = orignPoint.Name,
                 DestinationName = destinationPoint.Name,

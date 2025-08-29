@@ -183,10 +183,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
          {
              var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
              
-             // Проставляем StopOrder для всех станций
+             // Проставляем StopOrder для всех станций в обратном порядке
+             // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
              for (int i = 0; i < orderedStations.Count; i++)
              {
-                 orderedStations[i].StopOrder = i + 1;
+                 orderedStations[i].StopOrder = orderedStations.Count - i;
              }
              
              for (int i = 1; i < orderedStations.Count; i++)
@@ -222,10 +223,11 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
              var orderedStations = fuelStationChanges.OrderBy(fsc => fsc.ForwardDistance).ToList();
              var previousPosition = 0.0; // Старт
 
-             // Проставляем StopOrder для всех станций
+             // Проставляем StopOrder для всех станций в обратном порядке
+             // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
              for (int i = 0; i < orderedStations.Count; i++)
              {
-                 orderedStations[i].StopOrder = i + 1;
+                 orderedStations[i].StopOrder = orderedStations.Count - i;
              }
 
              foreach (var station in orderedStations)
@@ -285,8 +287,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                  var fuelUsed = distance * fuelConsumptionPerKm;
                  var fuelAtArrival = currentFuel - fuelUsed;
 
-                 // Проставляем StopOrder для FuelStationChange (начиная с 1)
-                 station.StopOrder = i + 1;
+                 // Проставляем StopOrder для FuelStationChange в обратном порядке
+                 // Самая дальняя станция получает StopOrder = 1, ближайшая - максимальный номер
+                 station.StopOrder = orderedStations.Count - i;
                  
                  // Проставляем CurrentFuel для FuelStationChange
                  station.CurrentFuel = fuelAtArrival;
