@@ -23,6 +23,13 @@ namespace Foruscorp.FuelRoutes.Infrastructure.Domain.RouteValidators
                 .IsRequired()
                 .HasColumnType("double precision");
 
+            builder.Property(fsc => fsc.NextDistanceKm)
+                .IsRequired()
+                .HasColumnType("double precision");
+
+            builder.Property(fsc => fsc.StopOrder)
+                .IsRequired();
+
             builder.Property(fsc => fsc.Refill)
                 .IsRequired()
                 .HasColumnType("double precision");
