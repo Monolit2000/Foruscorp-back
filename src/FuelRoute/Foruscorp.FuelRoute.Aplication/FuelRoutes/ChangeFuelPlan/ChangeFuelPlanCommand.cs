@@ -207,7 +207,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 if (request.Operation != Operation.Remove)
                 {
 
-                    var stationChange = routeValidator.FuelStationChanges.FirstOrDefault(fsc => fsc.FuelRouteStationId == fuelStation.FuelStationId);
+                    var stationChange = routeValidator.FuelStationChanges.FirstOrDefault(fsc => fsc.Id == fuelStation.FuelPointId);
 
                     if (stationChange != null)
                     {
