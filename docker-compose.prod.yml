@@ -1,4 +1,6 @@
 x-db: &db-env
+  # ConnectionStrings__DefaultConnection: "Host=host.docker.internal;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
+  # ConnectionStrings__DefaultConnection: "Host=54.151.63.149;Port=5435;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
   ConnectionStrings__DefaultConnection: "Host=foruscorp-db;Port=5432;Database=ForuscorpDB;Username=postgres;Password=your_secure_password"
 
 x-mq: &mq-env
@@ -22,13 +24,13 @@ services:
       - ./certs/certificate.pfx:/etc/certs/certificate.pfx:ro
     ports:
       - "5000:5000"
-      - "5011:5011"
+      # - "5011:5011"
     environment:
       ASPNETCORE_ENVIRONMENT: "Production"
-      ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
-      ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
+      # ASPNETCORE_Kestrel__Certificates__Default__Path: "/etc/certs/certificate.pfx"
+      # ASPNETCORE_Kestrel__Certificates__Default__Password: "foruscorp"
       ASPNETCORE_HTTP_PORTS: "5000"
-      ASPNETCORE_HTTPS_PORTS: "5011"
+      # ASPNETCORE_HTTPS_PORTS: "5011"
       <<: *otel-env
     networks:
       - foruscorp-docker-network
@@ -40,6 +42,7 @@ services:
       - "5007:5007"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5007
     depends_on:
       - rabbitmq
     extra_hosts:
@@ -54,6 +57,7 @@ services:
       - "5010:5010"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5010
     depends_on:
       - rabbitmq
       - redis
@@ -69,6 +73,7 @@ services:
       - "5002:5002"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5002
     depends_on:
       - rabbitmq
       - redis
@@ -85,6 +90,7 @@ services:
       - "5003:5003"
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
+      ASPNETCORE_HTTP_PORTS: 5003
       SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
     depends_on:
       - rabbitmq
@@ -102,6 +108,7 @@ services:
     environment:
       <<: [*db-env, *mq-env, *common-env, *otel-env]
       SamsaraApi__ApiToken: ${SAMSARA_API_TOKEN}
+      ASPNETCORE_HTTP_PORTS: 5001
     depends_on:
       - rabbitmq
       - redis
