@@ -124,17 +124,17 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
 
                         routeValidator.AddFuelStationChange(fuelStationChange);
 
-                        changes.Add(new FuelStationChangeInfo
-                        {
-                            FuelStationId = changeDto.FuelStationId,
-                            OriginalRefill = 0.0,
-                            NewRefill = fuelStationChange.Refill,
-                            OriginalCurrentFuel = 0.0,
-                            NewCurrentFuel = fuelStationChange.CurrentFuel,
-                            IsAlgo = fuelStationChange.IsAlgo,
-                            IsManual = fuelStationChange.IsManual,
-                            Status = "Added"
-                        });
+                        //changes.Add(new FuelStationChangeInfo
+                        //{
+                        //    FuelStationId = changeDto.FuelStationId,
+                        //    OriginalRefill = 0.0,
+                        //    NewRefill = fuelStationChange.Refill,
+                        //    OriginalCurrentFuel = 0.0,
+                        //    NewCurrentFuel = fuelStationChange.CurrentFuel,
+                        //    IsAlgo = fuelStationChange.IsAlgo,
+                        //    IsManual = fuelStationChange.IsManual,
+                        //    Status = "Added"
+                        //});
                         break;
 
                     case Operation.Remove:

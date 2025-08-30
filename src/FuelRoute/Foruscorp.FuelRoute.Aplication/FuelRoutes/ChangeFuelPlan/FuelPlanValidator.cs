@@ -109,9 +109,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                 if (!ValidateStationOrder(fuelStationChanges, result))
                     return result;
 
-                // Проверка 3: Минимальные расстояния между станциями
-                if (!ValidateMinimumDistances(fuelStationChanges, result, minStopDistanceKm))
-                    return result;
+                //// Проверка 3: Минимальные расстояния между станциями
+                //if (!ValidateMinimumDistances(fuelStationChanges, result, minStopDistanceKm))
+                //    return result;
 
                 // Проверка 4: Симуляция поездки с проверкой всех ограничений
                 if (!SimulateTripAndValidate(fuelStationChanges, routeSection, result, fuelParams, maxTankCapacity, minReserveFactor, fuelFinish))
