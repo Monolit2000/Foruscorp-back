@@ -319,7 +319,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                     stepResult.RequiredFuelReserve = minReserve;
                     stepResult.ActualFuelReserve = fuelAtArrival;
                     stepResult.MeetsReserveRequirement = false;
-                                         stepResult.Notes = $"VIOLATION OF 20% RESERVE";
+                                         stepResult.Notes = $"VIOLATION OF 20% RESERVE \n actual fuel reserve: {stepResult.ActualFuelReserve}";
                     
                     result.StepResults.Add(stepResult);
                     result.IsValid = false;
@@ -429,7 +429,9 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.ChangeFuelPlan
                                  result.FailureReason = $"Insufficient fuel to reach finish. " +
                      $"At finish will be {fuelAtFinish:F1}g < required {fuelFinish:F1}g. " +
                      $"Consumption: {fuelConsumptionPerKm:F3} g/km";
-                
+
+                result.FinalFuelAmount = fuelAtFinish;
+
                 return false;
             }
 
