@@ -159,7 +159,7 @@ namespace Foruscorp.FuelRoutes.Aplication.FuelRoutes.GetFuelRoute
                 Discount = station.FuelStation.Discount.ToString(CultureInfo.InvariantCulture),
                 PriceAfterDiscount = station.FuelStation.PriceAfterDiscount.ToString(CultureInfo.InvariantCulture),
 
-                IsAlgorithm = station.FuelStation.IsAlgorithm,
+                IsAlgorithm = !station.IsManual ? station.IsAlgo : station.IsManual,
                 Refill = station.Refill.ToString(CultureInfo.InvariantCulture),
                 StopOrder = station.StopOrder,
                 NextDistanceKm = station.NextDistanceKm.ToString(CultureInfo.InvariantCulture),
